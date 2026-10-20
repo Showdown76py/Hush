@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    # Liquid Glass et l'icône .icon demandent le SDK macOS 26 (Xcode 26 ou plus récent).
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Outils
+        run: |
+          brew install xcodegen
+          xcodebuild -version
+
+      - name: Tests du driver (AddressSanitizer + UBSan)
+        run: |
+          mkdir -p build
+          clang -O1 -g -fsanitize=address,undefined -std=c11 -Wall -Werror -I Shared \
+            -framework CoreAudio -framework CoreFoundation Driver/Tests/driver_test.c -o build/driver_test
+          build/driver_test
+
+      - name: Le projet Xcode est à jour avec project.yml
+        run: |
+          xcodegen generate
+          git diff --exit-code -- Hush.xcodeproj
+
+      - name: Sparkle
+        run: scripts/fetch-sparkle.sh
+
+      - name: Tests unitaires de l'app
+        run: |
+          xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Debug \
+            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGN_IDENTITY=- test
+
+      - name: Build de release (ad-hoc) + DMG
+        run: ./scripts/release.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hush-dmg
+          path: build/release/*.dmg
+          if-no-files-found: error
