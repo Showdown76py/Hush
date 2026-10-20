@@ -18,7 +18,6 @@ Le traitement de la voix d'Apple, celui de FaceTime, retire du micro tout le son
 micro et vous donne le résultat sous la forme d'une nouvelle entrée, « Hush Microphone », utilisable dans n'importe
 quelle app.
 
-
 <p align="center">
   <img src="docs/screenshots/menu-light.png" width="300" alt="Menu de Hush, mode clair">
   <img src="docs/screenshots/menu-dark.png" width="300" alt="Menu de Hush, mode sombre">

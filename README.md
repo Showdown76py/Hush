@@ -17,7 +17,6 @@ your Spotify playlist, a YouTube video or a game ends up in everyone's ears.
 Apple's voice processing, the one FaceTime uses, removes all of the Mac's sound from the microphone. Hush runs it
 on your microphone and gives you the result as a new input, "Hush Microphone", that any app can use.
 
-
 <p align="center">
   <img src="docs/screenshots/menu-light.png" width="300" alt="Hush menu, light mode">
   <img src="docs/screenshots/menu-dark.png" width="300" alt="Hush menu, dark mode">
