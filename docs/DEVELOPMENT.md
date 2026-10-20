@@ -109,7 +109,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
 | Correction de dérive pilotée par le remplissage du ring, par glissement d'un échantillon sec | réagit à la gigue du client : 16 glissements en 20 s, crépitements audibles → estimation par horodatages + rééchantillonnage |
 | Enregistrer « Hush Microphone » avec ffmpeg pour juger l'audio | ffmpeg (avfoundation) perd des morceaux (18,7 s sur 21) : clics dans le fichier → utiliser `dualrec` |
 | Faire tourner `enginecheck` pendant que l'app Hush tourne | deux producteurs dans le ring = voix robotique (d'où `writerPid` / `hush_app_claim_writer`) |
-| Chercher dans Hush la cause du son faible qui remonte à l'activation du VP | le tap montre -8 dB immédiats puis stables : c'est le passage des haut-parleurs en mode appel (ou l'atténuation de Discord), pas Hush |
+| Chercher dans Hush la cause du son faible qui remonte à l'activation du VP | le tap montre -8 dB immédiats puis stables : c'est le passage des haut-parleurs en mode appel, pas Hush (le réglage « Atténuation » de Discord n'existe pas sur Mac) |
 | `ImageRenderer` / `cacheDisplay` pour les captures | ne dessinent ni les contrôles AppKit ni Liquid Glass → vraie fenêtre + `screencapture -l` (la fenêtre reste inactive, donc le verre est désaturé) |
 
 ## Outils de mesure (Prototypes/)

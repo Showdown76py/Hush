@@ -46,10 +46,8 @@ In Discord, open User Settings › Voice & Video:
 | Echo Cancellation | off |
 | Noise Suppression | None |
 | Automatic Gain Control | off |
-| Attenuation | 0% |
 
 Hush already cleans your voice. Leave Discord's processing on and your voice gets cleaned twice and sounds worse.
-Attenuation lowers your other apps whenever someone talks, on top of what macOS already does, so set it to 0%.
 Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone.
 
 <p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Discord settings diagram"></p>
@@ -101,7 +99,7 @@ use headphones.
 **The music gets a bit quieter while Hush runs.**
 macOS lowers other audio whenever voice processing runs. Hush requests the smallest reduction Apple allows, about
 8 dB instead of the default 30 dB. We measured it and couldn't go lower (see the [measurements](Prototypes/MEASUREMENTS.md)).
-Automatic mode limits this to your calls. If the drop feels bigger, check Discord's Attenuation setting.
+Automatic mode limits this to your calls.
 
 **My speakers sound different while Hush runs.**
 macOS puts the speakers in call mode, like during a FaceTime call. When Hush turns on, the speakers sound quiet for

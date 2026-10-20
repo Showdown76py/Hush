@@ -47,11 +47,9 @@ Dans Discord, ouvrez Paramètres utilisateur › Voix et vidéo :
 | Suppression de l'écho | désactivée |
 | Réduction du bruit | Aucune |
 | Contrôle automatique du gain | désactivé |
-| Atténuation | 0 % |
 
 Hush nettoie déjà votre voix. Si vous laissez le traitement de Discord actif, votre voix est nettoyée deux fois et
-sonne moins bien. L'atténuation baisse vos autres apps dès que quelqu'un parle, en plus de ce que fait déjà macOS :
-mettez-la à 0 %. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush Microphone » comme micro.
+sonne moins bien. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush Microphone » comme micro.
 
 <p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Schéma des réglages de Discord"></p>
 
@@ -104,8 +102,7 @@ peu les haut-parleurs ou utilisez des écouteurs.
 **La musique baisse un peu quand Hush tourne.**
 macOS baisse les autres sons dès que le traitement de la voix tourne. Hush demande la baisse la plus faible
 qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. Nous l'avons mesuré, impossible de descendre plus bas
-(voir les [mesures](Prototypes/MEASUREMENTS.md)). Le mode Automatique limite ça à vos appels. Si la baisse vous
-semble plus forte, vérifiez l'atténuation de Discord.
+(voir les [mesures](Prototypes/MEASUREMENTS.md)). Le mode Automatique limite ça à vos appels.
 
 **Mes haut-parleurs sonnent différemment quand Hush tourne.**
 macOS les passe en mode appel, comme pendant un appel FaceTime. À l'activation de Hush, le son paraît faible pendant
