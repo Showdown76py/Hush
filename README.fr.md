@@ -111,6 +111,17 @@ autorisée : **environ 8 dB**, contre 30 dB par défaut. On ne peut pas descendr
 **Pourquoi le son de mes haut-parleurs change-t-il quand Hush est actif ?**
 macOS passe les haut-parleurs en « mode appel » (comme dans FaceTime). En mode Automatique, ça n'arrive que pendant vos appels.
 
+**Après un appel, le son de mes haut-parleurs reste plus faible puis remonte lentement. Pourquoi ?**
+Quand le traitement de la voix s'arrête, macOS fait sortir les haut-parleurs du « mode appel » progressivement :
+le son revient à son niveau normal en 30 à 40 secondes environ. Nous l'avons mesuré : ce n'est pas Hush qui baisse
+le son (le signal envoyé aux haut-parleurs est intact), c'est le traitement interne des haut-parleurs du Mac, et
+aucune API ne permet de l'accélérer. Si vous êtes pressé, cette commande relance le service audio de macOS et
+remet le son immédiatement (elle coupe tout le son pendant 1 à 2 secondes et demande votre mot de passe) :
+```bash
+sudo killall coreaudiod
+```
+Avec des écouteurs, le problème ne se pose pas.
+
 **Hush enregistre-t-il ce que je dis ?**
 Non. Tout est traité en direct, en mémoire, sur votre Mac. Rien n'est enregistré ni envoyé ailleurs, à part le
 test avant/après de l'accueil, qui reste dans un fichier temporaire local.

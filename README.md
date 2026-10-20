@@ -109,6 +109,17 @@ As soon as voice processing runs, macOS lowers other sounds. Hush asks for the s
 **Why do my speakers sound different while Hush is on?**
 macOS switches the speakers to “call mode”, like in FaceTime. In Automatic mode, this only happens during your calls.
 
+**After a call, my speakers stay quieter and then slowly come back. Why?**
+When voice processing stops, macOS takes the speakers out of “call mode” gradually: the sound returns to its normal
+level in about 30 to 40 seconds. We measured it: Hush isn't lowering anything (the signal sent to the speakers is
+untouched); it's the Mac's internal speaker processing, and no API can speed it up. If you're in a hurry, this
+command restarts the macOS audio service and brings the sound back immediately (it cuts all sound for 1 to 2
+seconds and asks for your password):
+```bash
+sudo killall coreaudiod
+```
+With headphones, this doesn't happen.
+
 **Does Hush record what I say?**
 No. Everything is processed live, in memory, on your Mac. Nothing is recorded or sent anywhere, apart from the
 before/after test in the welcome screens, which stays in a local temporary file.

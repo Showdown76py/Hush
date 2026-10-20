@@ -4,6 +4,29 @@ import Foundation
 import HushRT
 
 let switchTest = CommandLine.arguments.contains("--switch")
+if CommandLine.arguments.contains("--aggregates") {
+    // Liste les périphériques visibles par ce processus avant, pendant et après le VP.
+    func snapshot() -> String {
+        AudioDevices.allDeviceIDs().map { id in
+            "\(id):\(AudioDevices.string(id, kAudioObjectPropertyName) ?? "?")[\(AudioDevices.uint32(id, kAudioDevicePropertyTransportType).map { String(format: "%08x", $0) } ?? "?")]"
+        }.joined(separator: " ")
+    }
+    print("avant : \(snapshot())")
+    let shm = try SharedMemory()
+    let engine = VoiceEngine()
+    let source = AudioDevices.resolveSource(preferredUID: nil)!
+    try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+    Thread.sleep(forTimeInterval: 3)
+    print("pendant : \(snapshot())")
+    engine.stop()
+    var last = ""
+    for t in 0..<40 {
+        let s = snapshot()
+        if s != last { print("t=+\(t)s après arrêt : \(s)"); last = s }
+        Thread.sleep(forTimeInterval: 1)
+    }
+    exit(0)
+}
 if CommandLine.arguments.contains("--duck-release") {
     // Voice processing 10 s puis arrêt, le processus reste vivant 30 s (comme l'app).
     let shm = try SharedMemory()
