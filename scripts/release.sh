@@ -52,7 +52,11 @@ xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Release \
     CODE_SIGN_IDENTITY="-" \
     build | (command -v xcbeautify >/dev/null && xcbeautify || grep -E "error: |warning: |\*\* BUILD")
 APP_SRC="$DERIVED/Build/Products/Release/Hush.app"
-APP="$OUT/Hush.app"
+# Signature et assemblage hors du dépôt : dans un dossier synchronisé (iCloud Drive / File Provider),
+# macOS ajoute aux bundles des attributs étendus que codesign refuse.
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+APP="$WORK/Hush.app"
 ditto "$APP_SRC" "$APP"
 xattr -cr "$APP"
 lipo -info "$APP/Contents/MacOS/Hush"
@@ -75,8 +79,8 @@ SPK="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
 codesign --verify --deep --strict --verbose=1 "$APP"
 
 step "Création du DMG"
-STAGE="$(mktemp -d)"
-trap 'rm -rf "$STAGE"' EXIT
+STAGE="$WORK/dmg"
+mkdir -p "$STAGE"
 ditto "$APP" "$STAGE/Hush.app"
 ln -s /Applications "$STAGE/Applications"
 DMG="$OUT/Hush-$VERSION.dmg"
