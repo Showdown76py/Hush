@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Micro : capsule, étrier et pied -->
+  <rect x="434" y="232" width="156" height="300" rx="78" fill="#FFFFFF"/>
+  <path d="M374 452 a138 138 0 0 0 276 0" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+  <path d="M512 590 v74 M436 676 h152" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+</svg>

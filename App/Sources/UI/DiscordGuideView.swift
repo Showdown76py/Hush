@@ -23,7 +23,7 @@ struct DiscordGuideView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if showsDoneButton {
                 Button("Done", action: done)
-                    .buttonStyle(.borderedProminent)
+                    .hushGlassButton(prominent: true)
                     .controlSize(.large)
                     .keyboardShortcut(.defaultAction)
             }

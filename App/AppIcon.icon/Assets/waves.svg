@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <path d="M320.9 291.9 A248 248 0 0 0 320.9 608.1" fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="267.0" cy="247.3" r="12.0" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="221.0" cy="321.9" r="12.0" fill="#FFFFFF" fill-opacity="0.55"/>
+  <circle cx="197.0" cy="406.2" r="12.0" fill="#FFFFFF" fill-opacity="0.65"/>
+  <circle cx="197.0" cy="493.8" r="12.0" fill="#FFFFFF" fill-opacity="0.65"/>
+  <circle cx="221.0" cy="578.1" r="12.0" fill="#FFFFFF" fill-opacity="0.55"/>
+  <circle cx="267.0" cy="652.7" r="12.0" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="216.1" cy="205.2" r="8.5" fill="#FFFFFF" fill-opacity="0.29"/>
+  <circle cx="150.7" cy="319.9" r="8.5" fill="#FFFFFF" fill-opacity="0.37"/>
+  <circle cx="128.0" cy="450.0" r="8.5" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="150.7" cy="580.1" r="8.5" fill="#FFFFFF" fill-opacity="0.37"/>
+  <circle cx="216.1" cy="694.8" r="8.5" fill="#FFFFFF" fill-opacity="0.29"/>
+  <path d="M703.1 608.1 A248 248 0 0 0 703.1 291.9" fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="757.0" cy="652.7" r="12.0" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="803.0" cy="578.1" r="12.0" fill="#FFFFFF" fill-opacity="0.55"/>
+  <circle cx="827.0" cy="493.8" r="12.0" fill="#FFFFFF" fill-opacity="0.65"/>
+  <circle cx="827.0" cy="406.2" r="12.0" fill="#FFFFFF" fill-opacity="0.65"/>
+  <circle cx="803.0" cy="321.9" r="12.0" fill="#FFFFFF" fill-opacity="0.55"/>
+  <circle cx="757.0" cy="247.3" r="12.0" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="807.9" cy="694.8" r="8.5" fill="#FFFFFF" fill-opacity="0.29"/>
+  <circle cx="873.3" cy="580.1" r="8.5" fill="#FFFFFF" fill-opacity="0.37"/>
+  <circle cx="896.0" cy="450.0" r="8.5" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="873.3" cy="319.9" r="8.5" fill="#FFFFFF" fill-opacity="0.37"/>
+  <circle cx="807.9" cy="205.2" r="8.5" fill="#FFFFFF" fill-opacity="0.29"/>
+</svg>

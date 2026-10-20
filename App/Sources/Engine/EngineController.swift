@@ -71,7 +71,7 @@ final class EngineController: ObservableObject {
         sourceUID = d.string(forKey: Keys.source) ?? ""
         keepAppleDucking = d.bool(forKey: Keys.ducking)
         onboardingCompleted = d.bool(forKey: Keys.onboarding)
-        guard !isRunningUnitTests else { return }   // pas d'audio ni de mémoire partagée pendant les tests
+        guard !isHeadless else { return }   // pas d'audio ni de mémoire partagée (tests, captures d'écran)
         shm = try? SharedMemory()
         installListeners()
         timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
@@ -251,6 +251,19 @@ final class EngineController: ObservableObject {
     /// Quand le voice processing tourne, macOS remet aux autres clients du même micro un signal
     /// environ 17 dB plus faible (mesuré sur MacBook Air) : on compense pour l'affichage.
     var rawMeterOffsetDB: Float { engine.isRunning ? 17 : 0 }
+
+    // Niveaux des vumètres (remplaçables par des valeurs de démonstration pour les captures).
+    var previewLevels: (raw: Float, clean: Float)?
+    func rawMeterLevel() -> Float { previewLevels?.raw ?? engine.rawLevel }
+    func cleanMeterLevel() -> Float { previewLevels?.clean ?? (engine.isRunning ? engine.cleanLevel : 0) }
+
+    /// État de démonstration (captures d'écran uniquement).
+    func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float)) {
+        self.status = status
+        clientCount = clients
+        sourceName = source
+        previewLevels = levels
+    }
 
     var statusText: String {
         switch status {

@@ -8,7 +8,7 @@ options:
 settings:
   base:
     MARKETING_VERSION: 0.1.0
-    CURRENT_PROJECT_VERSION: 1
+    CURRENT_PROJECT_VERSION: 2
     SWIFT_VERSION: "5.0"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     CODE_SIGN_STYLE: Manual
@@ -30,6 +30,8 @@ targets:
       - path: App/Sources
       - path: App/RealTime
       - path: App/Resources
+      - path: App/AppIcon.icon
+        type: file
       - path: App/Hush-Bridging-Header.h
         buildPhase: none
     dependencies:
@@ -39,7 +41,8 @@ targets:
         embed: true
         codeSign: true
       - target: HushDriver
-        embed: false
+        embed: true
+        codeSign: false   # signé par sa propre cible
         copy:
           destination: resources
     settings:

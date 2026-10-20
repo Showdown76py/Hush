@@ -8,7 +8,8 @@ struct MenuContentView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        HushGlassContainer(spacing: 4) {
+        VStack(alignment: .leading, spacing: 14) {
             header
             PowerToggle(isOn: Binding(
                 get: { controller.mode != .off },
@@ -26,10 +27,12 @@ struct MenuContentView: View {
                 ProblemBanner(error: error)
             }
             meters
-            Divider()
+                .padding(14)
+                .hushGlass(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             footer
         }
-        .padding(18)
+        }
+        .padding(16)
         .frame(width: 320)
         .animation(.spring(duration: 0.35), value: controller.mode)
         .animation(.spring(duration: 0.35), value: controller.status)
@@ -58,9 +61,9 @@ struct MenuContentView: View {
     private var meters: some View {
         VStack(spacing: 12) {
             LevelMeter(title: "Microphone", systemImage: "waveform", tint: .orange,
-                       level: { controller.engine.rawLevel }, offsetDB: controller.rawMeterOffsetDB)
+                       level: { controller.rawMeterLevel() }, offsetDB: controller.rawMeterOffsetDB)
             LevelMeter(title: "Sent to apps", systemImage: "checkmark.seal.fill", tint: .green,
-                       level: { controller.engine.isRunning ? controller.engine.cleanLevel : 0 })
+                       level: { controller.cleanMeterLevel() })
             if !controller.sourceName.isEmpty {
                 Label(controller.sourceName, systemImage: "mic")
                     .font(.caption)
@@ -71,16 +74,20 @@ struct MenuContentView: View {
     }
 
     private var footer: some View {
-        HStack {
-            Button("Discord setup") { openWindow(id: WindowID.discord); NSApp.activate(ignoringOtherApps: true) }
+        HStack(spacing: 10) {
+            Button { openWindow(id: WindowID.discord); NSApp.activate(ignoringOtherApps: true) } label: {
+                Label("Discord setup", systemImage: "headphones")
+            }
             Spacer()
             Button { openSettings(); NSApp.activate(ignoringOtherApps: true) } label: { Image(systemName: "gearshape") }
                 .help(Text("Settings…"))
+                .buttonBorderShape(.circle)
             Button { NSApp.terminate(nil) } label: { Image(systemName: "power") }
                 .help(Text("Quit Hush"))
+                .buttonBorderShape(.circle)
         }
-        .buttonStyle(.borderless)
-        .controlSize(.regular)
+        .hushGlassButton()
+        .controlSize(.large)
     }
 }
 
@@ -91,16 +98,14 @@ struct PowerToggle: View {
     var body: some View {
         Button { isOn.toggle() } label: {
             HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(isOn ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(.quaternary))
-                        .frame(width: 44, height: 44)
-                        .shadow(color: isOn ? .accentColor.opacity(0.45) : .clear, radius: 8)
-                    Image(systemName: isOn ? "waveform.badge.mic" : "mic.slash")
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(isOn ? .white : .secondary)
-                        .contentTransition(.symbolEffect(.replace))
-                }
+                Image(systemName: isOn ? "waveform.badge.mic" : "mic.slash")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(isOn ? .white : .secondary)
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 48, height: 48)
+                    .background(Circle().fill(Color.hushBrand.gradient).opacity(isOn ? 1 : 0))
+                    .hushGlass(in: Circle(), tint: isOn ? Color.hushBrand : nil, interactive: true)
+                    .shadow(color: isOn ? Color.hushBrand.opacity(0.45) : .clear, radius: 12)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isOn ? "Clean microphone on" : "Clean microphone off")
                         .font(.title3.weight(.semibold))
@@ -111,8 +116,8 @@ struct PowerToggle: View {
                 Spacer(minLength: 0)
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.background.secondary))
-            .contentShape(RoundedRectangle(cornerRadius: 14))
+            .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .hushGlass(in: RoundedRectangle(cornerRadius: 22, style: .continuous), interactive: true)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isToggle)
@@ -159,11 +164,12 @@ struct ProblemBanner: View {
             if let action {
                 Button(action.title, action: action.run)
                     .controlSize(.small)
+                    .hushGlassButton(prominent: true)
             }
         }
-        .padding(10)
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.orange.opacity(0.12)))
+        .hushGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous), tint: .orange.opacity(0.18))
     }
 
     private var action: (title: LocalizedStringKey, run: () -> Void)? {

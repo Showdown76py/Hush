@@ -5,8 +5,10 @@ import SwiftUI
 struct OnboardingView: View {
     @EnvironmentObject private var controller: EngineController
     @Environment(\.dismissWindow) private var dismissWindow
-    @State private var step = 0
+    @State private var step: Int
     private let stepCount = 5
+
+    init(initialStep: Int = 0) { _step = State(initialValue: initialStep) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,19 +26,23 @@ struct OnboardingView: View {
                                     removal: .move(edge: .leading).combined(with: .opacity)))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .padding(.horizontal, 36)
-            .padding(.top, 36)
+            .padding(.top, 40)
+            .padding(.bottom, 24)
 
             HStack(spacing: 7) {
                 ForEach(0..<stepCount, id: \.self) { i in
                     Capsule()
-                        .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.3))
+                        .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.35))
                         .frame(width: i == step ? 18 : 7, height: 7)
                 }
             }
-            .padding(.bottom, 20)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .hushGlass(in: Capsule())
+            .padding(.bottom, 18)
             .accessibilityHidden(true)
         }
-        .frame(width: 600, height: 560)
+        .frame(width: 600, height: 540)
         .animation(.spring(duration: 0.45), value: step)
     }
 
@@ -91,7 +97,7 @@ private struct WelcomeStep: View {
             }
             Spacer()
             Button("Get started", action: next)
-                .buttonStyle(.borderedProminent)
+                .hushGlassButton(prominent: true)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
         }
@@ -111,7 +117,7 @@ private struct PermissionStep: View {
             switch status {
             case .authorized:
                 Label("Microphone allowed", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                Button("Continue", action: next).buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                Button("Continue", action: next).hushGlassButton(prominent: true).controlSize(.large).keyboardShortcut(.defaultAction)
             case .denied, .restricted:
                 Text("Microphone access was refused. Turn on Hush in System Settings › Privacy & Security › Microphone.")
                     .multilineTextAlignment(.center).foregroundStyle(.orange)
@@ -121,6 +127,7 @@ private struct PermissionStep: View {
                     }
                     Button("Check again") { status = AVCaptureDevice.authorizationStatus(for: .audio) }
                 }
+                .hushGlassButton()
                 .controlSize(.large)
             default:
                 Button("Allow microphone") {
@@ -130,7 +137,7 @@ private struct PermissionStep: View {
                         if status == .authorized { next() }
                     }
                 }
-                .buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                .hushGlassButton(prominent: true).controlSize(.large).keyboardShortcut(.defaultAction)
             }
         }
     }
@@ -155,7 +162,7 @@ private struct InstallStep: View {
             }
             if controller.driverState == .installed {
                 Label("Hush Microphone is installed", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                Button("Continue", action: next).buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                Button("Continue", action: next).hushGlassButton(prominent: true).controlSize(.large).keyboardShortcut(.defaultAction)
             } else {
                 Button {
                     working = true
@@ -169,7 +176,7 @@ private struct InstallStep: View {
                     if working { ProgressView().controlSize(.small).padding(.horizontal, 30) }
                     else { Text(controller.driverState == .updateAvailable ? "Update" : "Install") }
                 }
-                .buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                .hushGlassButton(prominent: true).controlSize(.large).keyboardShortcut(.defaultAction)
                 .disabled(working)
             }
         }
@@ -194,7 +201,7 @@ private struct TestStep: View {
                         .foregroundStyle(.orange).multilineTextAlignment(.center)
                 }
                 Button("Start the test") { Task { await test.run(controller: controller) } }
-                    .buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                    .hushGlassButton(prominent: true).controlSize(.large).keyboardShortcut(.defaultAction)
                 Button("Skip", action: next).buttonStyle(.link)
             case .warmingUp(let remaining):
                 Text("Start talking… \(remaining)").font(.title2.monospacedDigit())
@@ -214,8 +221,9 @@ private struct TestStep: View {
                 }
                 HStack {
                     Button("Try again") { Task { await test.run(controller: controller) } }
+                        .hushGlassButton()
                     Button("Continue") { test.stopPlayback(); next() }
-                        .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                        .hushGlassButton(prominent: true).keyboardShortcut(.defaultAction)
                 }
                 .controlSize(.large)
             }
@@ -242,9 +250,9 @@ private struct PlayCard: View {
                 Text(subtitle).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
             .frame(width: 190, height: 130)
-            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.background.secondary))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(isPlaying ? Color.accentColor : .clear, lineWidth: 2))
+            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .hushGlass(in: RoundedRectangle(cornerRadius: 24, style: .continuous),
+                       tint: isPlaying ? .accentColor.opacity(0.35) : nil, interactive: true)
         }
         .buttonStyle(.plain)
     }

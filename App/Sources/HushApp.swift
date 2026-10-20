@@ -6,6 +6,12 @@ struct HushApp: App {
     @StateObject private var controller = EngineController()
     private let updates = UpdateController()
 
+    init() {
+        if let dir = screenshotDirectory {
+            DispatchQueue.main.async { MainActor.assumeIsolated { Screenshots.render(to: dir) } }
+        }
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuContentView()
@@ -43,6 +49,14 @@ struct HushApp: App {
 
 /// Vrai quand l'app sert seulement d'hôte aux tests unitaires.
 let isRunningUnitTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+/// Mode "--render-screenshots <dossier>" : dessine les écrans en PNG puis quitte (README, revue du design).
+let screenshotDirectory: String? = {
+    let args = CommandLine.arguments
+    guard let i = args.firstIndex(of: "--render-screenshots"), i + 1 < args.count else { return nil }
+    return args[i + 1]
+}()
+/// Pas d'audio, pas de fenêtre automatique.
+let isHeadless = isRunningUnitTests || screenshotDirectory != nil
 
 enum WindowID {
     static let onboarding = "onboarding"
@@ -71,7 +85,7 @@ struct MenuBarLabel: View {
     var body: some View {
         Image(systemName: controller.status.menuBarSymbol)
             .task {
-                if !controller.onboardingCompleted && !isRunningUnitTests {
+                if !controller.onboardingCompleted && !isHeadless {
                     openWindow(id: WindowID.onboarding)
                     NSApp.activate(ignoringOtherApps: true)
                 }
