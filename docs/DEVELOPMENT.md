@@ -82,6 +82,11 @@ sudo scripts/install-driver.sh                          # installer le driver à
   donc l'autorisation micro (TCC) survit aux mises à jour ; en ad-hoc, elle est perdue à chaque build. Le driver
   reste toujours en ad-hoc. Hardened runtime seulement en Developer ID (sinon la validation des bibliothèques
   bloque Sparkle).
+- **Version du driver** : `HUSH_DRIVER_VERSION` dans `project.yml`, indépendante de la version de l'app. L'app
+  compare la version embarquée à celle installée et, si elle est plus récente, affiche une pastille orange sur
+  l'icône de la barre de menus et une bannière « Mettre à jour » dans le menu (mot de passe administrateur).
+  **Incrémenter cette valeur à chaque modification du driver**, et seulement dans ce cas, sinon chaque release
+  redemanderait le mot de passe.
 - **Permission micro** : si `AVCaptureDevice.authorizationStatus == .notDetermined`, l'app la redemande d'elle-même
   (cas d'une app remplacée avec une nouvelle signature).
 - **Mises à jour Sparkle** : clé publique EdDSA dans `project.yml` ; clé privée dans le trousseau du mainteneur

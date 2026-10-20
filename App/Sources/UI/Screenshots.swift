@@ -44,8 +44,31 @@ enum Screenshots {
 
         try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         save("menu", MenuContentView())
+        controller.applyPreview(status: .running, clients: 1, source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004),
+                                driverState: .updateAvailable)
+        save("menu-driver-update", MenuContentView())
+        controller.applyPreview(status: .running, clients: 1, source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004))
         for step in 0..<5 {
             save("onboarding-\(step + 1)", OnboardingView(initialStep: step))
+        }
+        // Icône de la barre de menus avec la pastille de mise à jour, en clair et en sombre (x4 pour l'examen).
+        for (suffix, appearance) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
+            NSAppearance(named: appearance)!.performAsCurrentDrawingAppearance {
+                let icon = MenuBarIcon.image(symbol: "mic.fill", badge: true)
+                let scale: CGFloat = 4
+                let size = NSSize(width: icon.size.width * scale + 16, height: icon.size.height * scale + 16)
+                let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width), pixelsHigh: Int(size.height),
+                                           bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                           colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+                NSGraphicsContext.saveGraphicsState()
+                NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+                (suffix == "dark" ? NSColor(white: 0.15, alpha: 1) : NSColor(white: 0.93, alpha: 1)).setFill()
+                NSRect(origin: .zero, size: size).fill()
+                icon.draw(in: NSRect(x: 8, y: 8, width: icon.size.width * scale, height: icon.size.height * scale))
+                NSGraphicsContext.restoreGraphicsState()
+                try? rep.representation(using: .png, properties: [:])?
+                    .write(to: URL(fileURLWithPath: directory).appendingPathComponent("menubar-badge-\(suffix).png"))
+            }
         }
         save("discord", DiscordGuideView(showsDoneButton: false).padding(28).frame(width: 560))
         save("settings", SettingsView())

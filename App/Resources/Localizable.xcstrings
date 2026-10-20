@@ -926,6 +926,16 @@
         }
       }
     },
+    "This version of Hush includes a newer Hush Microphone. macOS will ask for your password.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette version de Hush contient un Hush Microphone plus récent. macOS vous demandera votre mot de passe."
+          }
+        }
+      }
+    },
     "Try again": {
       "localizations": {
         "fr": {
@@ -1012,6 +1022,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Micro virtuel"
+          }
+        }
+      }
+    },
+    "Virtual microphone update": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise à jour du micro virtuel"
           }
         }
       }

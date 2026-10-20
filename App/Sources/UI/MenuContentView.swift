@@ -11,6 +11,9 @@ struct MenuContentView: View {
         HushGlassContainer(spacing: 4) {
         VStack(alignment: .leading, spacing: 14) {
             header
+            if controller.driverState == .updateAvailable {
+                DriverUpdateBanner()
+            }
             PowerToggle(isOn: Binding(
                 get: { controller.mode != .off },
                 set: { controller.mode = $0 ? .automatic : .off }))
@@ -183,5 +186,45 @@ struct ProblemBanner: View {
         default:
             return nil
         }
+    }
+}
+
+
+/// Bannière proposée quand l'app embarque un micro virtuel plus récent que celui installé.
+struct DriverUpdateBanner: View {
+    @EnvironmentObject private var controller: EngineController
+    @State private var working = false
+    @State private var error: HushError?
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.title2)
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Virtual microphone update").font(.callout.weight(.semibold))
+                Text(error.map { "\($0.title). \($0.advice)" }
+                     ?? String(localized: "This version of Hush includes a newer Hush Microphone. macOS will ask for your password."))
+                    .font(.caption)
+                    .foregroundStyle(error == nil ? .secondary : Color.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    working = true
+                    error = nil
+                    Task {
+                        do { try await controller.installDriver() } catch { self.error = error as? HushError ?? .installFailed }
+                        working = false
+                    }
+                } label: {
+                    if working { ProgressView().controlSize(.small) } else { Text("Update") }
+                }
+                .controlSize(.small)
+                .hushGlassButton(prominent: true)
+                .disabled(working)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .hushGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous), tint: .orange.opacity(0.15))
     }
 }

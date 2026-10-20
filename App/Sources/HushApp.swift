@@ -84,7 +84,8 @@ struct MenuBarLabel: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Image(systemName: controller.status.menuBarSymbol)
+        Image(nsImage: MenuBarIcon.image(symbol: controller.status.menuBarSymbol,
+                                         badge: controller.driverState == .updateAvailable))
             .task {
                 if !controller.onboardingCompleted && !isHeadless {
                     openWindow(id: WindowID.onboarding)
@@ -92,6 +93,36 @@ struct MenuBarLabel: View {
                 }
             }
             .accessibilityLabel(Text("Hush"))
+    }
+}
+
+/// Icône de la barre de menus, avec une pastille orange quand une mise à jour du micro virtuel attend.
+enum MenuBarIcon {
+    static func image(symbol: String, badge: Bool) -> NSImage {
+        let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+        guard let base = NSImage(systemSymbolName: symbol, accessibilityDescription: "Hush")?.withSymbolConfiguration(config) else {
+            return NSImage()
+        }
+        guard badge else {
+            base.isTemplate = true   // s'adapte seul au thème de la barre de menus
+            return base
+        }
+        let size = NSSize(width: base.size.width + 3, height: base.size.height)
+        // Dessin différé : la couleur du symbole suit l'apparence de la barre de menus au moment du rendu.
+        let image = NSImage(size: size, flipped: false) { rect in
+            let tinted = base.copy() as! NSImage
+            tinted.lockFocus()
+            NSColor.labelColor.set()
+            NSRect(origin: .zero, size: tinted.size).fill(using: .sourceAtop)
+            tinted.unlockFocus()
+            tinted.draw(in: NSRect(origin: .zero, size: base.size))
+            let d: CGFloat = 6
+            NSColor.systemOrange.setFill()
+            NSBezierPath(ovalIn: NSRect(x: rect.maxX - d, y: rect.maxY - d, width: d, height: d)).fill()
+            return true
+        }
+        image.isTemplate = false
+        return image
     }
 }
 

@@ -7,7 +7,10 @@ options:
   developmentLanguage: en
 settings:
   base:
-    MARKETING_VERSION: 0.1.0
+    MARKETING_VERSION: 0.2.0
+    # Version du driver, indépendante de celle de l'app : l'app propose de mettre le driver à jour (mot de
+    # passe administrateur) quand la sienne est plus récente. À incrémenter seulement quand le driver change.
+    HUSH_DRIVER_VERSION: 14
     CURRENT_PROJECT_VERSION: 2
     SWIFT_VERSION: "5.0"
     MACOSX_DEPLOYMENT_TARGET: "14.0"

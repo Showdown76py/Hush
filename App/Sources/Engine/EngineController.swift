@@ -357,7 +357,9 @@ final class EngineController: ObservableObject {
     }
 
     /// État de démonstration (captures d'écran uniquement).
-    func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float)) {
+    func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float),
+                      driverState: DriverInstaller.State = .installed) {
+        self.driverState = driverState
         self.status = status
         clientCount = clients
         sourceName = source

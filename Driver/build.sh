@@ -1,15 +1,14 @@
 #!/bin/bash
 # Construit Hush.driver (universal arm64 + x86_64) dans <outdir> (par défaut ../build).
-# Usage : build.sh [outdir] [version] [build]
+# Usage : build.sh [outdir] [version du driver]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OUT="${1:-$HERE/../build}"
-VERSION="${2:-0.1.0}"
-BUILD="${3:-1}"
+DRIVER_VERSION="${2:-$(awk '/HUSH_DRIVER_VERSION:/ {print $2; exit}' "$HERE/../project.yml")}"
 B="$OUT/Hush.driver/Contents"
 rm -rf "$OUT/Hush.driver"
 mkdir -p "$B/MacOS" "$B/Resources"
-sed -e "s/\$(MARKETING_VERSION)/$VERSION/" -e "s/\$(CURRENT_PROJECT_VERSION)/$BUILD/" "$HERE/Info.plist" > "$B/Info.plist"
+sed -e "s/\$(HUSH_DRIVER_VERSION)/$DRIVER_VERSION/g" "$HERE/Info.plist" > "$B/Info.plist"
 clang -bundle -O2 -Wall -Wextra -Werror -std=c11 \
   -arch arm64 -arch x86_64 -mmacosx-version-min=14.0 \
   -fvisibility=hidden -I "$HERE/../Shared" \
