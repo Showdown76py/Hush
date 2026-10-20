@@ -54,7 +54,9 @@ enum Screenshots {
         // Icône de la barre de menus avec la pastille de mise à jour, en clair et en sombre (x4 pour l'examen).
         for (suffix, appearance) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
             NSAppearance(named: appearance)!.performAsCurrentDrawingAppearance {
-                let icon = MenuBarIcon.image(symbol: "mic.fill", badge: true)
+              for (name, look, badge) in [("active", MenuBarIcon.Look.active, NSColor?.none), ("standby", .standby, nil),
+                                          ("off", .off, nil), ("update", .active, NSColor.systemOrange)] {
+                let icon = MenuBarIcon.image(look: look, badge: badge)
                 let scale: CGFloat = 4
                 let size = NSSize(width: icon.size.width * scale + 16, height: icon.size.height * scale + 16)
                 let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width), pixelsHigh: Int(size.height),
@@ -64,10 +66,21 @@ enum Screenshots {
                 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
                 (suffix == "dark" ? NSColor(white: 0.15, alpha: 1) : NSColor(white: 0.93, alpha: 1)).setFill()
                 NSRect(origin: .zero, size: size).fill()
-                icon.draw(in: NSRect(x: 8, y: 8, width: icon.size.width * scale, height: icon.size.height * scale))
+                // Une image modèle s'affiche dans la couleur du texte de la barre : on la teinte comme macOS.
+                let shown: NSImage
+                if icon.isTemplate {
+                    shown = NSImage(size: icon.size, flipped: false) { r in
+                        icon.draw(in: r)
+                        (suffix == "dark" ? NSColor.white : NSColor.black).set()
+                        r.fill(using: .sourceAtop)
+                        return true
+                    }
+                } else { shown = icon }
+                shown.draw(in: NSRect(x: 8, y: 8, width: icon.size.width * scale, height: icon.size.height * scale))
                 NSGraphicsContext.restoreGraphicsState()
                 try? rep.representation(using: .png, properties: [:])?
-                    .write(to: URL(fileURLWithPath: directory).appendingPathComponent("menubar-badge-\(suffix).png"))
+                    .write(to: URL(fileURLWithPath: directory).appendingPathComponent("menubar-\(name)-\(suffix).png"))
+              }
             }
         }
         save("discord", DiscordGuideView(showsDoneButton: false).padding(28).frame(width: 560))
