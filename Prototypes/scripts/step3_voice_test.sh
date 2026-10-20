@@ -11,7 +11,7 @@ say -v Thomas "Le test commence. Parlez dès que la musique démarre, jusqu'au s
 VP=$!; sleep 3          # laisse le VP démarrer et converger
 afplay -t 19 "$MUSIC" &
 AF=$!
-"$B/dualrec" --seconds 17 --out "$OUT/dual.wav" > "$OUT/dualrec.log" 2>&1
+"$B/dualrec" --b "${BDEV:-BlackHole 16ch}" --seconds 17 --out "$OUT/dual.wav" > "$OUT/dualrec.log" 2>&1
 wait $VP; kill $AF 2>/dev/null || true
 say -v Thomas "Terminé, merci."
 ffmpeg -v error -y -i "$OUT/dual.wav" -af "pan=mono|c0=c0" "$OUT/brut.wav"

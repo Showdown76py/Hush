@@ -20,6 +20,7 @@ var targetFill: UInt32 = 768
 var bypass = false
 var injectChannels = 1
 var useShm = false
+var ioBuffer: UInt32? = nil
 var it = CommandLine.arguments.dropFirst().makeIterator()
 while let a = it.next() {
     switch a {
@@ -33,6 +34,7 @@ while let a = it.next() {
     case "--bypass": bypass = true
     case "--inject-channels": injectChannels = Int(it.next()!)!
     case "--shm": useShm = true
+    case "--io-buffer": ioBuffer = UInt32(it.next()!)!
     default: fatalError("argument inconnu: \(a)")
     }
 }
@@ -104,6 +106,7 @@ final class Ctx {
     var primed = false
     var underruns = 0, reprimes = 0, peakIn: Float = 0, peakOut: Float = 0
     var injectPos = 0
+    var lastChunk: UInt32 = 0
     var injectData: UnsafeMutablePointer<Float>?
     var injectCount = 0
 }
@@ -114,6 +117,17 @@ if !inject.isEmpty {
     ctx.injectCount = inject.count
 }
 let ref = Unmanaged.passUnretained(ctx).toOpaque()
+
+// Taille de buffer IO (pour notre processus) du micro et des haut-parleurs par défaut.
+if var frames = ioBuffer {
+    for sel in [kAudioHardwarePropertyDefaultInputDevice, kAudioHardwarePropertyDefaultOutputDevice] {
+        var a = AudioObjectPropertyAddress(mSelector: sel, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        var dev = AudioDeviceID(0); var sz = UInt32(4)
+        AudioObjectGetPropertyData(sys, &a, 0, nil, &sz, &dev)
+        var b = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyBufferFrameSize, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        print("io buffer \(frames) sur \(dev) -> \(AudioObjectSetPropertyData(dev, &b, 0, nil, 4, &frames))")
+    }
+}
 
 // --- VPIO (entrée micro) ---
 var d1 = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_VoiceProcessingIO,
@@ -140,6 +154,7 @@ let micCB: AURenderCallback = { r, flags, ts, bus, frames, _ in
     let err = AudioUnitRender(c.vp!, flags, ts, bus, frames, &abl)
     if err != noErr { return err }
     for i in 0..<Int(frames) { c.peakIn = max(c.peakIn, abs(c.micBuf[i])) }
+    c.lastChunk = frames
     if let shm {
         hush_app_write(shm, c.micBuf, frames, mach_absolute_time())
     } else {
@@ -165,8 +180,8 @@ if useShm {
     while seconds <= 0 || Date().timeIntervalSince(t0) < seconds {
         Thread.sleep(forTimeInterval: 1)
         let r = hush_app_reader_stats(shm!)
-        print(String(format: "t=%4.1f in=%6.1f dB driverFill=%4u underruns=%llu clients=%u", Date().timeIntervalSince(t0),
-                     20 * log10(max(ctx.peakIn, 1e-9)), r.lastFill, r.underruns, r.clientsRunning))
+        print(String(format: "t=%4.1f in=%6.1f dB chunk=%u driverFill=%4u underruns=%llu clients=%u", Date().timeIntervalSince(t0),
+                     20 * log10(max(ctx.peakIn, 1e-9)), ctx.lastChunk, r.lastFill, r.underruns, r.clientsRunning))
         ctx.peakIn = 0
     }
     hush_app_stop(shm!)

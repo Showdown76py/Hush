@@ -62,4 +62,25 @@ static inline uint32_t ring_read(ring_t *r, float *dst, uint32_t frames, uint32_
     return n;
 }
 
+// Lecture simple, sans recalage : lit min(disponible, frames), complète par du silence.
+// Retourne le nombre de frames réellement lues.
+static inline uint32_t ring_read_avail(ring_t *r, float *dst, uint32_t frames) {
+    uint64_t w = atomic_load_explicit(&r->writePos, memory_order_acquire);
+    uint64_t rd = atomic_load_explicit(&r->readPos, memory_order_relaxed);
+    uint32_t mask = r->capacity - 1, ch = r->channels;
+    uint64_t avail = w > rd ? w - rd : 0;
+    uint32_t n = avail < frames ? (uint32_t)avail : frames;
+    for (uint32_t i = 0; i < n; i++) {
+        const float *s = &r->data[((rd + i) & mask) * ch];
+        for (uint32_t c = 0; c < ch; c++) dst[i * ch + c] = s[c];
+    }
+    for (uint32_t i = n * ch; i < frames * ch; i++) dst[i] = 0.0f;
+    atomic_store_explicit(&r->readPos, rd + n, memory_order_release);
+    return n;
+}
+
+static inline void ring_set_read(ring_t *r, uint64_t pos) {
+    atomic_store_explicit(&r->readPos, pos, memory_order_release);
+}
+
 #endif

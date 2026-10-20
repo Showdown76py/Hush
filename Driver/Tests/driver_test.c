@@ -117,7 +117,7 @@ static void TestIO(void) {
     int discontinuities = 0;
     uint64_t consumed = 0;
     for (int cycle = 0; cycle < 2000; cycle++) {
-        while (produced < consumed + 512 + 1024) {   // producteur au même débit moyen
+        while (produced < consumed + 512 + 1024 + 512) {   // producteur au même débit moyen, en avance
             for (int i = 0; i < 480; i++) block[i] = (float)(produced + i);
             ring_write(&s->ring, block, 480);
             produced += 480;
@@ -134,7 +134,7 @@ static void TestIO(void) {
     CHECK(atomic_load(&s->underruns) == 0, "aucun underrun (%llu)", (unsigned long long)atomic_load(&s->underruns));
     // Remplissage stable (ni dérive ni croissance) : entre cible - bloc producteur et cible + bloc lecteur + marge.
     UInt32 fill = atomic_load(&s->lastFill);
-    CHECK(fill >= 1024 - 480 && fill <= 1024 + 1024, "latence tenue autour de la cible (fill=%u)", fill);
+    CHECK(fill >= 512 + 1024 - 480 && fill <= 512 + 1024 + 480, "latence tenue autour de la cible (fill=%u)", fill);
 
     // 3. Producteur en panne de données : silence complété + underrun compté.
     Read(buf, 512); Read(buf, 512); Read(buf, 512); Read(buf, 512);
@@ -154,10 +154,48 @@ static void TestIO(void) {
     for (int k = 0; k < 10; k++) { for (int i = 0; i < 480; i++) block[i] = (float)k; ring_write(&s->ring, block, 480); }
     atomic_store(&s->writerHeartbeat, mach_absolute_time());
     Read(buf, 512);
-    CHECK(ring_fill(&s->ring) <= 1024, "recalage après retard (fill=%llu)", (unsigned long long)ring_fill(&s->ring));
+    CHECK(ring_fill(&s->ring) <= 1024 + 512, "recalage après retard (fill=%llu)", (unsigned long long)ring_fill(&s->ring));
 
     CHECK(Hush_StopIO(gDriverRef, kObjectID_Device, 1) == noErr, "StopIO");
     CHECK(atomic_load(&s->clientsRunning) == 0, "clientsRunning après StopIO");
+}
+
+// Cas réel observé avec Discord : client à 1024 frames, producteur (VPIO) par blocs irréguliers de ~128.
+// Simulation temporelle à 48 kHz avec gigue : aucun underrun en régime établi.
+static void TestBigClientBuffer(void) {
+    hush_shm_t *s = MapAsApp();
+    if (!s) return;
+    Hush_StartIO(gDriverRef, kObjectID_Device, 3);
+    atomic_store(&s->targetFill, 256);
+    atomic_store(&s->maxFill, 1024);
+    uint64_t before = atomic_load(&s->underruns);
+    float out[1024], chunk[160];
+    // Le producteur suit une horloge idéale ; chaque callback arrive avec 0 à 1,5 ms de retard
+    // (gigue non cumulative, comme un callback cadencé par une horloge matérielle).
+    double ideal = 0, nextWrite = 0, nextRead = 0.005;
+    unsigned seed = 1;
+    int reads = 0;
+    while (reads < 3000) {
+        if (nextWrite <= nextRead) {
+            seed = seed * 1103515245 + 12345;
+            uint32_t n = 127 + (seed >> 16) % 3;                 // 127..129 frames
+            for (uint32_t i = 0; i < n; i++) chunk[i] = 0.1f;
+            ring_write(&s->ring, chunk, n);
+            atomic_store(&s->writerHeartbeat, mach_absolute_time());
+            ideal += n / 48000.0;
+            seed = seed * 1103515245 + 12345;
+            nextWrite = ideal + ((seed >> 16) % 1000) / 1000.0 * 0.0015;
+        } else {
+            Read(out, 1024);
+            reads++;
+            nextRead += 1024 / 48000.0;
+        }
+    }
+    uint64_t during = atomic_load(&s->underruns) - before;
+    CHECK(during <= 1, "client 1024 frames : %llu underruns (amorçage inclus)", (unsigned long long)during);
+    UInt32 fill = atomic_load(&s->lastFill);
+    CHECK(fill >= 1024 && fill <= 1024 + 256 + 1024, "latence bornée (fill=%u)", fill);
+    Hush_StopIO(gDriverRef, kObjectID_Device, 3);
 }
 
 static void TestClock(void) {
@@ -185,6 +223,7 @@ int main(void) {
     CHECK(atomic_load(&gShm) != NULL, "mémoire partagée créée par le driver");
     TestProperties();
     TestIO();
+    TestBigClientBuffer();
     TestClock();
     shm_unlink(HUSH_SHM_NAME);
     if (failures) { fprintf(stderr, "%d échec(s)\n", failures); return 1; }

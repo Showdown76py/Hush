@@ -499,18 +499,42 @@ static OSStatus Hush_DoIOOperation(AudioServerPlugInDriverRef d, AudioObjectID d
         gNeedResync = true;
         return noErr;
     }
-    UInt32 target = atomic_load_explicit(&s->targetFill, memory_order_relaxed);
-    UInt32 maxFill = atomic_load_explicit(&s->maxFill, memory_order_relaxed);
-    if (target > HUSH_RING_FRAMES / 2) target = HUSH_RING_FRAMES / 2;
-    if (maxFill < target + frames) maxFill = target + frames;
-    if (maxFill > HUSH_RING_FRAMES - frames) maxFill = HUSH_RING_FRAMES - frames;
-    if (gNeedResync) {
-        UInt64 w = atomic_load_explicit(&s->ring.writePos, memory_order_acquire);
-        atomic_store_explicit(&s->ring.readPos, w > target ? w - target : 0, memory_order_release);
-        gNeedResync = false;
+    // Latence visée : un buffer client + une marge fixée par l'app. Après un trou, on joue du silence
+    // jusqu'à avoir de nouveau cette marge (ré-amorçage), au lieu d'enchaîner les micro-coupures.
+    UInt32 margin = atomic_load_explicit(&s->targetFill, memory_order_relaxed);
+    UInt32 tolerance = atomic_load_explicit(&s->maxFill, memory_order_relaxed);
+    if (margin > HUSH_RING_FRAMES / 4) margin = HUSH_RING_FRAMES / 4;
+    if (tolerance > HUSH_RING_FRAMES / 4) tolerance = HUSH_RING_FRAMES / 4;
+    UInt64 want = (UInt64)frames + margin;
+    UInt64 w = atomic_load_explicit(&s->ring.writePos, memory_order_acquire);
+    UInt64 rd = atomic_load_explicit(&s->ring.readPos, memory_order_relaxed);
+    UInt64 fill = w > rd ? w - rd : 0;
+    if (w < rd || fill > HUSH_RING_FRAMES - frames) {   // écrasé ou incohérent : on repart de la tête d'écriture
+        ring_set_read(&s->ring, w);
+        gNeedResync = true;
+        fill = 0;
     }
-    atomic_store_explicit(&s->lastFill, (UInt32)ring_fill(&s->ring), memory_order_relaxed);
-    UInt32 got = ring_read(&s->ring, out, frames, target, maxFill);
-    if (got < frames) atomic_fetch_add_explicit(&s->underruns, 1, memory_order_relaxed);
+    if (gNeedResync) {
+        // Ré-amorçage : on attend d'avoir `want` frames, sans jamais relire du son déjà joué
+        // (fill >= want garantit w - want >= rd).
+        if (fill >= want) {
+            ring_set_read(&s->ring, w - want);
+            fill = want;
+            gNeedResync = false;
+        } else {
+            memset(out, 0, frames * sizeof(float) * HUSH_CHANNELS);
+            atomic_store_explicit(&s->lastFill, (UInt32)fill, memory_order_relaxed);
+            return noErr;
+        }
+    } else if (fill > want + tolerance) {
+        ring_set_read(&s->ring, w - want);   // trop de retard accumulé : on jette l'excédent
+        fill = want;
+    }
+    atomic_store_explicit(&s->lastFill, (UInt32)fill, memory_order_relaxed);
+    UInt32 got = ring_read_avail(&s->ring, out, frames);
+    if (got < frames) {
+        atomic_fetch_add_explicit(&s->underruns, 1, memory_order_relaxed);
+        gNeedResync = true;
+    }
     return noErr;
 }

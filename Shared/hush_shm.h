@@ -27,8 +27,9 @@ typedef struct {
 
     // Écrit par l'app
     _Atomic uint64_t writerHeartbeat;   // mach_absolute_time() de la dernière écriture
-    _Atomic uint32_t targetFill;        // frames de latence visées par le driver
-    _Atomic uint32_t maxFill;           // au-delà, le driver se recale sur targetFill
+    // Latence visée par le driver = taille du buffer du client + safetyMargin.
+    _Atomic uint32_t targetFill;        // safetyMargin, en frames
+    _Atomic uint32_t maxFill;           // tolérance : au-delà de (cible + maxFill), le driver jette l'excédent
 
     // Écrit par le driver (statistiques, lecture seule pour l'app)
     _Atomic uint64_t readerHeartbeat;   // mach_absolute_time() de la dernière lecture
@@ -52,8 +53,8 @@ static inline int hush_shm_valid(const hush_shm_t *s, size_t mappedBytes) {
 static inline void hush_shm_init(hush_shm_t *s) {
     s->sampleRate = HUSH_SAMPLE_RATE;
     atomic_store(&s->writerHeartbeat, 0);
-    atomic_store(&s->targetFill, 512);
-    atomic_store(&s->maxFill, 2048);
+    atomic_store(&s->targetFill, 256);
+    atomic_store(&s->maxFill, 1024);
     atomic_store(&s->readerHeartbeat, 0);
     atomic_store(&s->underruns, 0);
     atomic_store(&s->lastFill, 0);
