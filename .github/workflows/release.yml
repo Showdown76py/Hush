@@ -51,10 +51,9 @@ jobs:
           SPARKLE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         if: env.SPARKLE_KEY != ''
         run: |
-          scripts/fetch-sparkle.sh
-          echo "$SPARKLE_KEY" > "$RUNNER_TEMP/sparkle.key"
-          Vendor/Sparkle/bin/generate_keys -f "$RUNNER_TEMP/sparkle.key"
-          rm "$RUNNER_TEMP/sparkle.key"
+          printf '%s' "$SPARKLE_KEY" > "$RUNNER_TEMP/sparkle.key"
+          chmod 600 "$RUNNER_TEMP/sparkle.key"
+          echo "SPARKLE_KEY_FILE=$RUNNER_TEMP/sparkle.key" >> "$GITHUB_ENV"
 
       - name: Build, signature, DMG
         run: ./scripts/release.sh "$VERSION"

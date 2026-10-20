@@ -74,6 +74,9 @@ sudo scripts/install-driver.sh                          # installer le driver à
   bloque Sparkle).
 - **Permission micro** : si `AVCaptureDevice.authorizationStatus == .notDetermined`, l'app la redemande d'elle-même
   (cas d'une app remplacée avec une nouvelle signature).
+- **Mises à jour Sparkle** : clé publique EdDSA dans `project.yml` ; clé privée dans le trousseau du mainteneur
+  (sauvegarde dans `~/Library/Application Support/Hush-signing/`) et dans le secret `SPARKLE_PRIVATE_KEY`.
+  Le workflow Release publie le DMG et `appcast.xml` ; l'app lit `releases/latest/download/appcast.xml`.
 - **Liquid Glass** : `hushGlass` / `hushGlassButton` dans `GlassCompat.swift` (macOS 26+, repli matériaux sur 14 et 15).
 
 ## Ce qui a été tenté et NE marche PAS (ne pas recommencer sans raison nouvelle)
@@ -113,4 +116,5 @@ sudo scripts/install-driver.sh                          # installer le driver à
 ## En suspens
 
 - Vérifier que l'autorisation micro survit à une mise à jour avec le certificat auto-signé (non encore testé).
-- Tester Developer ID + notarisation (pas de compte pour l'instant), et créer la clé EdDSA Sparkle.
+- Tester Developer ID + notarisation (pas de compte pour l'instant).
+- Première release (`git tag v0.1.0 && git push --tags`) puis vérifier une mise à jour Sparkle de bout en bout.

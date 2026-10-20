@@ -12,8 +12,8 @@
 #      les versions. Gatekeeper demande toujours « Ouvrir quand même » à la première installation.
 #   c) Ad-hoc (sinon) — l'app fonctionne, mais l'autorisation micro est redemandée à chaque version.
 #
-# Mises à jour Sparkle : si la clé EdDSA existe dans le trousseau (créée une fois avec
-# Vendor/Sparkle/bin/generate_keys), le DMG est signé et build/release/appcast.xml est généré.
+# Mises à jour Sparkle : avec la clé privée EdDSA (trousseau, ou fichier SPARKLE_KEY_FILE), le DMG est
+# signé et build/release/appcast.xml est généré.
 # DOWNLOAD_URL_PREFIX : URL où le DMG sera publié (par défaut, les releases GitHub).
 set -euo pipefail
 
@@ -43,13 +43,20 @@ command -v xcodegen >/dev/null && xcodegen generate --quiet
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-SPARKLE_PUBLIC_KEY=""
-if "$SPARKLE_BIN/generate_keys" -p >/dev/null 2>&1; then
-    SPARKLE_PUBLIC_KEY="$("$SPARKLE_BIN/generate_keys" -p)"
-    echo "Clé publique Sparkle trouvée : mises à jour automatiques activées."
+# Clé privée Sparkle pour signer l'appcast : fichier (SPARKLE_KEY_FILE, en CI) ou trousseau (machine du
+# mainteneur). La clé publique correspondante est dans project.yml (SPARKLE_PUBLIC_KEY).
+SPARKLE_SIGN=()
+if [ -n "${SPARKLE_KEY_FILE:-}" ]; then
+    SPARKLE_SIGN=(--ed-key-file "$SPARKLE_KEY_FILE")
+elif "$SPARKLE_BIN/generate_keys" -p >/dev/null 2>&1; then
+    PROJECT_KEY="$(awk '/SPARKLE_PUBLIC_KEY:/ {print $2; exit}' project.yml | tr -d '"')"
+    if [ "$("$SPARKLE_BIN/generate_keys" -p)" != "$PROJECT_KEY" ]; then
+        echo "La clé Sparkle du trousseau ne correspond pas à SPARKLE_PUBLIC_KEY (project.yml)." >&2
+        exit 1
+    fi
+    SPARKLE_SIGN=(--keychain-only)
 else
-    echo "Pas de clé Sparkle dans le trousseau : mises à jour automatiques désactivées dans ce build."
-    echo "  (créez-la une fois avec : $SPARKLE_BIN/generate_keys)"
+    echo "Pas de clé privée Sparkle : l'appcast ne sera pas généré."
 fi
 
 step "Build Release universel (arm64 + x86_64)"
@@ -57,7 +64,6 @@ xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Release \
     -derivedDataPath "$DERIVED" \
     ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
     MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
-    SPARKLE_PUBLIC_KEY="$SPARKLE_PUBLIC_KEY" \
     CODE_SIGN_IDENTITY="-" \
     build | (command -v xcbeautify >/dev/null && xcbeautify || grep -E "error: |warning: |\*\* BUILD")
 APP_SRC="$DERIVED/Build/Products/Release/Hush.app"
@@ -114,9 +120,11 @@ elif [ "$MODE" = "developer-id" ]; then
     echo "NOTARY_PROFILE non défini : DMG signé mais non notarisé."
 fi
 
-if [ -n "$SPARKLE_PUBLIC_KEY" ]; then
+if [ ${#SPARKLE_SIGN[@]} -gt 0 ]; then
     step "Appcast Sparkle"
-    "$SPARKLE_BIN/generate_appcast" --download-url-prefix "$DOWNLOAD_URL_PREFIX" -o "$OUT/appcast.xml" "$OUT"
+    if [ "${SPARKLE_SIGN[0]}" = "--keychain-only" ]; then SPARKLE_SIGN=(); fi
+    "$SPARKLE_BIN/generate_appcast" ${SPARKLE_SIGN[@]+"${SPARKLE_SIGN[@]}"} \
+        --download-url-prefix "$DOWNLOAD_URL_PREFIX" -o "$OUT/appcast.xml" "$OUT"
 fi
 
 step "Terminé"

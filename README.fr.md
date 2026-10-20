@@ -213,13 +213,14 @@ Le script compile en universel (arm64 + x86_64), signe, crée le DMG dans `build
   (à créer une fois avec `scripts/create-signing-cert.sh`, puis **à sauvegarder**), sinon signature ad-hoc ;
 - avec `CODESIGN_IDENTITY="Developer ID Application: …"` : hardened runtime + horodatage ;
 - avec en plus `NOTARY_PROFILE=<profil notarytool>` : notarisation et agrafage (stapling) ;
-- si une clé Sparkle existe (`Vendor/Sparkle/bin/generate_keys`, à créer une fois) : `appcast.xml` signé en EdDSA,
-  à publier avec le DMG dans la release GitHub.
+- avec la clé privée Sparkle (trousseau, ou fichier via `SPARKLE_KEY_FILE`) : `appcast.xml` signé en EdDSA, publié
+  avec le DMG dans la release GitHub. La clé publique correspondante est dans `project.yml` (`SPARKLE_PUBLIC_KEY`).
 
 La CI GitHub Actions compile, lance les tests du driver et de l'app, et produit un DMG à chaque push (dans les
-artefacts du workflow). Pousser un tag `vX.Y.Z` publie automatiquement une release GitHub avec le DMG. Pour qu'elle
-signe avec le certificat auto-signé, ajoutez les secrets `HUSH_SIGNING_P12` (le `.p12` en base64) et
-`HUSH_SIGNING_P12_PASSWORD`.
+artefacts du workflow). Pousser un tag `vX.Y.Z` publie automatiquement une release GitHub avec le DMG. Elle utilise
+trois secrets du dépôt : `HUSH_SIGNING_P12` (certificat auto-signé en base64), `HUSH_SIGNING_P12_PASSWORD` et
+`SPARKLE_PRIVATE_KEY` (clé EdDSA des mises à jour). **Sauvegardez ces clés** : sans la clé Sparkle, les utilisateurs
+existants ne pourraient plus recevoir de mise à jour.
 
 ### Architecture
 

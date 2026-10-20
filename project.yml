@@ -17,7 +17,7 @@ settings:
     # Le hardened runtime n'est activé que pour la signature Developer ID (scripts/release.sh) :
     # en signature ad-hoc, la validation des bibliothèques empêcherait de charger Sparkle.
     ENABLE_HARDENED_RUNTIME: NO
-    SPARKLE_PUBLIC_KEY: ""
+    SPARKLE_PUBLIC_KEY: "FABqLVzoRZgTz7s/WjtfJkkyNL3ogoT1VkOdr6KVhZk="
     DEAD_CODE_STRIPPING: YES
   configs:
     Release:

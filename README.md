@@ -211,12 +211,14 @@ The script builds a universal binary (arm64 + x86_64), signs it, creates the DMG
   `scripts/create-signing-cert.sh`, then **back it up**), otherwise an ad-hoc signature;
 - with `CODESIGN_IDENTITY="Developer ID Application: …"`: hardened runtime + timestamp;
 - also with `NOTARY_PROFILE=<notarytool profile>`: notarization and stapling;
-- if a Sparkle key exists (`Vendor/Sparkle/bin/generate_keys`, create it once): an EdDSA-signed `appcast.xml`
-  to publish with the DMG in the GitHub release.
+- with the Sparkle private key (keychain, or a file via `SPARKLE_KEY_FILE`): an EdDSA-signed `appcast.xml`,
+  published with the DMG in the GitHub release. The matching public key is in `project.yml` (`SPARKLE_PUBLIC_KEY`).
 
 GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push (as a workflow
-artifact). Pushing a `vX.Y.Z` tag automatically publishes a GitHub release with the DMG. To have it sign
-with the self-signed certificate, add the `HUSH_SIGNING_P12` (base64 `.p12`) and `HUSH_SIGNING_P12_PASSWORD` secrets.
+artifact). Pushing a `vX.Y.Z` tag automatically publishes a GitHub release with the DMG. It uses three
+repository secrets: `HUSH_SIGNING_P12` (base64 self-signed certificate), `HUSH_SIGNING_P12_PASSWORD` and
+`SPARKLE_PRIVATE_KEY` (EdDSA update key). **Back these keys up**: without the Sparkle key, existing users could no
+longer receive updates.
 
 ### Architecture
 
