@@ -99,15 +99,15 @@ de la sortie système, blocs de 10 ms. Musique seule, atténuation médiane apr�
 | Convergence | ~3 s | ~5 s |
 | CPU | (dans coreaudiod / VPIO) | 6,9 % d'un cœur (0,69 ms par bloc de 10 ms) |
 | Permissions | micro | micro + enregistrement audio système (tap) |
-| Qualité de la voix en double-talk | « très bien » (écoute de l'utilisateur) | **à évaluer à l'oreille** |
+| Qualité de la voix en double-talk | très bonne (à l'écoute) | **à évaluer à l'oreille** |
 
 Le rejeu hors ligne (`aec3offline`) d'une prise enregistrée est identique au bit près au traitement en direct :
 une seule prise vocale suffit pour comparer tous les réglages.
 
 ### AEC3 avec la voix (prise réelle, rejouée hors ligne)
 
-Sur la prise vocale de l'utilisateur (voix + musique), AEC3 coupe la voix pendant le double-talk : 5 à 7 secondes
-sur 14 perdent plus de 10 dB, même sans réduction de bruit. L'utilisateur trouve la voix « presque inaudible ».
+Sur une prise vocale réelle (voix + musique), AEC3 coupe la voix pendant le double-talk : 5 à 7 secondes
+sur 14 perdent plus de 10 dB, même sans réduction de bruit. À l'écoute, la voix est « presque inaudible ».
 Des préréglages de suppresseur plus transparents (fabrique `EchoCanceller3` personnalisée) ne gagnent qu'à la marge :
 
 | Réglage | Musique retirée | Voix gardée (médiane) | Coupures > 10 dB |
@@ -122,7 +122,7 @@ peut être retiré qu'en supprimant aussi la voix. **Conclusion : le VP d'Apple 
 
 ### Remontée lente du volume après l'arrêt du VP
 
-Signalée à l'oreille par l'utilisateur, puis mesurée. Le signal envoyé aux haut-parleurs (tap) est plat. Le rapport
+Remarquée à l'oreille, puis mesurée. Le signal envoyé aux haut-parleurs (tap) est plat. Le rapport
 acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP et remonte progressivement en 30 à 40 s
 (de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
 pas réglable par une API publique.

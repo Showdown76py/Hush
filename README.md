@@ -214,7 +214,8 @@ The script builds a universal binary (arm64 + x86_64), signs it, creates the DMG
 - if a Sparkle key exists (`Vendor/Sparkle/bin/generate_keys`, create it once): an EdDSA-signed `appcast.xml`
   to publish with the DMG in the GitHub release.
 
-GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push. To have it sign
+GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push (as a workflow
+artifact). Pushing a `vX.Y.Z` tag automatically publishes a GitHub release with the DMG. To have it sign
 with the self-signed certificate, add the `HUSH_SIGNING_P12` (base64 `.p12`) and `HUSH_SIGNING_P12_PASSWORD` secrets.
 
 ### Architecture
