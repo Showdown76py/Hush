@@ -60,3 +60,46 @@ significative. Une mesure absolue par clics a échoué : dès que le VPIO tourne
 25 dB plus bas et les clics se perdent dans le bruit.
 
 Base acoustique sans l'app : haut-parleur → micro brut = 33,1 ms (constant).
+
+## Driver maison (étape 4)
+
+Driver HAL "Hush Microphone" (AudioServerPlugIn en C, signé ad-hoc) + ring buffer en mémoire partagée POSIX.
+
+- **Chargé par coreaudiod en signature ad-hoc** : visible dans Configuration audio et MIDI et dans Réglages Système › Son › Entrée.
+- **La mémoire partagée POSIX fonctionne depuis le sandbox du driver** (créée par le driver, ouverte par l'app).
+- Dérive d'horloge micro intégré / horloge du driver : **-0,2 ppm** (soit un recalage toutes les 7 h environ, sans correction).
+- Remplissage du driver stable sur 3 min avec un vrai client, 0 underrun en régime établi.
+- Défaut trouvé avec Discord (client à 1024 frames) : 14 underruns en 7 s → corrigé (marge au-delà du buffer
+  client + ré-amorçage). Le test de non-régression reproduit exactement les 14 underruns de l'ancienne logique.
+
+| Transport (VP en bypass) | Latence |
+|---|---|
+| BlackHole, ring 256, buffer 128 | 31,2 ms |
+| Driver Hush, cible 512 | 16,6 ms (0 underrun) |
+| Driver Hush, buffer IO 128, marge 256 | **13,8 ms** |
+| **VP actif + driver Hush, avec la voix** | **80,9 ms** (médiane sur 29 fenêtres, 71 à 90 ms) |
+
+## Comparaison avec WebRTC AEC3 (prototype `aec3/`)
+
+AEC3 (webrtc-audio-processing 2.1, BSD-3), micro intégré **brut** (sans VPIO), référence = tap Core Audio
+de la sortie système, blocs de 10 ms. Musique seule, atténuation médiane après convergence (≥ 5 s) :
+
+| Réglage AEC3 | Atténuation de la musique |
+|---|---|
+| AEC seul | -17,8 dB |
+| AEC + réduction de bruit haute | -28,1 dB |
+| AEC + réduction de bruit très haute | -35,3 dB |
+
+| | VP d'Apple | WebRTC AEC3 |
+|---|---|---|
+| Atténuation de la musique | **-43,5 dB** | -28 à -35 dB (selon la réduction de bruit) |
+| Ducking de la musique | -8 dB (plancher macOS) | **0 dB** |
+| Son des haut-parleurs | dégradé (mode « appel ») | **intact** |
+| Latence ajoutée (pipeline complet + driver) | ~81 ms | **16,6 ms** |
+| Convergence | ~3 s | ~5 s |
+| CPU | (dans coreaudiod / VPIO) | 6,9 % d'un cœur (0,69 ms par bloc de 10 ms) |
+| Permissions | micro | micro + enregistrement audio système (tap) |
+| Qualité de la voix en double-talk | « très bien » (écoute de l'utilisateur) | **à évaluer à l'oreille** |
+
+Le rejeu hors ligne (`aec3offline`) d'une prise enregistrée est identique au bit près au traitement en direct :
+une seule prise vocale suffit pour comparer tous les réglages.
