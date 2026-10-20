@@ -19,6 +19,7 @@ var bufferFrames: UInt32 = 256
 var targetFill: UInt32 = 768
 var bypass = false
 var injectChannels = 1
+var useShm = false
 var it = CommandLine.arguments.dropFirst().makeIterator()
 while let a = it.next() {
     switch a {
@@ -31,6 +32,7 @@ while let a = it.next() {
     case "--target": targetFill = UInt32(it.next()!)!
     case "--bypass": bypass = true
     case "--inject-channels": injectChannels = Int(it.next()!)!
+    case "--shm": useShm = true
     default: fatalError("argument inconnu: \(a)")
     }
 }
@@ -86,6 +88,15 @@ let ringCap: UInt32 = 8192
 let ring = UnsafeMutableRawPointer.allocate(byteCount: ring_bytes(ringCap, 1), alignment: 64).assumingMemoryBound(to: ring_t.self)
 ring_init(ring, ringCap, 1)
 
+// Mémoire partagée avec le driver Hush (créée par le driver, ou par nous si absente).
+var shm: UnsafeMutableRawPointer?
+if useShm {
+    var err: Int32 = 0
+    guard let p = hush_app_map(&err) else { fatalError("mémoire partagée indisponible: errno \(err)") }
+    shm = p
+    hush_app_set_latency(p, targetFill, targetFill * 4)
+}
+
 final class Ctx {
     var vp: AudioUnit?
     let micBuf = UnsafeMutablePointer<Float>.allocate(capacity: 8192)
@@ -129,7 +140,11 @@ let micCB: AURenderCallback = { r, flags, ts, bus, frames, _ in
     let err = AudioUnitRender(c.vp!, flags, ts, bus, frames, &abl)
     if err != noErr { return err }
     for i in 0..<Int(frames) { c.peakIn = max(c.peakIn, abs(c.micBuf[i])) }
-    ring_write(ring, c.micBuf, frames)
+    if let shm {
+        hush_app_write(shm, c.micBuf, frames, mach_absolute_time())
+    } else {
+        ring_write(ring, c.micBuf, frames)
+    }
     return noErr
 }
 let silenceCB: AURenderCallback = { _, flags, _, _, _, io in
@@ -143,7 +158,22 @@ check(AudioUnitSetProperty(vp, kAudioOutputUnitProperty_SetInputCallback, kAudio
 check(AudioUnitSetProperty(vp, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &s2, cbSize), "vp silence cb")
 check(AudioUnitInitialize(vp), "VPIO init")
 
-// --- AUHAL sortie sur le périphérique virtuel ---
+// --- AUHAL sortie sur le périphérique virtuel (pas en mode --shm) ---
+if useShm {
+    check(AudioOutputUnitStart(vp), "VPIO start")
+    let t0 = Date()
+    while seconds <= 0 || Date().timeIntervalSince(t0) < seconds {
+        Thread.sleep(forTimeInterval: 1)
+        let r = hush_app_reader_stats(shm!)
+        print(String(format: "t=%4.1f in=%6.1f dB driverFill=%4u underruns=%llu clients=%u", Date().timeIntervalSince(t0),
+                     20 * log10(max(ctx.peakIn, 1e-9)), r.lastFill, r.underruns, r.clientsRunning))
+        ctx.peakIn = 0
+    }
+    hush_app_stop(shm!)
+    AudioOutputUnitStop(vp)
+    print("ok")
+    exit(0)
+}
 guard var outDev = deviceID(named: outputName) else { fatalError("périphérique introuvable: \(outputName)") }
 var d2 = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_HALOutput,
                                    componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
