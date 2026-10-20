@@ -37,7 +37,22 @@ jobs:
           xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Debug \
             -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGN_IDENTITY=- test
 
-      - name: Build de release (ad-hoc) + DMG
+      - name: Certificat de signature auto-signé (si les secrets existent)
+        env:
+          P12: ${{ secrets.HUSH_SIGNING_P12 }}
+          P12_PASSWORD: ${{ secrets.HUSH_SIGNING_P12_PASSWORD }}
+        if: env.P12 != ''
+        run: |
+          KC="$RUNNER_TEMP/signing.keychain-db"
+          security create-keychain -p ci "$KC"
+          security set-keychain-settings "$KC"
+          security unlock-keychain -p ci "$KC"
+          echo "$P12" | base64 --decode > "$RUNNER_TEMP/hush.p12"
+          security import "$RUNNER_TEMP/hush.p12" -k "$KC" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci "$KC"
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+
+      - name: Build de release + DMG
         run: ./scripts/release.sh
 
       - uses: actions/upload-artifact@v4

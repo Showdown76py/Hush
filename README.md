@@ -133,7 +133,8 @@ See the limitations below.
 - **Without an Apple Developer account** (ad-hoc signature):
   - Gatekeeper blocks the first launch (see above);
   - the virtual microphone works normally (verified: coreaudiod loads an ad-hoc signed driver);
-  - after each update, macOS may ask for microphone permission again, because the signing identity changes with every build;
+  - official releases are signed with a **stable self-signed certificate**, so macOS keeps the microphone
+    permission across versions. A pure ad-hoc build would ask again with every version;
   - automatic updates work, with an EdDSA signature that Sparkle checks.
 
 ## Measurements
@@ -195,13 +196,15 @@ sudo scripts/uninstall-driver.sh
 
 The script builds a universal binary (arm64 + x86_64), signs it, creates the DMG in `build/release/`, then:
 
-- **no identity**: ad-hoc signature;
+- **no identity**: the “Hush Self-Signed Code Signing” certificate if it is in the keychain (create it once with
+  `scripts/create-signing-cert.sh`, then **back it up**), otherwise an ad-hoc signature;
 - with `CODESIGN_IDENTITY="Developer ID Application: …"`: hardened runtime + timestamp;
 - also with `NOTARY_PROFILE=<notarytool profile>`: notarization and stapling;
 - if a Sparkle key exists (`Vendor/Sparkle/bin/generate_keys`, create it once): an EdDSA-signed `appcast.xml`
   to publish with the DMG in the GitHub release.
 
-GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push.
+GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push. To have it sign
+with the self-signed certificate, add the `HUSH_SIGNING_P12` (base64 `.p12`) and `HUSH_SIGNING_P12_PASSWORD` secrets.
 
 ### Architecture
 

@@ -135,7 +135,8 @@ généralement pas. Voir les limites ci-dessous.
 - **Sans compte Apple Developer** (signature ad-hoc) :
   - Gatekeeper bloque le premier lancement (voir plus haut) ;
   - le micro virtuel fonctionne normalement (vérifié : coreaudiod charge un driver signé ad-hoc) ;
-  - après chaque mise à jour, macOS peut redemander l'autorisation du micro, car l'identité de signature change à chaque build ;
+  - les releases officielles sont signées avec un **certificat auto-signé stable** : macOS conserve donc l'autorisation
+    du micro d'une version à l'autre. Une build signée en ad-hoc pur la redemanderait à chaque version ;
   - les mises à jour automatiques fonctionnent, avec une signature EdDSA vérifiée par Sparkle.
 
 ## Mesures
@@ -197,13 +198,16 @@ sudo scripts/uninstall-driver.sh
 
 Le script compile en universel (arm64 + x86_64), signe, crée le DMG dans `build/release/`, puis :
 
-- **sans identité** : signature ad-hoc ;
+- **sans identité** : le certificat auto-signé « Hush Self-Signed Code Signing » s'il est dans le trousseau
+  (à créer une fois avec `scripts/create-signing-cert.sh`, puis **à sauvegarder**), sinon signature ad-hoc ;
 - avec `CODESIGN_IDENTITY="Developer ID Application: …"` : hardened runtime + horodatage ;
 - avec en plus `NOTARY_PROFILE=<profil notarytool>` : notarisation et agrafage (stapling) ;
 - si une clé Sparkle existe (`Vendor/Sparkle/bin/generate_keys`, à créer une fois) : `appcast.xml` signé en EdDSA,
   à publier avec le DMG dans la release GitHub.
 
-La CI GitHub Actions compile, lance les tests du driver et de l'app, et produit un DMG à chaque push.
+La CI GitHub Actions compile, lance les tests du driver et de l'app, et produit un DMG à chaque push. Pour qu'elle
+signe avec le certificat auto-signé, ajoutez les secrets `HUSH_SIGNING_P12` (le `.p12` en base64) et
+`HUSH_SIGNING_P12_PASSWORD`.
 
 ### Architecture
 

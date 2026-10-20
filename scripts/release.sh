@@ -3,12 +3,14 @@
 #
 # Usage : ./scripts/release.sh [version]
 #
-# Deux modes de signature :
+# Trois modes de signature :
 #   a) Developer ID — définir CODESIGN_IDENTITY="Developer ID Application: Nom (TEAMID)".
 #      Hardened runtime + horodatage. Notarisation si NOTARY_PROFILE est défini
 #      (profil créé avec : xcrun notarytool store-credentials <profil> --apple-id … --team-id …).
-#   b) Ad-hoc (par défaut, sans compte Apple Developer) — l'app fonctionne, mais Gatekeeper
-#      demandera à l'utilisateur d'autoriser l'ouverture (voir README).
+#   b) Auto-signé (automatique si le certificat « Hush Self-Signed Code Signing » est dans le trousseau,
+#      voir scripts/create-signing-cert.sh) — identité stable : l'autorisation micro est conservée entre
+#      les versions. Gatekeeper demande toujours « Ouvrir quand même » à la première installation.
+#   c) Ad-hoc (sinon) — l'app fonctionne, mais l'autorisation micro est redemandée à chaque version.
 #
 # Mises à jour Sparkle : si la clé EdDSA existe dans le trousseau (créée une fois avec
 # Vendor/Sparkle/bin/generate_keys), le DMG est signé et build/release/appcast.xml est généré.
@@ -19,7 +21,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 VERSION="${1:-$(awk '/MARKETING_VERSION:/ {print $2; exit}' project.yml)}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
-IDENTITY="${CODESIGN_IDENTITY:--}"
+SELF_SIGNED_NAME="Hush Self-Signed Code Signing"
+if [ -n "${CODESIGN_IDENTITY:-}" ]; then
+    IDENTITY="$CODESIGN_IDENTITY"; MODE="developer-id"
+elif security find-certificate -c "$SELF_SIGNED_NAME" >/dev/null 2>&1; then
+    IDENTITY="$SELF_SIGNED_NAME"; MODE="self-signed"
+else
+    IDENTITY="-"; MODE="ad-hoc"
+fi
 REPO_URL="${REPO_URL:-https://github.com/Showdown76py/Hush}"
 DOWNLOAD_URL_PREFIX="${DOWNLOAD_URL_PREFIX:-$REPO_URL/releases/download/v$VERSION/}"
 OUT="$ROOT/build/release"
@@ -62,10 +71,15 @@ xattr -cr "$APP"
 lipo -info "$APP/Contents/MacOS/Hush"
 lipo -info "$APP/Contents/Resources/Hush.driver/Contents/MacOS/Hush"
 
-step "Signature ($([ "$IDENTITY" = "-" ] && echo "ad-hoc" || echo "$IDENTITY"))"
+step "Signature : $MODE ($IDENTITY)"
 SIGN=(codesign --force --sign "$IDENTITY")
-if [ "$IDENTITY" != "-" ]; then
+DRIVER_SIGN=(codesign --force --sign "$IDENTITY")
+if [ "$MODE" = "developer-id" ]; then
     SIGN+=(--options runtime --timestamp)
+    DRIVER_SIGN+=(--options runtime --timestamp)
+elif [ "$MODE" = "self-signed" ]; then
+    # Le driver n'a besoin d'aucune autorisation : il reste en ad-hoc, mode vérifié avec coreaudiod.
+    DRIVER_SIGN=(codesign --force --sign -)
 fi
 # De l'intérieur vers l'extérieur (pas de --deep).
 SPK="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
@@ -74,9 +88,10 @@ SPK="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
 "${SIGN[@]}" "$SPK/Autoupdate"
 "${SIGN[@]}" "$SPK/Updater.app"
 "${SIGN[@]}" "$APP/Contents/Frameworks/Sparkle.framework"
-"${SIGN[@]}" "$APP/Contents/Resources/Hush.driver"
+"${DRIVER_SIGN[@]}" "$APP/Contents/Resources/Hush.driver"
 "${SIGN[@]}" --entitlements "$ROOT/App/Hush.entitlements" "$APP"
 codesign --verify --deep --strict --verbose=1 "$APP"
+codesign -d -r- "$APP" 2>&1 | grep designated
 
 step "Création du DMG"
 STAGE="$WORK/dmg"
@@ -85,17 +100,17 @@ ditto "$APP" "$STAGE/Hush.app"
 ln -s /Applications "$STAGE/Applications"
 DMG="$OUT/Hush-$VERSION.dmg"
 hdiutil create -quiet -volname "Hush $VERSION" -srcfolder "$STAGE" -fs HFS+ -format UDZO -imagekey zlib-level=9 -ov "$DMG"
-if [ "$IDENTITY" != "-" ]; then
+if [ "$MODE" = "developer-id" ]; then
     codesign --force --sign "$IDENTITY" --timestamp "$DMG"
 fi
 
-if [ "$IDENTITY" != "-" ] && [ -n "${NOTARY_PROFILE:-}" ]; then
+if [ "$MODE" = "developer-id" ] && [ -n "${NOTARY_PROFILE:-}" ]; then
     step "Notarisation (profil $NOTARY_PROFILE)"
     xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
     xcrun stapler staple "$DMG"
     xcrun stapler validate "$DMG"
     spctl --assess --type open --context context:primary-signature --verbose "$DMG" || true
-elif [ "$IDENTITY" != "-" ]; then
+elif [ "$MODE" = "developer-id" ]; then
     echo "NOTARY_PROFILE non défini : DMG signé mais non notarisé."
 fi
 
