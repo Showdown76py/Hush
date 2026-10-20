@@ -5,7 +5,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 W="${1:?install webrtc}"
 OUT="${2:-$HERE/aec3cap}"
 INC="$W/include/webrtc-audio-processing-2"
-clang++ -std=c++17 -O2 -c "$HERE/aec3_wrap.cc" -I "$INC" -I "$W/include" -DWEBRTC_POSIX -DWEBRTC_MAC -o /tmp/aec3_wrap.o
+SRC="$W/../webrtc-audio-processing-2.1/webrtc"
+clang++ -std=c++17 -O2 -c "$HERE/aec3_wrap.cc" -I "$INC" -I "$SRC" -I "$W/include" -DWEBRTC_POSIX -DWEBRTC_MAC -DWEBRTC_APM_DEBUG_DUMP=0 -o /tmp/aec3_wrap.o
 clang -std=c11 -O2 -fobjc-arc -c "$HERE/tap.m" -o /tmp/aec3_tap.o
 clang -std=c11 -O2 -c "$HERE/aec3cap.c" -I "$HERE/../../Shared" -o /tmp/aec3cap.o
 ABSL=$(find "$W/../webrtc-audio-processing-2.1/build/subprojects" -name "libabsl_*.a" | tr '\n' ' ')

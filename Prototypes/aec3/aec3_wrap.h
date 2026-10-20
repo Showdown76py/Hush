@@ -6,6 +6,8 @@ extern "C" {
 #endif
 typedef struct aec3 aec3_t;
 aec3_t *aec3_create(int noiseSuppression /*0..4, 0 = off*/);
+// preset : 0 = réglages par défaut d'AEC3, 1 = voix préservée, 2 = voix très préservée ; agc : gain automatique.
+aec3_t *aec3_create_tuned(int noiseSuppression, int preset, int agc);
 void aec3_destroy(aec3_t *a);
 // ref : 480 échantillons de la sortie système ; mic : 480 du micro ; out : 480 nettoyés.
 int aec3_process(aec3_t *a, const float *ref, const float *mic, float *out);

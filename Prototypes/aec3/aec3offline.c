@@ -19,12 +19,12 @@ static float *read_wav(const char *path, size_t *n) {   // format écrit par aec
 }
 
 int main(int argc, char **argv) {
-    if (argc != 5) { fprintf(stderr, "usage : %s raw.wav ref.wav ns out.wav\n", argv[0]); return 2; }
+    if (argc != 5 && argc != 7) { fprintf(stderr, "usage : %s raw.wav ref.wav ns out.wav [preset agc]\n", argv[0]); return 2; }
     size_t nr, nf;
     float *raw = read_wav(argv[1], &nr), *ref = read_wav(argv[2], &nf);
     size_t n = (nr < nf ? nr : nf) / 480 * 480;
     float *out = calloc(n, 4);
-    aec3_t *a = aec3_create(atoi(argv[3]));
+    aec3_t *a = argc == 7 ? aec3_create_tuned(atoi(argv[3]), atoi(argv[5]), atoi(argv[6])) : aec3_create(atoi(argv[3]));
     for (size_t i = 0; i < n; i += 480) aec3_process(a, ref + i, raw + i, out + i);
     // Même en-tête que l'entrée.
     FILE *in = fopen(argv[1], "rb"), *o = fopen(argv[4], "wb");

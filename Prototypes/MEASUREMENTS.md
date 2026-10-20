@@ -103,3 +103,26 @@ de la sortie système, blocs de 10 ms. Musique seule, atténuation médiane apr�
 
 Le rejeu hors ligne (`aec3offline`) d'une prise enregistrée est identique au bit près au traitement en direct :
 une seule prise vocale suffit pour comparer tous les réglages.
+
+### AEC3 avec la voix (prise réelle, rejouée hors ligne)
+
+Sur la prise vocale de l'utilisateur (voix + musique), AEC3 coupe la voix pendant le double-talk : 5 à 7 secondes
+sur 14 perdent plus de 10 dB, même sans réduction de bruit. L'utilisateur trouve la voix « presque inaudible ».
+Des préréglages de suppresseur plus transparents (fabrique `EchoCanceller3` personnalisée) ne gagnent qu'à la marge :
+
+| Réglage | Musique retirée | Voix gardée (médiane) | Coupures > 10 dB |
+|---|---|---|---|
+| Défaut, sans réduction de bruit | -16,8 dB | -6,4 dB | 5/14 |
+| Défaut + réduction de bruit haute | -28,1 dB | -9,5 dB | 6/14 |
+| « Voix+ », sans réduction de bruit | -15,5 dB | -5,6 dB | 3/14 |
+| « Voix+ » + réduction de bruit haute | -25,4 dB | -8,4 dB | 5/14 |
+
+Le filtre linéaire d'AEC3 plafonne à environ 16 dB sur les haut-parleurs (non linéaires) d'un MacBook : le reste ne
+peut être retiré qu'en supprimant aussi la voix. **Conclusion : le VP d'Apple reste le moteur de Hush.**
+
+### Remontée lente du volume après l'arrêt du VP
+
+Signalée à l'oreille par l'utilisateur, puis mesurée. Le signal envoyé aux haut-parleurs (tap) est plat. Le rapport
+acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP et remonte progressivement en 30 à 40 s
+(de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
+pas réglable par une API publique.
