@@ -22,6 +22,14 @@ void hush_rt_set_shm(hush_rt_t *rt, void *_Nullable shm);
 // la mémoire partagée. Ne jamais l'activer pendant que le voice processing écrit (un seul producteur).
 // La désactivation attend la fin d'un éventuel callback en cours.
 void hush_rt_set_passthrough(hush_rt_t *rt, void *_Nullable shm);
+// Niveau de la voix traitée. Remplace le gain automatique du voice processing, qui remonte le bruit de
+// fond quand la musique est forte. Par défaut : gain automatique piloté par la voix (hush_agc.h) ;
+// sinon gain fixe (dB) avec limiteur doux. Modifiables à chaud.
+void hush_rt_set_auto_gain(hush_rt_t *rt, int enabled);
+void hush_rt_reset_auto_gain(hush_rt_t *rt, float initialGainDB);   // repris au callback suivant
+float hush_rt_auto_gain_db(const hush_rt_t *rt);
+void hush_rt_set_gain_db(hush_rt_t *rt, float db);
+void hush_rt_apply_gain(float *x, uint32_t n, float gain);
 // Correction de dérive d'horloge par glissement d'échantillons (activée par défaut).
 void hush_rt_set_drift_correction(hush_rt_t *rt, int enabled);
 

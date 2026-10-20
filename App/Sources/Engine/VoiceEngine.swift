@@ -82,6 +82,11 @@ final class VoiceEngine {
                                                                mDuckingLevel: config.keepAppleDucking ? .default : .min)
             try Self.check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_OtherAudioDuckingConfiguration, kAudioUnitScope_Global, 0,
                                                 &duck, UInt32(MemoryLayout<AUVoiceIOOtherAudioDuckingConfiguration>.size)), "Ducking")
+            // Pas de gain automatique : quand la musique est forte, il remonte le résidu de suppression
+            // (souffle « ventilateur »). Un gain fixe est appliqué à la place dans hush_rt.
+            var agc: UInt32 = 0
+            try Self.check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 0,
+                                                &agc, UInt32(MemoryLayout<UInt32>.size)), "AGC")
             var fmt = Self.monoFormat()
             let fmtSize = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
             try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &fmt, fmtSize), "format micro")
@@ -121,6 +126,19 @@ final class VoiceEngine {
         rawUnitIsStale = rawUnit != nil
         Self.log.notice("voice processing arrêté")
     }
+
+    /// Niveau de la voix traitée : gain automatique piloté par la voix, ou gain fixe (dB).
+    func setVoiceLevel(automatic: Bool, fixedDB: Float) {
+        hush_rt_set_gain_db(rt, fixedDB)
+        hush_rt_set_auto_gain(rt, automatic ? 1 : 0)
+    }
+
+    /// Repart du gain automatique mémorisé (appelé à chaque démarrage du traitement).
+    func resetAutomaticGain(to dB: Float) {
+        hush_rt_reset_auto_gain(rt, dB)
+    }
+
+    var automaticGainDB: Float { hush_rt_auto_gain_db(rt) }
 
     func setSharedMemory(_ shm: UnsafeMutableRawPointer?) {
         self.shm = shm

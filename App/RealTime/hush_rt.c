@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "hush_agc.h"
 #include "hush_shm.h"
 
 #define SCRATCH_FRAMES 8192u
@@ -18,6 +19,12 @@ struct hush_rt {
     _Atomic(hush_shm_t *) passShm;
     _Atomic int passBusy;
     _Atomic int driftEnabled;
+    _Atomic float gain;          // gain fixe appliqué à la voix traitée (linéaire), si pas de gain automatique
+    _Atomic int autoGain;        // gain automatique piloté par la voix (hush_agc)
+    _Atomic int agcResetPending; // demande de réinitialisation, appliquée au début du callback suivant
+    _Atomic float agcResetGainDB;
+    _Atomic float agcGainDB;     // gain automatique courant (pour le mémoriser)
+    hush_agc_t agc;              // thread temps réel du VP uniquement
 
     float *vpScratch;    // SCRATCH_FRAMES + 1 (place pour un échantillon dupliqué)
     float *rawScratch;
@@ -53,6 +60,10 @@ hush_rt_t *hush_rt_create(void) {
     rt->record = calloc(HUSH_RT_RECORD_MAX_FRAMES, sizeof(float));
     if (!rt->vpScratch || !rt->rawScratch || !rt->record) { hush_rt_destroy(rt); return NULL; }
     atomic_store(&rt->driftEnabled, 1);
+    atomic_store(&rt->gain, 1.0f);
+    atomic_store(&rt->autoGain, 1);
+    hush_agc_init(&rt->agc, 48000.0f, 10.0f);
+    atomic_store(&rt->agcGainDB, 10.0f);
     rt->driftBaseline = -1;
     return rt;
 }
@@ -73,6 +84,30 @@ void hush_rt_set_passthrough(hush_rt_t *rt, void *shm) {
     if (shm == NULL) {
         // Attend qu'aucun callback ne soit en train d'écrire avec l'ancien pointeur.
         while (atomic_load(&rt->passBusy) != 0) usleep(100);
+    }
+}
+
+void hush_rt_set_gain_db(hush_rt_t *rt, float db) {
+    atomic_store(&rt->gain, powf(10.0f, db / 20.0f));
+}
+
+void hush_rt_set_auto_gain(hush_rt_t *rt, int enabled) { atomic_store(&rt->autoGain, enabled); }
+
+void hush_rt_reset_auto_gain(hush_rt_t *rt, float initialGainDB) {
+    atomic_store(&rt->agcResetGainDB, initialGainDB);
+    atomic_store_explicit(&rt->agcResetPending, 1, memory_order_release);
+}
+
+float hush_rt_auto_gain_db(const hush_rt_t *rt) { return atomic_load(&((hush_rt_t *)rt)->agcGainDB); }
+
+// Gain fixe puis limiteur doux : linéaire jusqu'à 0,9, puis compression progressive vers 1,0.
+void hush_rt_apply_gain(float *x, uint32_t n, float gain) {
+    const float knee = 0.9f, range = 0.1f;
+    for (uint32_t i = 0; i < n; i++) {
+        float y = x[i] * gain;
+        float a = fabsf(y);
+        if (a > knee) y = copysignf(knee + range * tanhf((a - knee) / range), y);
+        x[i] = y;
     }
 }
 
@@ -140,6 +175,15 @@ OSStatus hush_rt_vp_input(void *refCon, AudioUnitRenderActionFlags *flags, const
         atomic_fetch_add_explicit(&rt->vpErrors, 1, memory_order_relaxed);
         atomic_store_explicit(&rt->lastError, err, memory_order_relaxed);
         return err;
+    }
+    if (atomic_exchange_explicit(&rt->agcResetPending, 0, memory_order_acquire))
+        hush_agc_init(&rt->agc, 48000.0f, atomic_load_explicit(&rt->agcResetGainDB, memory_order_relaxed));
+    if (atomic_load_explicit(&rt->autoGain, memory_order_relaxed)) {
+        hush_agc_process(&rt->agc, rt->vpScratch, frames);
+        atomic_store_explicit(&rt->agcGainDB, rt->agc.gainDB, memory_order_relaxed);
+    } else {
+        float gain = atomic_load_explicit(&rt->gain, memory_order_relaxed);
+        if (gain != 1.0f) hush_rt_apply_gain(rt->vpScratch, frames, gain);
     }
     atomic_store_explicit(&rt->levelClean, rms(rt->vpScratch, frames), memory_order_relaxed);
     record_push(rt, 0, rt->vpScratch, frames);

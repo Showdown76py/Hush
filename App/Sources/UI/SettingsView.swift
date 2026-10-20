@@ -33,9 +33,16 @@ struct SettingsView: View {
                         do { if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() } }
                         catch { launchAtLogin = SMAppService.mainApp.status == .enabled }
                     }
+                Picker("Voice level", selection: $controller.voiceLevel) {
+                    Text("Automatic (recommended)").tag("auto")
+                    Text("+0 dB").tag("0")
+                    Text("+6 dB").tag("6")
+                    Text("+12 dB").tag("12")
+                    Text("+18 dB").tag("18")
+                }
                 Toggle("Lower other sounds while Hush is on", isOn: $controller.keepAppleDucking)
             } footer: {
-                Text("macOS always lowers other sounds a little (about 8 dB) while voice cleanup runs. Turn this on to use Apple’s stronger default instead.")
+                Text("Automatic adjusts to your voice only while you speak, so background noise is never boosted. macOS always lowers other sounds a little (about 8 dB) while voice cleanup runs; turn the last option on to use Apple’s stronger default instead.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 

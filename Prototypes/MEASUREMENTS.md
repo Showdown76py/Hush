@@ -126,3 +126,16 @@ Remarquée à l'oreille, puis mesurée. Le signal envoyé aux haut-parleurs (tap
 acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP et remonte progressivement en 30 à 40 s
 (de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
 pas réglable par une API publique.
+
+### Souffle « ventilateur » quand la musique est forte
+
+Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau par seconde) :
+
+| Configuration | Bouffées max | Niveau habituel |
+|---|---|---|
+| Gain automatique du VPIO (défaut d'Apple) | -25 dB | -50 à -67 dB |
+| Gain automatique du VPIO désactivé, sans gain | -52 dB | -63 à -88 dB |
+| Gain automatique Hush piloté par la voix (`hush_agc`) | -39 dB (1 s, démarrage du VP) | -55 à -60 dB, stable |
+
+Le gain automatique d'Apple remonte le résidu de suppression quand personne ne parle. Celui de Hush ne bouge que
+pendant la parole : le résidu reste environ 35 dB sous le niveau visé pour la voix (-22 dB).

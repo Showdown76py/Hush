@@ -32,6 +32,7 @@
 		C4094500A084E64D8574A8EF /* driver-admin.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1250082F2B61D146862261F6 /* driver-admin.sh */; };
 		CD0EF97A179A858EAB69BE62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 998EE92588640F00901C68F9 /* Assets.xcassets */; };
 		D13857F1BF351D8248240F5E /* DriverInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5665B5D5C90635F49202F95 /* DriverInstaller.swift */; };
+		DC2FE683C895318E0E10CF60 /* hush_agc.c in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E7BA292EA15C269AF423B /* hush_agc.c */; };
 		F5ABADA1265E74FF8D393091 /* Sparkle.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9AD303383E70238854530C8A /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -91,6 +92,7 @@
 		3B441E844E805B05E732ED6D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		50E294F847708222F5ACE13A /* HushApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushApp.swift; sourceTree = "<group>"; };
 		54D7749AE0829E17D4A6D682 /* Screenshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screenshots.swift; sourceTree = "<group>"; };
+		5598F77654053F7E754D728C /* hush_agc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hush_agc.h; sourceTree = "<group>"; };
 		5857C55ECEA19366E371E2A7 /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
 		5A56F36AD2F01B6D830581C7 /* GlassCompat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCompat.swift; sourceTree = "<group>"; };
 		654F958ABA81F8BFE55E9395 /* HushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushTests.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		88D5F1E34276D7F28423D584 /* HushTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HushTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		998EE92588640F00901C68F9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9AD303383E70238854530C8A /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = "<group>"; };
+		9C3E7BA292EA15C269AF423B /* hush_agc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hush_agc.c; sourceTree = "<group>"; };
 		A7BF3AF6473EBDB20122AC07 /* ring.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ring.h; sourceTree = "<group>"; };
 		BE0FA2754F2AF00ACD3F8601 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		DA887F928F5622FB0AC57E19 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
@@ -213,6 +216,8 @@
 		7C17ED15946BD6A0E9153F82 /* RealTime */ = {
 			isa = PBXGroup;
 			children = (
+				9C3E7BA292EA15C269AF423B /* hush_agc.c */,
+				5598F77654053F7E754D728C /* hush_agc.h */,
 				66FA5173A5EC9FF62939EF64 /* hush_rt.c */,
 				8372E1B68A4B3AE002388487 /* hush_rt.h */,
 			);
@@ -390,6 +395,7 @@
 				96B0139B0FDA4CF2FAB63CC5 /* SettingsView.swift in Sources */,
 				57A1062384F3AAEFB6945388 /* SharedMemory.swift in Sources */,
 				16A74F7279FC20B6C14648C8 /* VoiceEngine.swift in Sources */,
+				DC2FE683C895318E0E10CF60 /* hush_agc.c in Sources */,
 				2851EDCED9D7105AEC45391D /* hush_rt.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

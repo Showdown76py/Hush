@@ -25,7 +25,7 @@ project.yml       source de vérité du projet Xcode (XcodeGen) ; Hush.xcodeproj
 ```bash
 scripts/fetch-sparkle.sh && xcodegen generate          # après chaque modif de project.yml : regénérer et committer
 xcodebuild -scheme Hush -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Hush-cli build
-xcodebuild -scheme Hush -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Hush-cli test   # 8 tests
+xcodebuild -scheme Hush -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Hush-cli test   # 17 tests
 clang -O1 -g -fsanitize=address,undefined -std=c11 -Wall -Werror -I Shared -framework CoreAudio \
   -framework CoreFoundation Driver/Tests/driver_test.c -o build/driver_test && build/driver_test
 ./scripts/release.sh [version]                          # DMG universel dans build/release/
@@ -63,6 +63,13 @@ sudo scripts/install-driver.sh                          # installer le driver à
   d'hystérésis), Toujours actif, Désactivé = **passage direct** du micro brut vers Hush Microphone (seulement
   quand une app écoute, sinon l'indicateur orange resterait allumé). Un seul producteur dans le ring à la fois :
   `hush_rt_set_passthrough(NULL)` attend la fin du callback en cours (compteur `passBusy`).
+- **Niveau de la voix** : le gain automatique du VPIO (`kAUVoiceIOProperty_VoiceProcessingEnableAGC`) est
+  **désactivé**, car il remonte le résidu de suppression quand la musique est forte (souffle « ventilateur »,
+  bouffées jusqu'à -25 dB). Il est remplacé par `hush_agc` : gain piloté par la voix (détection = 12 dB au-dessus
+  du bruit de fond suivi ET au-dessus de -54 dBFS), cible -19 dB par syllabe (environ -22 dB par phrase), montée
+  10 dB/s et descente 40 dB/s **uniquement pendant la parole**, gain figé sinon, limiteur doux, gain mémorisé
+  entre les appels. Réglage « Voice level » : Automatique (défaut) ou gain fixe. Tests synthétiques dans
+  `HushTests` (voix faible/forte, résidu jamais remonté, bruit seul, cri, changement de locuteur).
 - **Correction de dérive** par glissement d'un échantillon, au plus tous les 32 callbacks. La dérive mesurée avec le
   micro intégré est de -0,2 ppm, donc elle sert surtout pour les micros USB.
 - **Test avant/après de l'onboarding** : 5 s avec Hush (VP déjà convergé) **puis** 5 s sans, et non en simultané.
@@ -95,6 +102,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
 | Buffers IO de 128 frames / cible du ring de 128 | gain marginal ; la granularité du VPIO domine |
 | **WebRTC AEC3** (webrtc-audio-processing 2.1 + tap système comme référence, `Prototypes/aec3`) | 0 ducking, haut-parleurs intacts, 16,6 ms de latence, MAIS -16 dB seulement par soustraction (haut-parleurs MacBook non linéaires) ; le reste coupe la voix en double-talk (« presque inaudible » à l'écoute). Préréglages de suppresseur (fabrique `EchoCanceller3` maison) : gain marginal. **Abandonné.** |
 | Accélérer la remontée du volume après l'arrêt du VP | le signal envoyé est plat ; le son émis est environ 10 dB plus bas et remonte en 30 à 40 s (traitement des haut-parleurs qui quitte le « mode appel »). Le `VPAUAggregateAudioDevice` disparaît instantanément. Rien trouvé en ligne à part `sudo killall coreaudiod`. Documenté dans la FAQ ; l'hystérésis du mode automatique reste à 3 s |
+| Gain automatique du VPIO (par défaut) | remonte le résidu quand la musique est forte : souffle « ventilateur » audible → désactivé, remplacé par `hush_agc` |
 | `ImageRenderer` / `cacheDisplay` pour les captures | ne dessinent ni les contrôles AppKit ni Liquid Glass → vraie fenêtre + `screencapture -l` (la fenêtre reste inactive, donc le verre est désaturé) |
 
 ## Outils de mesure (Prototypes/)

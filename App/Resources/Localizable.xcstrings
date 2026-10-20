@@ -14,6 +14,18 @@
     "%lld": {
       "shouldTranslate": false
     },
+    "+0 dB": {
+      "shouldTranslate": false
+    },
+    "+12 dB": {
+      "shouldTranslate": false
+    },
+    "+18 dB": {
+      "shouldTranslate": false
+    },
+    "+6 dB": {
+      "shouldTranslate": false
+    },
     "Active": {
       "localizations": {
         "fr": {
@@ -144,6 +156,16 @@
         }
       }
     },
+    "Automatic (recommended)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatique (recommandé)"
+          }
+        }
+      }
+    },
     "Automatic (system default)": {
       "localizations": {
         "fr": {
@@ -160,6 +182,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contrôle automatique du gain"
+          }
+        }
+      }
+    },
+    "Automatic adjusts to your voice only while you speak, so background noise is never boosted. macOS always lowers other sounds a little (about 8 dB) while voice cleanup runs; turn the last option on to use Apple’s stronger default instead.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En automatique, le niveau s’adapte à votre voix uniquement pendant que vous parlez : le bruit de fond n’est jamais amplifié. macOS baisse toujours un peu les autres sons (environ 8 dB) pendant le nettoyage de la voix ; activez la dernière option pour utiliser la baisse plus forte d’Apple."
           }
         }
       }
@@ -974,6 +1006,16 @@
         }
       }
     },
+    "Voice level": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niveau de la voix"
+          }
+        }
+      }
+    },
     "Welcome to Hush": {
       "localizations": {
         "fr": {
@@ -1030,16 +1072,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vos amis entendent votre voix, pas la musique ni les vidéos de votre Mac."
-          }
-        }
-      }
-    },
-    "macOS always lowers other sounds a little (about 8 dB) while voice cleanup runs. Turn this on to use Apple’s stronger default instead.": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "macOS baisse toujours un peu les autres sons (environ 8 dB) pendant le nettoyage de la voix. Activez cette option pour utiliser la baisse plus forte d’Apple."
           }
         }
       }

@@ -44,12 +44,23 @@ final class EngineController: ObservableObject {
     @Published var keepAppleDucking: Bool {
         didSet { UserDefaults.standard.set(keepAppleDucking, forKey: Keys.ducking); scheduleRestart(reason: "ducking") }
     }
+    /// Niveau de la voix : "auto" (gain automatique piloté par la voix) ou un gain fixe en dB ("0", "6"…).
+    @Published var voiceLevel: String {
+        didSet {
+            UserDefaults.standard.set(voiceLevel, forKey: Keys.voiceLevel)
+            applyVoiceLevel()
+        }
+    }
     @Published var onboardingCompleted: Bool {
         didSet { UserDefaults.standard.set(onboardingCompleted, forKey: Keys.onboarding) }
     }
 
+    /// Gain de départ du gain automatique, avant qu'une session n'ait mémorisé le sien.
+    static let defaultAutomaticGainDB: Float = 10
+
     enum Keys {
         static let mode = "mode", source = "sourceUID", ducking = "keepAppleDucking", onboarding = "onboardingCompleted"
+        static let voiceLevel = "voiceLevel", automaticGain = "automaticGainDB"
     }
 
     let engine = VoiceEngine()
@@ -61,6 +72,7 @@ final class EngineController: ObservableObject {
     private var restartWork: DispatchWorkItem?
     private var lastClientSeen = Date.distantPast
     private var lastCallbackCount: UInt64 = 0
+    private var lastGainSave = Date()
     private var lastCallbackProgress = Date()
     private var failures = 0
     private var nextRetry = Date.distantPast
@@ -76,7 +88,9 @@ final class EngineController: ObservableObject {
         mode = HushMode(rawValue: d.string(forKey: Keys.mode) ?? "") ?? .automatic
         sourceUID = d.string(forKey: Keys.source) ?? ""
         keepAppleDucking = d.bool(forKey: Keys.ducking)
+        voiceLevel = d.string(forKey: Keys.voiceLevel) ?? "auto"
         onboardingCompleted = d.bool(forKey: Keys.onboarding)
+        applyVoiceLevel()
         guard !isHeadless else { return }   // pas d'audio ni de mémoire partagée (tests, captures d'écran)
         shm = try? SharedMemory()
         installListeners()
@@ -105,7 +119,7 @@ final class EngineController: ObservableObject {
     /// Aligne l'état réel sur l'état voulu.
     func reconcile() {
         if !wantsRunning {
-            if engine.isRunning { engine.stop() }
+            if engine.isRunning { saveAutomaticGain(); engine.stop() }
             failures = 0
             updatePassthrough()
             setStatus(mode == .off ? .off : .waiting)
@@ -137,6 +151,8 @@ final class EngineController: ObservableObject {
         if shm == nil { shm = try? SharedMemory() }
         setStatus(.starting)
         do {
+            let savedGain = UserDefaults.standard.object(forKey: Keys.automaticGain) as? Float ?? Self.defaultAutomaticGainDB
+            engine.resetAutomaticGain(to: savedGain)
             try engine.start(.init(inputDevice: source.id, keepAppleDucking: keepAppleDucking), shm: shm?.pointer)
             sourceName = source.name
             activeDevice = source.id
@@ -153,6 +169,18 @@ final class EngineController: ObservableObject {
             log.error("échec du démarrage (\(self.failures)) : \(String(describing: error), privacy: .public)")
             setStatus(.problem(error as? HushError ?? .voiceProcessingFailed))
         }
+    }
+
+    // MARK: - Niveau de la voix
+
+    private func applyVoiceLevel() {
+        engine.setVoiceLevel(automatic: voiceLevel == "auto", fixedDB: Float(voiceLevel) ?? 0)
+    }
+
+    /// Mémorise le gain automatique atteint, pour repartir au bon niveau au prochain appel.
+    private func saveAutomaticGain() {
+        guard voiceLevel == "auto" else { return }
+        UserDefaults.standard.set(engine.automaticGainDB, forKey: Keys.automaticGain)
     }
 
     // MARK: - Passage direct (micro propre désactivé)
@@ -219,6 +247,10 @@ final class EngineController: ObservableObject {
                 clientCount = stats.clients
             }
             if stats.clients > 0 { lastClientSeen = Date() }
+        }
+        if engine.isRunning, Date().timeIntervalSince(lastGainSave) > 10 {
+            saveAutomaticGain()
+            lastGainSave = Date()
         }
         if engine.isRunning {
             // Chien de garde : plus aucun callback audio depuis 1,5 s → relance.
