@@ -62,6 +62,7 @@ final class VoiceEngine {
     /// Démarre la capture avec voice processing. `shm` : mémoire partagée avec le driver (peut être nil).
     func start(_ config: Configuration, shm: UnsafeMutableRawPointer?) throws {
         stop()
+        setPassthrough(nil)   // un seul producteur dans le ring
         // Buffers IO courts pour ce processus : moins de latence (sans effet sur les autres apps).
         AudioDevices.setBufferFrameSize(config.inputDevice, config.ioBufferFrames)
         if let output = AudioDevices.defaultDevice(input: false) {
@@ -115,6 +116,9 @@ final class VoiceEngine {
         AudioComponentInstanceDispose(unit)
         vpUnit = nil
         isRunning = false
+        // Une unité brute ouverte pendant le voice processing reste dans le mode « altéré » de macOS
+        // (environ 10 dB plus bas) : elle sera rouverte à sa prochaine utilisation.
+        rawUnitIsStale = rawUnit != nil
         Self.log.info("voice processing arrêté")
     }
 
@@ -123,9 +127,27 @@ final class VoiceEngine {
         if isRunning { hush_rt_set_shm(rt, shm) }
     }
 
-    /// Capture parallèle du micro sans traitement (vumètre "micro" et enregistrement "sans Hush").
+    private(set) var rawDevice: AudioDeviceID?
+    private(set) var isPassingThrough = false
+    private var rawUnitIsStale = false
+
+    /// Micro brut envoyé tel quel au driver ("micro propre" désactivé). Exclusif avec `start`.
+    func setPassthrough(_ shm: UnsafeMutableRawPointer?) {
+        precondition(shm == nil || !isRunning, "un seul producteur à la fois")
+        hush_rt_set_passthrough(rt, shm)
+        if shm == nil, isPassingThrough, let s = shmForPassthrough { hush_app_stop(s) }   // driver → silence
+        shmForPassthrough = shm
+        isPassingThrough = shm != nil
+    }
+    private var shmForPassthrough: UnsafeMutableRawPointer?
+
+    /// Capture parallèle du micro sans traitement (vumètre "micro", enregistrement "sans Hush",
+    /// passage direct). Sans effet si elle tourne déjà sur ce périphérique.
     func startRawMonitor(device: AudioDeviceID) throws {
+        if rawUnit != nil, rawDevice == device, !rawUnitIsStale { return }
+        rawUnitIsStale = false
         stopRawMonitor()
+        AudioDevices.setBufferFrameSize(device, 256)
         let unit = try Self.makeUnit(kAudioUnitSubType_HALOutput)
         do {
             var one: UInt32 = 1, zero: UInt32 = 0
@@ -151,11 +173,13 @@ final class VoiceEngine {
             throw error
         }
         rawUnit = unit
+        rawDevice = device
         isMonitoringRaw = true
     }
 
     func stopRawMonitor() {
         guard let unit = rawUnit else { return }
+        rawDevice = nil
         AudioOutputUnitStop(unit)
         AudioUnitUninitialize(unit)
         AudioComponentInstanceDispose(unit)

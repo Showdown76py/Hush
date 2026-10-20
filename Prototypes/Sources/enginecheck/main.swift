@@ -3,13 +3,34 @@
 import Foundation
 import HushRT
 
-let seconds = Double(CommandLine.arguments.dropFirst().first ?? "60") ?? 60
+let switchTest = CommandLine.arguments.contains("--switch")
+let seconds = switchTest ? 30 : (Double(CommandLine.arguments.dropFirst().first ?? "60") ?? 60)
 let shm = try SharedMemory()
 let engine = VoiceEngine()
 guard let source = AudioDevices.resolveSource(preferredUID: nil) else { fatalError("pas de micro") }
 print("source : \(source.name)")
-try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
-try engine.startRawMonitor(device: source.id)
+if switchTest {
+    // 0-10 s : passage direct ; 10-20 s : voice processing ; 20-30 s : passage direct.
+    try engine.startRawMonitor(device: source.id)
+    engine.setPassthrough(shm.pointer)
+    DispatchQueue.global().asyncAfter(deadline: .now() + 10) {
+        engine.setPassthrough(nil)
+        try! engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+        print("→ voice processing")
+    }
+    DispatchQueue.global().asyncAfter(deadline: .now() + 20) {
+        engine.stop()
+        if CommandLine.arguments.contains("--reopen") {
+            engine.stopRawMonitor()
+            try! engine.startRawMonitor(device: source.id)
+        }
+        engine.setPassthrough(shm.pointer)
+        print("→ passage direct")
+    }
+} else {
+    try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+    try engine.startRawMonitor(device: source.id)
+}
 hush_rt_record_start(engine.rt, 0, 48000)
 let t0 = Date()
 var lastCallbacks: UInt64 = 0

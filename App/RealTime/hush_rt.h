@@ -18,6 +18,10 @@ void hush_rt_set_vp_unit(hush_rt_t *rt, AudioUnit _Nullable unit);
 void hush_rt_set_raw_unit(hush_rt_t *rt, AudioUnit _Nullable unit);
 // Mémoire partagée avec le driver (NULL = pas de sortie). Peut être changée à chaud.
 void hush_rt_set_shm(hush_rt_t *rt, void *_Nullable shm);
+// Passage direct : quand `shm` n'est pas NULL, le micro brut (unité "raw") est écrit tel quel dans
+// la mémoire partagée. Ne jamais l'activer pendant que le voice processing écrit (un seul producteur).
+// La désactivation attend la fin d'un éventuel callback en cours.
+void hush_rt_set_passthrough(hush_rt_t *rt, void *_Nullable shm);
 // Correction de dérive d'horloge par glissement d'échantillons (activée par défaut).
 void hush_rt_set_drift_correction(hush_rt_t *rt, int enabled);
 

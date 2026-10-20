@@ -109,7 +109,7 @@ struct PowerToggle: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isOn ? "Clean microphone on" : "Clean microphone off")
                         .font(.title3.weight(.semibold))
-                    Text(isOn ? "Music from your speakers is removed" : "Your Mac sounds exactly as usual")
+                    Text(isOn ? "Music from your speakers is removed" : "Apps get your normal microphone")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

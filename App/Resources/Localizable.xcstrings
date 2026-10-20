@@ -114,6 +114,16 @@
         }
       }
     },
+    "Apps get your normal microphone": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les apps reçoivent votre micro normal"
+          }
+        }
+      }
+    },
     "Apps using “Hush Microphone” will lose their microphone. macOS will ask for your password.": {
       "localizations": {
         "fr": {
@@ -604,6 +614,16 @@
         }
       }
     },
+    "Off — apps get your normal microphone": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactivé — les apps reçoivent votre micro normal"
+          }
+        }
+      }
+    },
     "On": {
       "localizations": {
         "fr": {
@@ -1000,16 +1020,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sans Hush"
-          }
-        }
-      }
-    },
-    "Your Mac sounds exactly as usual": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Votre Mac sonne exactement comme d’habitude"
           }
         }
       }

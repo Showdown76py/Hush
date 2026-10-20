@@ -85,7 +85,8 @@ sudo rm -rf /Library/Audio/Plug-Ins/HAL/Hush.driver && sudo killall coreaudiod
 - **Automatic** (default): Hush only runs while an app is using “Hush Microphone” (for example while you're in a
   Discord voice channel). The rest of the time, your Mac sounds exactly as usual.
 - **Always on**: processing runs all the time.
-- **Off**: Hush does nothing and “Hush Microphone” sends silence.
+- **Off**: no processing, and “Hush Microphone” passes your microphone through unchanged, so there's no need to
+  switch microphones in Discord: just flip the switch.
 
 The menu shows two live meters: what the microphone hears, and what is sent to apps. With music playing, the first
 one moves and the second one stays quiet.

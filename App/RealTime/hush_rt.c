@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "hush_shm.h"
 
@@ -14,6 +15,8 @@ struct hush_rt {
     AudioUnit vpUnit;
     AudioUnit rawUnit;
     _Atomic(hush_shm_t *) shm;
+    _Atomic(hush_shm_t *) passShm;
+    _Atomic int passBusy;
     _Atomic int driftEnabled;
 
     float *vpScratch;    // SCRATCH_FRAMES + 1 (place pour un échantillon dupliqué)
@@ -65,6 +68,14 @@ void hush_rt_destroy(hush_rt_t *rt) {
 void hush_rt_set_vp_unit(hush_rt_t *rt, AudioUnit unit) { rt->vpUnit = unit; }
 void hush_rt_set_raw_unit(hush_rt_t *rt, AudioUnit unit) { rt->rawUnit = unit; }
 void hush_rt_set_shm(hush_rt_t *rt, void *shm) { atomic_store(&rt->shm, (hush_shm_t *)shm); }
+void hush_rt_set_passthrough(hush_rt_t *rt, void *shm) {
+    atomic_store(&rt->passShm, (hush_shm_t *)shm);
+    if (shm == NULL) {
+        // Attend qu'aucun callback ne soit en train d'écrire avec l'ancien pointeur.
+        while (atomic_load(&rt->passBusy) != 0) usleep(100);
+    }
+}
+
 void hush_rt_set_drift_correction(hush_rt_t *rt, int enabled) { atomic_store(&rt->driftEnabled, enabled); }
 
 static float rms(const float *x, UInt32 n) {
@@ -175,6 +186,10 @@ OSStatus hush_rt_raw_input(void *refCon, AudioUnitRenderActionFlags *flags, cons
     if (err != noErr) return err;
     atomic_store_explicit(&rt->levelRaw, rms(rt->rawScratch, frames), memory_order_relaxed);
     record_push(rt, 1, rt->rawScratch, frames);
+    atomic_fetch_add(&rt->passBusy, 1);              // avant de lire le pointeur (voir hush_rt_set_passthrough)
+    hush_shm_t *pass = atomic_load(&rt->passShm);
+    if (pass) hush_app_write(pass, rt->rawScratch, frames, mach_absolute_time());
+    atomic_fetch_sub(&rt->passBusy, 1);
     return noErr;
 }
 

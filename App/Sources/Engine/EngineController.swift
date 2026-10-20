@@ -28,6 +28,8 @@ final class EngineController: ObservableObject {
     private func setStatus(_ new: Status) { if status != new { status = new } }
     @Published private(set) var sourceName: String = ""
     @Published private(set) var clientCount = 0
+    /// "Micro propre" désactivé mais une app écoute : le micro brut est transmis tel quel.
+    @Published private(set) var passthroughActive = false
     @Published private(set) var driverState: DriverInstaller.State = DriverInstaller.state
     @Published var mode: HushMode {
         didSet { UserDefaults.standard.set(mode.rawValue, forKey: Keys.mode); reconcile() }
@@ -101,9 +103,11 @@ final class EngineController: ObservableObject {
         if !wantsRunning {
             if engine.isRunning { engine.stop() }
             failures = 0
+            updatePassthrough()
             setStatus(mode == .off ? .off : .waiting)
             return
         }
+        if engine.isPassingThrough { stopPassthrough() }
         if engine.isRunning { return }
         guard Date() >= nextRetry else { return }
         start()
@@ -139,6 +143,40 @@ final class EngineController: ObservableObject {
         }
     }
 
+    // MARK: - Passage direct (micro propre désactivé)
+
+    private var wantsPassthrough: Bool {
+        mode == .off && !forceRunning && !suspendedForTest && !sleeping && microphonePermission == .authorized
+            && (clientCount > 0 || Date().timeIntervalSince(lastClientSeen) < 3)
+    }
+
+    /// Le micro brut n'est ouvert que si une app écoute Hush Microphone (sinon l'indicateur
+    /// orange de macOS resterait allumé en permanence).
+    private func updatePassthrough() {
+        guard wantsPassthrough, let shm, let source = AudioDevices.resolveSource(preferredUID: sourceUID) else {
+            if engine.isPassingThrough { stopPassthrough() }
+            return
+        }
+        guard !engine.isPassingThrough || engine.rawDevice != source.id else { return }
+        do {
+            if engine.isPassingThrough { engine.setPassthrough(nil) }   // changement de micro
+            try engine.startRawMonitor(device: source.id)
+            engine.setPassthrough(shm.pointer)
+            sourceName = source.name
+            activeDevice = source.id
+            watchDevice(source.id)
+            passthroughActive = true
+        } catch {
+            log.error("passage direct impossible : \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    private func stopPassthrough() {
+        engine.setPassthrough(nil)
+        passthroughActive = false
+        updateRawMonitor()   // coupe le micro si le popover est fermé
+    }
+
     /// Relance (débouncée) après un changement matériel ou de réglage.
     func scheduleRestart(reason: String, delay: TimeInterval = 0.5) {
         restartWork?.cancel()
@@ -147,6 +185,11 @@ final class EngineController: ObservableObject {
                 guard let self else { return }
                 self.log.info("relance : \(reason, privacy: .public)")
                 if self.engine.isRunning { self.engine.stop() }
+                if self.engine.isPassingThrough {
+                    self.engine.setPassthrough(nil)
+                    self.engine.stopRawMonitor()
+                    self.passthroughActive = false
+                }
                 self.nextRetry = .distantPast
                 self.reconcile()
             }
@@ -216,7 +259,7 @@ final class EngineController: ObservableObject {
 
     private func handleHardwareChange(_ selector: AudioObjectPropertySelector) {
         driverState = DriverInstaller.state
-        guard engine.isRunning else { return }
+        guard engine.isRunning || engine.isPassingThrough else { return }
         if selector == kAudioHardwarePropertyDevices {
             // On ne relance que si notre micro a disparu ou si un micro préféré vient d'apparaître.
             let resolved = AudioDevices.resolveSource(preferredUID: sourceUID)?.id
@@ -240,6 +283,7 @@ final class EngineController: ObservableObject {
     }
 
     func updateRawMonitor() {
+        if engine.isPassingThrough { return }   // l'unité brute sert déjà au passage direct
         guard popoverVisible, let source = AudioDevices.resolveSource(preferredUID: sourceUID),
               microphonePermission == .authorized else {
             engine.stopRawMonitor()
@@ -255,7 +299,11 @@ final class EngineController: ObservableObject {
     // Niveaux des vumètres (remplaçables par des valeurs de démonstration pour les captures).
     var previewLevels: (raw: Float, clean: Float)?
     func rawMeterLevel() -> Float { previewLevels?.raw ?? engine.rawLevel }
-    func cleanMeterLevel() -> Float { previewLevels?.clean ?? (engine.isRunning ? engine.cleanLevel : 0) }
+    func cleanMeterLevel() -> Float {
+        if let previewLevels { return previewLevels.clean }
+        if engine.isRunning { return engine.cleanLevel }
+        return engine.isPassingThrough ? engine.rawLevel : 0
+    }
 
     /// État de démonstration (captures d'écran uniquement).
     func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float)) {
@@ -272,6 +320,7 @@ final class EngineController: ObservableObject {
         case .running: String(localized: "Active")
         case .starting: String(localized: "Starting…")
         case .waiting: String(localized: "Standby — turns on when an app uses Hush Microphone")
+        case .off where passthroughActive: String(localized: "Off — apps get your normal microphone")
         case .off: String(localized: "Off")
         case .problem(let e): e.title
         }
