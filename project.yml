@@ -7,7 +7,7 @@ options:
   developmentLanguage: en
 settings:
   base:
-    MARKETING_VERSION: 0.2.0
+    MARKETING_VERSION: 0.2.1
     # Version du driver, indépendante de celle de l'app : l'app propose de mettre le driver à jour (mot de
     # passe administrateur) quand la sienne est plus récente. À incrémenter seulement quand le driver change.
     HUSH_DRIVER_VERSION: 14
