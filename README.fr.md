@@ -88,23 +88,37 @@ préférez le réglage d'Apple.
 
 ## FAQ
 
-**Ma voix baisse parfois quand la musique joue.**
+<details>
+<summary>Ma voix baisse parfois quand la musique joue.</summary>
+
 C'est le suppresseur de double-talk du traitement d'Apple : quand vous parlez par-dessus un son fort, il baisse
 brièvement ce qu'il n'arrive pas à séparer, pour ne laisser passer aucun écho. On ne peut pas le régler. Baissez un
 peu les haut-parleurs ou utilisez des écouteurs.
 
-**La musique baisse un peu quand Hush tourne.**
+</details>
+
+<details>
+<summary>La musique baisse un peu quand Hush tourne.</summary>
+
 macOS baisse les autres sons dès que le traitement de la voix tourne. Hush demande la baisse la plus faible
 qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. Nous l'avons mesuré, impossible de descendre plus bas
 (voir les [mesures](Prototypes/MEASUREMENTS.md)). Le mode Automatique limite ça à vos appels.
 
-**Mes haut-parleurs sonnent différemment quand Hush tourne.**
+</details>
+
+<details>
+<summary>Mes haut-parleurs sonnent différemment quand Hush tourne.</summary>
+
 macOS les passe en mode appel, comme pendant un appel FaceTime. À l'activation de Hush, le son paraît faible pendant
 quelques secondes puis se stabilise. Le signal laissé passer par Hush baisse de 8 dB d'un coup puis reste stable
 (nous l'avons mesuré) : le changement progressif vient du traitement des haut-parleurs. En mode Automatique, tout ça
 n'arrive que pendant vos appels.
 
-**Après un appel, le son reste faible puis remonte lentement.**
+</details>
+
+<details>
+<summary>Après un appel, le son reste faible puis remonte lentement.</summary>
+
 macOS fait sortir les haut-parleurs du mode appel en 30 à 40 secondes. Le signal envoyé par Hush est intact : la
 remontée lente se passe dans le traitement interne des haut-parleurs du Mac, et aucune API ne l'accélère. Pour
 récupérer le son tout de suite, relancez le service audio (tout le son se coupe une ou deux secondes, et votre mot
@@ -116,16 +130,30 @@ sudo killall coreaudiod
 
 Avec des écouteurs, le problème n'existe pas.
 
-**Hush m'enregistre-t-il ?**
+</details>
+
+<details>
+<summary>Hush m'enregistre-t-il ?</summary>
+
 Non. Hush traite le son en direct, en mémoire. Seul le test avant/après des écrans d'accueil enregistre quelque
 chose, dans un fichier temporaire local.
 
-**Écouteurs, AirPods ?**
+</details>
+
+<details>
+<summary>Écouteurs, AirPods ?</summary>
+
 Ça marche. Hush suit tout seul les changements de sortie audio.
 
-**Y a-t-il un retard ?**
+</details>
+
+<details>
+<summary>Y a-t-il un retard ?</summary>
+
 Environ 80 ms au total : environ 65 ms pour le traitement d'Apple, environ 15 ms pour Hush. Vos interlocuteurs ne le
 remarquent pas en conversation.
+
+</details>
 
 ## Limites connues
 

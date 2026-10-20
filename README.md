@@ -85,22 +85,36 @@ launch at login, and stronger ducking if you prefer Apple's default.
 
 ## FAQ
 
-**My voice sometimes dips while music plays.**
+<details>
+<summary>My voice sometimes dips while music plays.</summary>
+
 That's the double-talk suppressor in Apple's voice processing: when you talk over loud speaker sound, it briefly
 turns down what it can't separate so no echo gets through. You can't tune it. Turn the speakers down a little or
 use headphones.
 
-**The music gets a bit quieter while Hush runs.**
+</details>
+
+<details>
+<summary>The music gets a bit quieter while Hush runs.</summary>
+
 macOS lowers other audio whenever voice processing runs. Hush requests the smallest reduction Apple allows, about
 8 dB instead of the default 30 dB. We measured it and couldn't go lower (see the [measurements](Prototypes/MEASUREMENTS.md)).
 Automatic mode limits this to your calls.
 
-**My speakers sound different while Hush runs.**
+</details>
+
+<details>
+<summary>My speakers sound different while Hush runs.</summary>
+
 macOS puts the speakers in call mode, like during a FaceTime call. When Hush turns on, the speakers sound quiet for
 a few seconds and then settle. The signal Hush lets through drops by 8 dB at once and stays flat (we measured it),
 so the slow change comes from the speaker processing. In Automatic mode all of this only happens during calls.
 
-**After a call, the speakers stay quiet and slowly come back.**
+</details>
+
+<details>
+<summary>After a call, the speakers stay quiet and slowly come back.</summary>
+
 macOS takes the speakers out of call mode over 30 to 40 seconds. The signal Hush sends is untouched; the slow ramp
 happens inside the Mac's speaker processing and no API speeds it up. To get your sound back right away, restart
 the audio service (it cuts all sound for a second or two and asks for your password):
@@ -111,16 +125,30 @@ sudo killall coreaudiod
 
 Headphones don't have this problem.
 
-**Does Hush record me?**
+</details>
+
+<details>
+<summary>Does Hush record me?</summary>
+
 No. Hush processes audio live, in memory. The only recording is the before/after test in the welcome screens, kept
 in a local temporary file.
 
-**Headphones, AirPods?**
+</details>
+
+<details>
+<summary>Headphones, AirPods?</summary>
+
 They work. Hush follows output changes on its own.
 
-**Is there a delay?**
+</details>
+
+<details>
+<summary>Is there a delay?</summary>
+
 About 80 ms in total: Apple's processing adds about 65 ms, Hush about 15 ms. People on the other end don't notice it
 in conversation.
+
+</details>
 
 ## Known limitations
 
