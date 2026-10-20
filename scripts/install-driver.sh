@@ -1,6 +1,6 @@
 #!/bin/bash
-# Installe Hush.driver dans /Library/Audio/Plug-Ins/HAL et redémarre coreaudiod.
-# Usage : sudo scripts/install-driver.sh [chemin/vers/Hush.driver]
+# installs Hush.driver into /Library/Audio/Plug-Ins/HAL and restarts coreaudiod
+# usage: sudo scripts/install-driver.sh [path/to/Hush.driver]
 set -euo pipefail
 SRC="${1:-$(cd "$(dirname "$0")/.." && pwd)/build/Hush.driver}"
 DST="/Library/Audio/Plug-Ins/HAL/Hush.driver"

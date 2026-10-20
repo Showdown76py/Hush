@@ -1,7 +1,7 @@
 #!/bin/bash
-# Test vocal AEC3 : une prise de 15 s (micro brut + sortie système) pendant que l'utilisateur parle
-# en musique, puis rejeu hors ligne avec plusieurs niveaux de réduction de bruit.
-# Usage : aec3_voice_test.sh <aec3cap> <musique> <dossier de sortie>
+# aec3 voice test: one 15 s take (raw mic + system output) while user talks over music
+# then offline rerun at several noise suppression levels
+# usage: aec3_voice_test.sh <aec3cap> <music> <outdir>
 set -euo pipefail
 BIN="$1"; MUSIC="$2"; OUT="$3"
 mkdir -p "$OUT"

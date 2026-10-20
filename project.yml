@@ -8,8 +8,8 @@ options:
 settings:
   base:
     MARKETING_VERSION: 0.2.1
-    # Version du driver, indépendante de celle de l'app : l'app propose de mettre le driver à jour (mot de
-    # passe administrateur) quand la sienne est plus récente. À incrémenter seulement quand le driver change.
+    # independent of MARKETING_VERSION. app offers a driver update (admin password)
+    # when this exceeds the installed driver's, only bump if the driver changes
     HUSH_DRIVER_VERSION: 14
     CURRENT_PROJECT_VERSION: 2
     SWIFT_VERSION: "5.0"
@@ -17,8 +17,8 @@ settings:
     CODE_SIGN_STYLE: Manual
     CODE_SIGN_IDENTITY: "-"
     DEVELOPMENT_TEAM: ""
-    # Le hardened runtime n'est activé que pour la signature Developer ID (scripts/release.sh) :
-    # en signature ad-hoc, la validation des bibliothèques empêcherait de charger Sparkle.
+    # hardened runtime only for developer id signing (scripts/release.sh)
+    # w/ ad-hoc, library validation would block loading sparkle
     ENABLE_HARDENED_RUNTIME: NO
     SPARKLE_PUBLIC_KEY: "FABqLVzoRZgTz7s/WjtfJkkyNL3ogoT1VkOdr6KVhZk="
     DEAD_CODE_STRIPPING: YES
@@ -38,14 +38,14 @@ targets:
       - path: App/Hush-Bridging-Header.h
         buildPhase: none
     dependencies:
-      # Sparkle est vendoré par scripts/fetch-sparkle.sh (le téléchargement SwiftPM des binaires
-      # peut se bloquer en CI / derrière certains proxys).
+      # vendored by scripts/fetch-sparkle.sh since xcodebuild can hang downloading
+      # swiftpm binaries
       - framework: Vendor/Sparkle/Sparkle.framework
         embed: true
         codeSign: true
       - target: HushDriver
         embed: true
-        codeSign: false   # signé par sa propre cible
+        codeSign: false   # signed by its own target
         copy:
           destination: resources
     settings:

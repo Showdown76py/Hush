@@ -1,7 +1,5 @@
 import Foundation
 
-/// Erreurs présentées à l'utilisateur : toujours un message humain, jamais de code Core Audio.
-/// Le détail technique est seulement journalisé.
 enum HushError: Error, Equatable {
     case microphonePermissionDenied
     case noInputDevice

@@ -1,6 +1,6 @@
-// Enregistre la sortie audio système (tap Core Audio global) dans un WAV mono.
-// Sert à mesurer objectivement le ducking : on mesure ce qui part vers les haut-parleurs.
-// Usage : systap --out file.wav [--seconds 20]
+// records system audio output (global core audio tap) to a mono wav
+// objective ducking measurement: measures what actually goes to the speakers
+// usage: systap --out file.wav [--seconds 20]
 import AudioToolbox
 import AVFoundation
 import CoreAudio

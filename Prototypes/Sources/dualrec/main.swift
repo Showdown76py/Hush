@@ -1,8 +1,7 @@
-// Enregistre deux périphériques d'entrée en parallèle (canal 0 de chacun) et les aligne grâce aux
-// horodatages hôte (mHostTime) du premier buffer de chaque flux. Produit un WAV stéréo :
-// gauche = périphérique A, droite = périphérique B, alignés dans le temps réel.
-// Affiche aussi les latences déclarées par les périphériques.
-// Usage : dualrec --a <dev> --b <dev> --out file.wav [--seconds 15]
+// records two input devices in parallel (channel 0 of each) aligned via host timestamps (mHostTime)
+// of each stream's first buffer. outputs stereo wav: left = device A, right = device B, aligned in real time
+// also prints the latencies the devices report
+// usage: dualrec --a <dev> --b <dev> --out file.wav [--seconds 15]
 import AudioToolbox
 import AVFoundation
 import CoreAudio
@@ -75,7 +74,7 @@ func makeInput(_ name: String, _ rec: Rec) -> AudioUnit {
     check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &one, 4), "in")
     check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &zero, 4), "out")
     check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &dev, 4), "dev")
-    // Canal 0 uniquement, en mono 48 kHz.
+    // channel 0 only, mono 48 kHz
     var fmt = AudioStreamBasicDescription(mSampleRate: sr, mFormatID: kAudioFormatLinearPCM,
         mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked | kAudioFormatFlagIsNonInterleaved,
         mBytesPerPacket: 4, mFramesPerPacket: 1, mBytesPerFrame: 4, mChannelsPerFrame: 1, mBitsPerChannel: 32, mReserved: 0)
@@ -109,7 +108,7 @@ AudioOutputUnitStop(ua); AudioOutputUnitStop(ub)
 
 var tb = mach_timebase_info_data_t(); mach_timebase_info(&tb)
 let dtSec = (Double(Int64(rb.firstHost) - Int64(ra.firstHost)) * Double(tb.numer) / Double(tb.denom)) / 1e9
-let shift = Int((dtSec * sr).rounded())   // B commence `shift` frames après A
+let shift = Int((dtSec * sr).rounded())   // B starts `shift` frames after A
 let firstANs = Double(ra.firstHost) * Double(tb.numer) / Double(tb.denom) + Double(max(0, shift)) / sr * 1e9
 try String(firstANs).write(toFile: outPath + ".t0", atomically: true, encoding: .utf8)
 print(String(format: "décalage de départ B-A = %.2f ms (%d frames)", dtSec * 1000, shift))

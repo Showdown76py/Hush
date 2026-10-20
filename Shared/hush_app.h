@@ -1,4 +1,4 @@
-// Ouverture de la mémoire partagée côté app (shm_open est variadique, donc inaccessible depuis Swift).
+// app side shm open (shm_open is variadic so Swift can't call it)
 #ifndef HUSH_APP_H
 #define HUSH_APP_H
 
@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include "hush_shm.h"
 
-// Ouvre (et crée si besoin) la mémoire partagée. Retourne NULL et renseigne *outErrno en cas d'échec.
+// opens (creates if needed) the shm. on failure returns NULL and sets *outErrno
 static inline void *hush_app_map(int *outErrno) {
     int fd = shm_open(HUSH_SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (fd < 0) { *outErrno = errno; return NULL; }

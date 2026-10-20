@@ -1,6 +1,6 @@
-// Prototype : micro brut (AUHAL, sans voice processing) + référence = sortie système (tap Core Audio)
-// → WebRTC AEC3 + débruitage → WAV (et, avec --shm, le micro virtuel Hush).
-// Usage : aec3cap --dir <out> [--seconds 15] [--ns 0..4] [--bypass] [--shm]
+// prototype: raw mic (auhal, no vp) + ref = system output (core audio tap)
+// -> webrtc aec3 + denoise -> wav (and w/ --shm the hush virtual mic)
+// usage: aec3cap --dir <out> [--seconds 15] [--ns 0..4] [--bypass] [--shm]
 #include <AudioToolbox/AudioToolbox.h>
 #include <CoreAudio/AudioHardwareTapping.h>
 #include <CoreAudio/CATapDescription.h>
@@ -103,14 +103,14 @@ int main(int argc, char **argv) {
         hush_app_set_latency(shm, 256, 1024);
     }
 
-    // --- Tap global de la sortie système (sans couper le son) ---
+    // --- global tap of system output (not muting it) ---
     pid_t pid = getpid();
     AudioObjectID selfObj = 0;
     UInt32 sz = sizeof(selfObj);
     AudioObjectPropertyAddress a = {kAudioHardwarePropertyTranslatePIDToProcessObject, kAudioObjectPropertyScopeGlobal,
                                     kAudioObjectPropertyElementMain};
     check(AudioObjectGetPropertyData(kAudioObjectSystemObject, &a, sizeof(pid), &pid, &sz, &selfObj), "TranslatePID");
-    // CATapDescription est une classe Objective-C : on passe par le runtime via un petit helper en ObjC.
+    // CATapDescription is an objc class so go through a tiny objc helper
     extern AudioObjectID make_global_tap(AudioObjectID exclude, CFStringRef *outUUID);
     CFStringRef tapUUID = NULL;
     AudioObjectID tap = make_global_tap(selfObj, &tapUUID);
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     AudioDeviceIOProcID procID = NULL;
     check(AudioDeviceCreateIOProcID(aggID, tap_proc, NULL, &procID), "IOProc");
 
-    // --- Micro brut ---
+    // --- raw mic ---
     AudioComponentDescription d = {kAudioUnitType_Output, kAudioUnitSubType_HALOutput, kAudioUnitManufacturer_Apple, 0, 0};
     check(AudioComponentInstanceNew(AudioComponentFindNext(NULL, &d), &gMicUnit), "AUHAL");
     UInt32 one = 1, zero = 0;
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
     check(AudioDeviceStart(aggID, procID), "tap start");
     check(AudioOutputUnitStart(gMicUnit), "mic start");
 
-    // Alignement initial : on jette le début du flux qui a commencé le plus tôt.
+    // initial alignment: drop the head of whichever stream started first
     while (!atomic_load(&gMicFirstHost) || !atomic_load(&gRefFirstHost)) usleep(1000);
     double dt = ((double)atomic_load(&gRefFirstHost) - (double)atomic_load(&gMicFirstHost)) / gTicksPerSec;
     uint64_t drop = (uint64_t)(fabs(dt) * SR);

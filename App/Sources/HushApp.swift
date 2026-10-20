@@ -47,15 +47,14 @@ struct HushApp: App {
     }
 }
 
-/// Vrai quand l'app sert seulement d'hôte aux tests unitaires.
 let isRunningUnitTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-/// Mode "--render-screenshots <dossier>" : dessine les écrans en PNG puis quitte (README, revue du design).
+/// "--render-screenshots <dir>" mode: renders screens to PNG then quits (README, design review)
 let screenshotDirectory: String? = {
     let args = CommandLine.arguments
     guard let i = args.firstIndex(of: "--render-screenshots"), i + 1 < args.count else { return nil }
     return args[i + 1]
 }()
-/// Pas d'audio, pas de fenêtre automatique.
+/// no audio, no auto window
 let isHeadless = isRunningUnitTests || screenshotDirectory != nil
 
 enum WindowID {
@@ -63,8 +62,8 @@ enum WindowID {
     static let discord = "discord"
 }
 
-/// Mises à jour automatiques (Sparkle). Désactivées tant que la clé publique EdDSA n'est pas
-/// renseignée dans Info.plist (builds de développement).
+/// auto updates (sparkle). off until the EdDSA public key is set
+/// in Info.plist (dev builds)
 final class UpdateController: ObservableObject {
     let controller: SPUStandardUpdaterController?
 
@@ -78,7 +77,7 @@ final class UpdateController: ObservableObject {
     func checkForUpdates() { controller?.checkForUpdates(nil) }
 }
 
-/// Icône de la barre de menus ; ouvre l'onboarding au premier lancement.
+/// also opens onboarding on first launch
 struct MenuBarLabel: View {
     @EnvironmentObject private var controller: EngineController
     @Environment(\.openWindow) private var openWindow
@@ -100,16 +99,15 @@ struct MenuBarLabel: View {
     }
 }
 
-/// Icône de la barre de menus tirée du logo de l'app : un micro entre deux ondes, « ( micro ) ».
-/// Monochrome (image modèle) pour suivre le thème de la barre de menus ; une pastille de couleur signale un
-/// problème (rouge) ou une mise à jour du micro virtuel (orange).
+/// taken from the app logo: a mic between two waves. w/ a colored badge the image can't be
+/// a template image or macOS would wipe the color
 enum MenuBarIcon {
     enum Look { case active, standby, off }
 
     static func image(look: Look, badge: NSColor?) -> NSImage {
         let size = NSSize(width: 22, height: 16)
         let image = NSImage(size: size, flipped: false) { _ in
-            // Dessiné à l'affichage : `textColor` suit l'apparence de la barre de menus quand il y a une pastille.
+            // drawn at display time so `textColor` follows the menu bar appearance when there's a badge
             let ink = badge == nil ? NSColor.black : NSColor.textColor
             draw(look: look, ink: ink, in: size)
             if let badge {
@@ -125,7 +123,7 @@ enum MenuBarIcon {
 
     private static func draw(look: Look, ink: NSColor, in size: NSSize) {
         let cx = size.width / 2
-        // Micro : capsule, étrier et pied.
+        // mic: capsule, yoke and stand
         ink.setFill()
         NSBezierPath(roundedRect: NSRect(x: cx - 2.4, y: 6.6, width: 4.8, height: 8.2), xRadius: 2.4, yRadius: 2.4).fill()
         ink.setStroke()
@@ -140,7 +138,7 @@ enum MenuBarIcon {
         stand.lineWidth = 1.4
         stand.lineCapStyle = .round
         stand.stroke()
-        // Ondes « ( » et « ) », estompées en veille, absentes quand Hush est désactivé.
+        // "(" and ")" waves, faded when idle, gone when hush is off
         if look != .off {
             ink.withAlphaComponent(look == .active ? 1 : 0.35).setStroke()
             for (start, end) in [(140.0, 220.0), (-40.0, 40.0)] {

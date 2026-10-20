@@ -1,6 +1,6 @@
 #!/bin/bash
-# Qualité de la voix : 4 prises de 6 s (brut, VP, VP sans AGC, VP + musique) pendant que l'on parle.
-# Usage : voice_quality_test.sh <musique> <dossier>
+# voice quality: 4 takes of 6 s (raw, vp, vp w/o agc, vp + music) while talking
+# usage: voice_quality_test.sh <music> <dir>
 set -eu
 MUSIC="$1"; OUT="$2"
 B="$(dirname "$0")/../.build/debug/vpcapture"

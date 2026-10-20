@@ -1,35 +1,33 @@
-// Gain automatique piloté par la voix, pour la sortie du voice processing.
+// voice driven auto gain for vp output
 //
-// Contrairement au gain automatique du VPIO, celui-ci ne bouge que pendant la parole : quand personne
-// ne parle, le gain est figé, donc le résidu de musique et le bruit de fond ne sont jamais remontés.
-// Traitement par blocs, sans allocation ni verrou (utilisable dans un callback audio).
+// unlike VPIO's AGC this only moves during speech. nobody talking -> gain frozen
+// so music residue and noise floor never get boosted
+// block based, no alloc no lock (safe in an audio callback)
 #ifndef HUSH_AGC_H
 #define HUSH_AGC_H
 
 #include <stdint.h>
 
 typedef struct {
-    // Réglages
-    float targetDB;        // niveau RMS visé pour la parole (par bloc), en dBFS
+    float targetDB;        // target speech RMS (per block), dBFS
     float minGainDB;
     float maxGainDB;
-    float riseDBPerSec;    // vitesse max de montée du gain
-    float fallDBPerSec;    // vitesse max de descente du gain
-    float speechMarginDB;  // la parole doit dépasser le bruit de fond d'au moins cette marge
+    float riseDBPerSec;
+    float fallDBPerSec;
+    float speechMarginDB;  // speech must beat noise floor by at least this
     float sampleRate;
 
-    // État
-    float gainDB;          // gain courant
-    float floorDB;         // estimation du bruit de fond
-    float speechDB;        // niveau de parole lissé
-    float lastGain;        // gain linéaire appliqué à la fin du bloc précédent (rampe sans « zipper »)
-    int speaking;          // le dernier bloc contenait de la parole
+    float gainDB;
+    float floorDB;         // noise floor estimate
+    float speechDB;        // smoothed speech level
+    float lastGain;        // linear gain at end of previous block (ramp, no zipper noise)
+    int speaking;          // last block had speech
 } hush_agc_t;
 
-// Valeurs par défaut ; `initialGainDB` permet de reprendre le gain de la session précédente.
+// `initialGainDB` restores previous session gain (clamped to [minGainDB, maxGainDB])
 void hush_agc_init(hush_agc_t *agc, float sampleRate, float initialGainDB);
 
-// Applique le gain (et le limiteur doux) au bloc, en place.
+// applies gain (and soft limiter) to the block in place
 void hush_agc_process(hush_agc_t *agc, float *x, uint32_t n);
 
 #endif

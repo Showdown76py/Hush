@@ -1,11 +1,11 @@
-// Rejoue AEC3 hors ligne sur une prise enregistrée par aec3cap (raw.wav + ref.wav alignés).
-// Usage : aec3offline <raw.wav> <ref.wav> <ns 0..4> <out.wav>
+// reruns aec3 offline on a take recorded by aec3cap (aligned raw.wav + ref.wav)
+// usage: aec3offline <raw.wav> <ref.wav> <ns 0..4> <out.wav>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "aec3_wrap.h"
 
-static float *read_wav(const char *path, size_t *n) {   // format écrit par aec3cap : en-tête de 44 octets, float32
+static float *read_wav(const char *path, size_t *n) {   // format written by aec3cap: 44 byte header, float32
     FILE *f = fopen(path, "rb");
     if (!f) { perror(path); exit(1); }
     fseek(f, 0, SEEK_END);
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     float *out = calloc(n, 4);
     aec3_t *a = argc == 7 ? aec3_create_tuned(atoi(argv[3]), atoi(argv[5]), atoi(argv[6])) : aec3_create(atoi(argv[3]));
     for (size_t i = 0; i < n; i += 480) aec3_process(a, ref + i, raw + i, out + i);
-    // Même en-tête que l'entrée.
+    // same header as input
     FILE *in = fopen(argv[1], "rb"), *o = fopen(argv[4], "wb");
     unsigned char hdr[44];
     if (fread(hdr, 1, 44, in) != 44) return 1;

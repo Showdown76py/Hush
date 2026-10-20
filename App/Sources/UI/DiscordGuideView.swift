@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Instructions Discord, avec un schéma des réglages à modifier.
 struct DiscordGuideView: View {
     let showsDoneButton: Bool
     var done: () -> Void = {}
@@ -31,7 +30,7 @@ struct DiscordGuideView: View {
     }
 }
 
-/// Schéma (pas une capture d'écran) du panneau "Voix et vidéo".
+/// redrawn discord "Voice & Video" panel, not a screenshot
 private struct VoiceSettingsSchematic: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {

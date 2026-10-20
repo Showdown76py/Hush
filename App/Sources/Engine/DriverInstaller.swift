@@ -1,9 +1,7 @@
 import Foundation
 import os
 
-/// Installe / met à jour / retire le micro virtuel (Hush.driver) dans /Library/Audio/Plug-Ins/HAL.
-/// Les droits administrateur sont demandés par la fenêtre système standard (osascript), une seule
-/// fois par opération ; l'app elle-même ne voit jamais le mot de passe.
+/// admin rights go through osascript's system dialog so the app never sees the password
 enum DriverInstaller {
     private static let log = Logger(subsystem: "io.github.showdown76py.Hush", category: "installer")
     static let installedURL = URL(fileURLWithPath: "/Library/Audio/Plug-Ins/HAL/Hush.driver")
@@ -34,7 +32,7 @@ enum DriverInstaller {
     static func install() async throws {
         guard let source = bundledURL else { throw HushError.installFailed }
         try await runPrivileged(action: "install", argument: source.path)
-        // coreaudiod redémarre : on attend que le périphérique apparaisse.
+        // coreaudiod restarts so wait for the device to show up
         for _ in 0..<40 {
             if AudioDevices.isHushDevicePresent { return }
             try await Task.sleep(nanoseconds: 250_000_000)
@@ -76,7 +74,7 @@ enum DriverInstaller {
         }
         guard status == 0 else {
             log.error("\(action, privacy: .public) a échoué (\(status)) : \(stderr, privacy: .public)")
-            if stderr.contains("-128") { throw HushError.installCancelled }   // l'utilisateur a annulé
+            if stderr.contains("-128") { throw HushError.installCancelled }   // userCanceledErr
             throw action == "install" ? HushError.installFailed : HushError.uninstallFailed
         }
     }

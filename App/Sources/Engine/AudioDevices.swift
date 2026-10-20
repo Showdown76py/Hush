@@ -4,7 +4,6 @@ import HushRT
 import CoreAudio
 import Foundation
 
-/// Un périphérique audio d'entrée, tel que présenté dans les réglages.
 struct AudioInputDevice: Identifiable, Hashable {
     let id: AudioDeviceID
     let uid: String
@@ -13,7 +12,6 @@ struct AudioInputDevice: Identifiable, Hashable {
     let isVirtual: Bool
 }
 
-/// Accès en lecture au modèle d'objets Core Audio (HAL), hors temps réel.
 enum AudioDevices {
     static let hushDeviceUID = "HushMicrophone_UID"
     static let system = AudioObjectID(kAudioObjectSystemObject)
@@ -60,7 +58,7 @@ enum AudioDevices {
         return list.reduce(0) { $0 + Int($1.mNumberChannels) }
     }
 
-    /// Entrées audio utilisables comme source (le micro virtuel Hush est exclu pour éviter une boucle).
+    /// hush mic excluded since as a source it would loop on itself
     static func inputDevices() -> [AudioInputDevice] {
         allDeviceIDs().compactMap { id in
             guard inputChannelCount(id) > 0, let uid = string(id, kAudioDevicePropertyDeviceUID), uid != hushDeviceUID else { return nil }
@@ -85,8 +83,7 @@ enum AudioDevices {
 
     static var isHushDevicePresent: Bool { device(uid: hushDeviceUID) != nil }
 
-    /// Choisit le micro source : celui demandé s'il existe, sinon l'entrée par défaut du système
-    /// (sauf si c'est le micro Hush lui-même), sinon le micro intégré.
+    /// if default input is the hush mic it's missing from `inputDevices()` so fall back to built-in mic
     static func resolveSource(preferredUID: String?) -> AudioInputDevice? {
         let inputs = inputDevices()
         if let preferredUID, !preferredUID.isEmpty, let d = inputs.first(where: { $0.uid == preferredUID }) { return d }
@@ -94,16 +91,15 @@ enum AudioDevices {
         return inputs.first(where: \.isBuiltIn) ?? inputs.first(where: { !$0.isVirtual }) ?? inputs.first
     }
 
-    /// Fixe la taille de buffer IO de ce processus pour un périphérique (réduit la latence).
-    @discardableResult
-    static func setBufferFrameSize(_ id: AudioDeviceID, _ frames: UInt32) -> OSStatus {
+    /// buffer size only applies to this process, other apps unaffected
+    static func setBufferFrameSize(_ id: AudioDeviceID, _ frames: UInt32) {
         var a = address(kAudioDevicePropertyBufferFrameSize)
         var value = frames
-        return AudioObjectSetPropertyData(id, &a, 0, nil, UInt32(MemoryLayout<UInt32>.size), &value)
+        AudioObjectSetPropertyData(id, &a, 0, nil, UInt32(MemoryLayout<UInt32>.size), &value)
     }
 }
 
-/// Abonnement à une propriété Core Audio ; l'écoute s'arrête à la libération de l'objet.
+/// listening stops when the object is freed
 final class AudioPropertyListener {
     private let object: AudioObjectID
     private var address: AudioObjectPropertyAddress

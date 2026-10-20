@@ -1,6 +1,6 @@
 #!/bin/bash
-# Lancé en root par Hush (via la fenêtre d'authentification de macOS).
-# Usage : driver-admin.sh install <chemin/vers/Hush.driver>
+# run as root by hush (via macOS auth dialog)
+# usage: driver-admin.sh install <path/to/Hush.driver>
 #         driver-admin.sh uninstall
 set -euo pipefail
 DST="/Library/Audio/Plug-Ins/HAL/Hush.driver"

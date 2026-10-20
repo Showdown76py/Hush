@@ -1,9 +1,8 @@
 import XCTest
 @testable import Hush
 
-/// Tests sans matériel audio : contrat de mémoire partagée, partie temps réel, logique de l'UI.
 final class SharedMemoryContractTests: XCTestCase {
-    /// Mémoire ordinaire (jamais la vraie mémoire partagée du driver installé).
+    /// plain memory (never the installed driver's real shm)
     private func makeRegion() -> UnsafeMutableRawPointer {
         let p = UnsafeMutableRawPointer.allocate(byteCount: hush_shm_bytes(), alignment: 64)
         p.initializeMemory(as: UInt8.self, repeating: 0, count: hush_shm_bytes())
@@ -22,8 +21,6 @@ final class SharedMemoryContractTests: XCTestCase {
         hush_app_attach(p, hush_shm_bytes())
         var samples = [Float](repeating: 0.25, count: 480)
         hush_app_write(p, &samples, 480, 1234)
-        let shm = p.assumingMemoryBound(to: UInt8.self)
-        _ = shm
         XCTAssertEqual(hush_app_reader_stats(p).clientsRunning, 0)
         hush_app_stop(p)
     }
@@ -49,7 +46,7 @@ final class SingleWriterTests: XCTestCase {
 
     func testDeadOwnerIsReplaced() {
         let p = region(); defer { p.deallocate() }
-        XCTAssertEqual(hush_app_claim_writer(p, 999_999), 1)   // pid inexistant
+        XCTAssertEqual(hush_app_claim_writer(p, 999_999), 1)   // nonexistent pid
         XCTAssertEqual(hush_app_claim_writer(p, UInt32(getpid())), 1, "propriétaire mort remplacé")
     }
 }
@@ -103,7 +100,6 @@ final class GainTests: XCTestCase {
     }
 }
 
-/// Gain automatique piloté par la voix, testé sur des signaux synthétiques.
 final class VoiceAGCTests: XCTestCase {
     private let sr: Float = 48000
     private let block = 256
@@ -111,11 +107,11 @@ final class VoiceAGCTests: XCTestCase {
 
     private func noise() -> Float {
         seed = seed &* 1664525 &+ 1013904223
-        return Float(Int32(bitPattern: seed)) / Float(Int32.max) * 1.732   // RMS ≈ 1
+        return Float(Int32(bitPattern: seed)) / Float(Int32.max) * 1.732   // RMS ~1
     }
 
-    /// Parole simulée : bruit modulé par des syllabes (4 Hz), phrases de 1,5 s séparées de 0,5 s de pause,
-    /// au niveau RMS `speechDB` pendant la parole, sur un bruit de fond à `floorDB`.
+    /// fake speech: noise modulated by syllables (4 Hz), 1.5 s phrases w/ 0.5 s pauses
+    /// at RMS `speechDB` while talking over a noise floor at `floorDB`
     private func speech(seconds: Float, speechDB: Float, floorDB: Float = -75) -> [Float] {
         let n = Int(seconds * sr)
         let a = powf(10, speechDB / 20) * 1.63, f = powf(10, floorDB / 20)
@@ -127,7 +123,6 @@ final class VoiceAGCTests: XCTestCase {
         }
     }
 
-    /// Fait passer le signal par l'AGC par blocs ; retourne la sortie.
     private func run(_ agc: inout hush_agc_t, _ x: [Float]) -> [Float] {
         var y = x
         y.withUnsafeMutableBufferPointer { p in
@@ -141,7 +136,7 @@ final class VoiceAGCTests: XCTestCase {
         return y
     }
 
-    /// Niveau RMS (dB) des passages de parole de la sortie, sur les `lastSeconds` dernières secondes.
+    /// RMS level (dB) of output speech parts over the last `lastSeconds` seconds
     private func speechLevel(_ y: [Float], lastSeconds: Float) -> Float {
         let start = y.count - Int(lastSeconds * sr)
         var sum: Float = 0, count = 0
@@ -155,7 +150,7 @@ final class VoiceAGCTests: XCTestCase {
         var agc = hush_agc_t()
         hush_agc_init(&agc, sr, 0)
         let y = run(&agc, speech(seconds: 14, speechDB: -44))
-        // La cible est par bloc de parole ; la moyenne d'une phrase synthétique est environ 3 dB en dessous.
+        // target is per speech block. a synthetic phrase averages ~3 dB below
         XCTAssertEqual(speechLevel(y, lastSeconds: 4), agc.targetDB - 3, accuracy: 4, "voix faible ramenée vers la cible")
     }
 
@@ -168,7 +163,7 @@ final class VoiceAGCTests: XCTestCase {
     }
 
     func testMusicResidualIsNeverRaised() {
-        // Résidu de musique laissé par le voice processing : bouffées à -58 dB entre des silences à -85 dB.
+        // music residue left by vp: -58 dB bursts between -85 dB silences
         var agc = hush_agc_t()
         hush_agc_init(&agc, sr, 10)
         var x = [Float]()
@@ -207,7 +202,7 @@ final class VoiceAGCTests: XCTestCase {
 }
 
 final class DriftResampleTests: XCTestCase {
-    /// La correction de dérive ne doit créer aucune discontinuité : bords conservés, signal lisse.
+    /// drift correction must not create any discontinuity: edges kept, signal smooth
     func testDropAndAddKeepEdgesAndSmoothness() {
         let n = 256
         let src = (0..<n).map { sinf(2 * .pi * 440 * Float($0) / 48000) }
@@ -224,7 +219,7 @@ final class DriftResampleTests: XCTestCase {
 }
 
 final class DriftEstimatorTests: XCTestCase {
-    /// Simule un micro à `ppm` de 48 kHz (blocs de 256, horodatages avec gigue de ±0,5 ms) pendant `seconds`.
+    /// simulates a mic `ppm` off 48 kHz (256 blocks, timestamps w/ ±0.5 ms jitter) for `seconds`
     private func slips(ppm: Double, seconds: Double) -> (dropped: Int, added: Int, estimate: Double) {
         var d = hush_drift_t()
         hush_drift_reset(&d)
@@ -245,7 +240,7 @@ final class DriftEstimatorTests: XCTestCase {
     func testFastMicrophoneDropsExactlyItsExcess() {
         let r = slips(ppm: 100, seconds: 60)
         XCTAssertEqual(r.estimate, 100, accuracy: 2)
-        // corrections à partir de 10 s : 50 s × 4,8 frames/s ≈ 240
+        // corrections from 10 s on: 50 s × 4.8 frames/s ~ 240
         XCTAssertEqual(Double(r.dropped), 240, accuracy: 10)
         XCTAssertEqual(r.added, 0)
     }

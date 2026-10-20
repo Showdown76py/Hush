@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage : build.sh <dossier install de webrtc-audio-processing> [sortie]
+# usage: build.sh <webrtc-audio-processing install dir> [output]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 W="${1:?install webrtc}"

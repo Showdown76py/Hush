@@ -1,10 +1,7 @@
-// Hush — AudioServerPlugIn (driver HAL) minimal.
-//
-// Expose un unique périphérique d'entrée virtuel ("Hush Microphone", mono, 48 kHz, Float32)
-// dont l'audio provient d'un ring buffer en mémoire partagée alimenté par l'app Hush.
-// Le driver ne contient aucune logique métier : il relaie l'audio, produit du silence si l'app ne
-// tourne pas, et publie quelques statistiques. Écrit à partir de la documentation de
-// <CoreAudio/AudioServerPlugIn.h> ; licence MIT.
+// Hush AudioServerPlugIn (HAL driver). exposes one virtual input device
+// ("Hush Microphone", mono 48 kHz Float32) that reads the shm ring buffer written by the app
+// all policy (latency, modes) lives in the app. driver outputs silence when the app isn't running
+// written from the <CoreAudio/AudioServerPlugIn.h> docs. MIT license
 
 #include <CoreAudio/AudioServerPlugIn.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -37,25 +34,19 @@ enum {
 
 static const UInt32 kZeroTimeStampPeriod = 16384;
 
-// ---------------------------------------------------------------------------------------------
-// État global
-// ---------------------------------------------------------------------------------------------
-
 static os_log_t gLog;
-static AudioServerPlugInHostRef gHost = NULL;
 static pthread_mutex_t gStateMutex = PTHREAD_MUTEX_INITIALIZER;
 static _Atomic UInt32 gRefCount = 1;
-static UInt32 gIOClients = 0;               // protégé par gStateMutex
+static UInt32 gIOClients = 0;               // guarded by gStateMutex
 
-// Horloge (modifiée uniquement quand l'IO ne tourne pas, ou par le thread IO)
+// only touched when IO is stopped or by the IO thread
 static Float64 gHostTicksPerFrame = 0;
 static UInt64 gAnchorHostTime = 0;
 static UInt64 gTimeStampCount = 0;
 static UInt64 gWriterTimeoutTicks = 0;
 
-// Mémoire partagée
 static hush_shm_t *_Atomic gShm = NULL;
-static bool gNeedResync = true;            // thread IO uniquement
+static bool gNeedResync = true;            // IO thread only
 
 static void OpenSharedMemory(void) {
     if (atomic_load(&gShm) != NULL) return;
@@ -64,7 +55,7 @@ static void OpenSharedMemory(void) {
         os_log_error(gLog, "shm_open(%{public}s) a échoué: errno=%d", HUSH_SHM_NAME, errno);
         return;
     }
-    fchmod(fd, 0666);   // l'app tourne sous un autre utilisateur que le driver
+    fchmod(fd, 0666);   // app runs as a different user than the driver
     struct stat st;
     size_t need = hush_shm_bytes();
     if (fstat(fd, &st) != 0) { close(fd); return; }
@@ -89,10 +80,6 @@ static void OpenSharedMemory(void) {
     atomic_store(&gShm, s);
     os_log(gLog, "mémoire partagée prête (%zu octets)", need);
 }
-
-// ---------------------------------------------------------------------------------------------
-// Interface COM
-// ---------------------------------------------------------------------------------------------
 
 static HRESULT Hush_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface);
 static ULONG Hush_AddRef(void *inDriver);
@@ -130,7 +117,7 @@ static AudioServerPlugInDriverInterface gInterface = {
 static AudioServerPlugInDriverInterface *gInterfacePtr = &gInterface;
 static AudioServerPlugInDriverRef gDriverRef = &gInterfacePtr;
 
-// Point d'entrée déclaré dans Info.plist (CFPlugInFactories).
+// entry point declared in Info.plist (CFPlugInFactories)
 __attribute__((visibility("default")))
 void *Hush_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID) {
     (void)inAllocator;
@@ -164,9 +151,9 @@ static ULONG Hush_Release(void *inDriver) {
 }
 
 static OSStatus Hush_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost) {
+    (void)inHost;
     if (inDriver != gDriverRef) return kAudioHardwareBadObjectError;
     gLog = os_log_create("io.github.showdown76py.Hush.Driver", "driver");
-    gHost = inHost;
     mach_timebase_info_data_t tb;
     mach_timebase_info(&tb);
     Float64 ticksPerSecond = 1e9 * (Float64)tb.denom / (Float64)tb.numer;
@@ -202,10 +189,6 @@ static OSStatus Hush_AbortDeviceConfigurationChange(AudioServerPlugInDriverRef d
     return (d == gDriverRef && dev == kObjectID_Device) ? noErr : kAudioHardwareBadObjectError;
 }
 
-// ---------------------------------------------------------------------------------------------
-// Propriétés
-// ---------------------------------------------------------------------------------------------
-
 static AudioStreamBasicDescription StreamFormat(void) {
     AudioStreamBasicDescription f = {0};
     f.mSampleRate = HUSH_SAMPLE_RATE;
@@ -219,7 +202,7 @@ static AudioStreamBasicDescription StreamFormat(void) {
     return f;
 }
 
-// Copie une valeur de taille fixe. outData == NULL : on ne demande que la taille.
+// copies a fixed size value. outData == NULL -> size query only
 #define RETURN_VALUE(type, expr)                                         \
     do {                                                                 \
         *outSize = sizeof(type);                                         \
@@ -230,7 +213,7 @@ static AudioStreamBasicDescription StreamFormat(void) {
         return noErr;                                                    \
     } while (0)
 
-// Copie un tableau d'AudioObjectID (tronqué à la taille fournie).
+// copies an AudioObjectID array (truncated to given size)
 static OSStatus ReturnIDs(const AudioObjectID *ids, UInt32 count, UInt32 inDataSize, UInt32 *outSize, void *outData) {
     if (!outData) { *outSize = count * sizeof(AudioObjectID); return noErr; }
     UInt32 n = inDataSize / sizeof(AudioObjectID);
@@ -332,7 +315,7 @@ static OSStatus GetProp(AudioObjectID obj, const AudioObjectPropertyAddress *a, 
         case kAudioObjectPropertyOwner: RETURN_VALUE(AudioObjectID, kObjectID_Device);
         case kAudioObjectPropertyOwnedObjects: return ReturnIDs(NULL, 0, inDataSize, outSize, outData);
         case kAudioStreamPropertyIsActive: RETURN_VALUE(UInt32, 1);
-        case kAudioStreamPropertyDirection: RETURN_VALUE(UInt32, 1);   // 1 = entrée
+        case kAudioStreamPropertyDirection: RETURN_VALUE(UInt32, 1);   // 1 = input
         case kAudioStreamPropertyTerminalType: RETURN_VALUE(UInt32, kAudioStreamTerminalTypeMicrophone);
         case kAudioStreamPropertyStartingChannel: RETURN_VALUE(UInt32, 1);
         case kAudioStreamPropertyLatency: RETURN_VALUE(UInt32, 0);
@@ -367,8 +350,7 @@ static OSStatus Hush_IsPropertySettable(AudioServerPlugInDriverRef d, AudioObjec
     (void)pid;
     if (d != gDriverRef || a == NULL || outSettable == NULL) return kAudioHardwareIllegalOperationError;
     if (!Hush_HasProperty(d, obj, pid, a)) return kAudioHardwareUnknownPropertyError;
-    // Formats et fréquence "réglables" pour que les clients puissent les écrire : seule la valeur
-    // actuelle est acceptée.
+    // formats/rate marked settable so clients can write them but only the current value is accepted
     *outSettable = (obj == kObjectID_Stream && (a->mSelector == kAudioStreamPropertyVirtualFormat ||
                                                 a->mSelector == kAudioStreamPropertyPhysicalFormat));
     return noErr;
@@ -409,14 +391,10 @@ static OSStatus Hush_SetPropertyData(AudioServerPlugInDriverRef d, AudioObjectID
     return Hush_HasProperty(d, obj, pid, a) ? kAudioHardwareUnsupportedOperationError : kAudioHardwareUnknownPropertyError;
 }
 
-// ---------------------------------------------------------------------------------------------
-// IO
-// ---------------------------------------------------------------------------------------------
-
 static OSStatus Hush_StartIO(AudioServerPlugInDriverRef d, AudioObjectID dev, UInt32 client) {
     (void)client;
     if (d != gDriverRef || dev != kObjectID_Device) return kAudioHardwareBadObjectError;
-    OpenSharedMemory();   // au cas où elle n'a pas pu être créée à l'initialisation
+    OpenSharedMemory();   // in case it couldn't be created at init
     pthread_mutex_lock(&gStateMutex);
     if (gIOClients == 0) {
         gAnchorHostTime = mach_absolute_time();
@@ -445,7 +423,7 @@ static OSStatus Hush_GetZeroTimeStamp(AudioServerPlugInDriverRef d, AudioObjectI
                                       Float64 *outSampleTime, UInt64 *outHostTime, UInt64 *outSeed) {
     (void)client;
     if (d != gDriverRef || dev != kObjectID_Device) return kAudioHardwareBadObjectError;
-    // Horloge nominale à 48 kHz dérivée de l'horloge hôte. Appelée uniquement par le thread IO.
+    // nominal 48 kHz on host clock. no lock, only the IO thread calls this
     Float64 ticksPerPeriod = gHostTicksPerFrame * kZeroTimeStampPeriod;
     UInt64 now = mach_absolute_time();
     UInt64 next = gAnchorHostTime + (UInt64)((Float64)(gTimeStampCount + 1) * ticksPerPeriod);
@@ -477,7 +455,7 @@ static OSStatus Hush_EndIOOperation(AudioServerPlugInDriverRef d, AudioObjectID 
     return (d == gDriverRef && dev == kObjectID_Device) ? noErr : kAudioHardwareBadObjectError;
 }
 
-// Lecture temps réel : pas d'allocation, pas de verrou, pas d'appel système.
+// realtime read. no alloc no lock no syscall
 static OSStatus Hush_DoIOOperation(AudioServerPlugInDriverRef d, AudioObjectID dev, AudioObjectID stream, UInt32 client,
                                    UInt32 op, UInt32 frames, const AudioServerPlugInIOCycleInfo *info,
                                    void *ioMain, void *ioSecondary) {
@@ -494,13 +472,13 @@ static OSStatus Hush_DoIOOperation(AudioServerPlugInDriverRef d, AudioObjectID d
     atomic_store_explicit(&s->readerHeartbeat, now, memory_order_relaxed);
     UInt64 hb = atomic_load_explicit(&s->writerHeartbeat, memory_order_acquire);
     if (hb == 0 || now < hb || now - hb > gWriterTimeoutTicks || frames > HUSH_RING_FRAMES / 2) {
-        // L'app ne tourne pas : silence, et recalage à la reprise.
+        // app not running -> silence and resync when it's back
         memset(out, 0, frames * sizeof(float) * HUSH_CHANNELS);
         gNeedResync = true;
         return noErr;
     }
-    // Latence visée : un buffer client + une marge fixée par l'app. Après un trou, on joue du silence
-    // jusqu'à avoir de nouveau cette marge (ré-amorçage), au lieu d'enchaîner les micro-coupures.
+    // target latency = one client buffer + margin set by the app. after a gap play silence until
+    // we have that margin again (re-prime) instead of chaining micro dropouts
     UInt32 margin = atomic_load_explicit(&s->targetFill, memory_order_relaxed);
     UInt32 tolerance = atomic_load_explicit(&s->maxFill, memory_order_relaxed);
     if (margin > HUSH_RING_FRAMES / 4) margin = HUSH_RING_FRAMES / 4;
@@ -509,14 +487,14 @@ static OSStatus Hush_DoIOOperation(AudioServerPlugInDriverRef d, AudioObjectID d
     UInt64 w = atomic_load_explicit(&s->ring.writePos, memory_order_acquire);
     UInt64 rd = atomic_load_explicit(&s->ring.readPos, memory_order_relaxed);
     UInt64 fill = w > rd ? w - rd : 0;
-    if (w < rd || fill > HUSH_RING_FRAMES - frames) {   // écrasé ou incohérent : on repart de la tête d'écriture
+    if (w < rd || fill > HUSH_RING_FRAMES - frames) {   // overwritten or inconsistent -> restart from write head
         ring_set_read(&s->ring, w);
         gNeedResync = true;
         fill = 0;
     }
     if (gNeedResync) {
-        // Ré-amorçage : on attend d'avoir `want` frames, sans jamais relire du son déjà joué
-        // (fill >= want garantit w - want >= rd).
+        // re-prime: wait for `want` frames, never replay already played audio
+        // (fill >= want guarantees w - want >= rd)
         if (fill >= want) {
             ring_set_read(&s->ring, w - want);
             fill = want;
@@ -527,7 +505,7 @@ static OSStatus Hush_DoIOOperation(AudioServerPlugInDriverRef d, AudioObjectID d
             return noErr;
         }
     } else if (fill > want + tolerance) {
-        ring_set_read(&s->ring, w - want);   // trop de retard accumulé : on jette l'excédent
+        ring_set_read(&s->ring, w - want);   // too far behind -> drop the excess
         fill = want;
     }
     atomic_store_explicit(&s->lastFill, (UInt32)fill, memory_order_relaxed);

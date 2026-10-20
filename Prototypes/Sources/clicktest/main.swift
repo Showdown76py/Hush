@@ -1,7 +1,6 @@
-// Joue des clics sur la sortie par défaut à intervalles réguliers et enregistre l'heure hôte
-// (en ns) de chaque clic, telle que donnée par l'horodatage de sortie. Sert de référence absolue
-// pour mesurer la latence d'un chemin d'entrée.
-// Usage : clicktest --out times.txt [--seconds 10] [--first 2.0] [--interval 1.5]
+// plays clicks on the default output at regular intervals and logs host time (ns) of each click
+// taken from the output timestamp. absolute reference to measure an input path's latency
+// usage: clicktest --out times.txt [--seconds 10] [--first 2.0] [--interval 1.5]
 import AudioToolbox
 import CoreAudio
 import Foundation
@@ -22,14 +21,14 @@ let sr = 48000.0
 var tb = mach_timebase_info_data_t(); mach_timebase_info(&tb)
 
 final class Ctx {
-    var pos: Int64 = 0                 // frames jouées
+    var pos: Int64 = 0                 // frames played
     var nextClick: Int64 = 0
     var times = UnsafeMutablePointer<UInt64>.allocate(capacity: 1000)
     var count = 0
 }
 let ctx = Ctx()
 ctx.nextClick = Int64(first * sr)
-let clickLen = 96   // 2 ms, bruit large bande décroissant
+let clickLen = 96   // 2 ms decaying broadband noise
 var click = [Float](repeating: 0, count: clickLen)
 var seed: UInt32 = 12345
 for i in 0..<clickLen {
@@ -63,7 +62,7 @@ let cb: AURenderCallback = { r, _, ts, _, frames, io in
             if p >= 0 && p < n { for b in abl { b.mData!.assumingMemoryBound(to: Float.self)[Int(p)] = clickPtr[i] } }
         }
         if k >= c.pos && k < c.pos + n && c.count < 1000 {
-            // heure hôte du premier échantillon du buffer + décalage du clic
+            // host time of buffer's first sample + click offset
             c.times[c.count] = ts.pointee.mHostTime + UInt64(Double(k - c.pos) / sr * 1e9 * Double(tb.denom) / Double(tb.numer))
             c.count += 1
         }

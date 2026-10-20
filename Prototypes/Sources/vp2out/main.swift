@@ -1,8 +1,7 @@
-// Prototype étape 2 : micro + voice processing (VPIO) -> ring buffer -> sortie temps réel sur un
-// périphérique (BlackHole). Option d'injection pour mesurer la latence (étape 3) :
-// --inject <fichier> joue le fichier sur le canal 0 du périphérique de sortie, et le résultat VP
-// est écrit sur le canal --out-channel (par défaut 0 sans injection, 2 avec).
-// Usage : vp2out [--input <dev>] [--output <dev>] [--seconds N] [--inject file] [--buffer frames]
+// step 2 prototype: mic + vp (vpio) -> ring buffer -> realtime output on a device (blackhole)
+// injection option to measure latency (step 3): --inject <file> plays the file on output channel 0
+// and vp result goes to --out-channel (default 0 w/o injection, 2 with)
+// usage: vp2out [--input <dev>] [--output <dev>] [--seconds N] [--inject file] [--buffer frames]
 //                [--target frames] [--bypass]
 import AudioToolbox
 import AVFoundation
@@ -67,7 +66,7 @@ func pcm(_ ch: UInt32) -> AudioStreamBasicDescription {
 let asbdSize = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
 let cbSize = UInt32(MemoryLayout<AURenderCallbackStruct>.size)
 
-// Fichier d'injection chargé en mémoire (mono 48 kHz)
+// injection file loaded in memory (mono 48 kHz)
 var inject: [Float] = []
 if let injectPath {
     let f = try AVAudioFile(forReading: URL(fileURLWithPath: injectPath))
@@ -85,12 +84,12 @@ if let injectPath {
     print("injection: \(inject.count) frames")
 }
 
-// Ring mono VP -> sortie
+// mono ring vp -> output
 let ringCap: UInt32 = 8192
 let ring = UnsafeMutableRawPointer.allocate(byteCount: ring_bytes(ringCap, 1), alignment: 64).assumingMemoryBound(to: ring_t.self)
 ring_init(ring, ringCap, 1)
 
-// Mémoire partagée avec le driver Hush (créée par le driver, ou par nous si absente).
+// shm w/ hush driver (created by driver or by us if missing)
 var shm: UnsafeMutableRawPointer?
 if useShm {
     var err: Int32 = 0
@@ -120,7 +119,7 @@ if !inject.isEmpty {
 }
 let ref = Unmanaged.passUnretained(ctx).toOpaque()
 
-// Taille de buffer IO (pour notre processus) du micro et des haut-parleurs par défaut.
+// io buffer size (for our process) of default mic and speakers
 if var frames = ioBuffer {
     for sel in [kAudioHardwarePropertyDefaultInputDevice, kAudioHardwarePropertyDefaultOutputDevice] {
         var a = AudioObjectPropertyAddress(mSelector: sel, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
@@ -131,7 +130,7 @@ if var frames = ioBuffer {
     }
 }
 
-// --- VPIO (entrée micro) ---
+// --- vpio (mic input) ---
 var d1 = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_VoiceProcessingIO,
                                    componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 var u1: AudioUnit?
@@ -157,7 +156,7 @@ let micCB: AURenderCallback = { r, flags, ts, bus, frames, _ in
     if err != noErr { return err }
     for i in 0..<Int(frames) { c.peakIn = max(c.peakIn, abs(c.micBuf[i])) }
     c.lastChunk = frames
-    // frames produites avant ce callback / temps hôte écoulé depuis le premier callback
+    // frames produced before this callback / host time since first callback
     if c.firstHost == 0 { c.firstHost = ts.pointee.mHostTime } else { c.framesSinceFirst += UInt64(c.prevFrames) }
     c.prevFrames = frames
     c.lastHost = ts.pointee.mHostTime
@@ -179,7 +178,7 @@ check(AudioUnitSetProperty(vp, kAudioOutputUnitProperty_SetInputCallback, kAudio
 check(AudioUnitSetProperty(vp, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &s2, cbSize), "vp silence cb")
 check(AudioUnitInitialize(vp), "VPIO init")
 
-// --- AUHAL sortie sur le périphérique virtuel (pas en mode --shm) ---
+// --- auhal output on the virtual device (not in --shm mode) ---
 if useShm {
     check(AudioOutputUnitStart(vp), "VPIO start")
     let t0 = Date()
@@ -217,7 +216,7 @@ let outCB: AURenderCallback = { r, _, _, _, frames, io in
     let abl = UnsafeMutableAudioBufferListPointer(io!)
     for b in abl { memset(b.mData, 0, Int(b.mDataByteSize)) }
     let n = Int(frames)
-    // Injection éventuelle sur le canal 0
+    // optional injection on channel 0
     if let inj = c.injectData {
         for ch in 0..<injectChannels {
             let dst = abl[ch].mData!.assumingMemoryBound(to: Float.self)
@@ -225,7 +224,7 @@ let outCB: AURenderCallback = { r, _, _, _, frames, io in
         }
         c.injectPos += n
     }
-    // Sortie VP : on attend un remplissage cible avant de jouer (amorçage), et on ré-amorce sur underrun.
+    // vp output: wait for target fill before playing (priming) and re-prime on underrun
     if !c.primed {
         if ring_fill(ring) >= UInt64(targetFill) { c.primed = true } else { return noErr }
     }

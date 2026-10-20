@@ -1,11 +1,11 @@
-// Fait tourner le moteur réel de l'app (VoiceEngine + hush_rt.c) hors de l'app, vers le driver Hush.
-// Usage : enginecheck [secondes]
+// runs the real app engine (VoiceEngine + hush_rt.c) outside the app into the hush driver
+// usage: enginecheck [seconds]
 import Foundation
 import HushRT
 
 let switchTest = CommandLine.arguments.contains("--switch")
 if CommandLine.arguments.contains("--aggregates") {
-    // Liste les périphériques visibles par ce processus avant, pendant et après le VP.
+    // list devices this process sees before/during/after vp
     func snapshot() -> String {
         AudioDevices.allDeviceIDs().map { id in
             "\(id):\(AudioDevices.string(id, kAudioObjectPropertyName) ?? "?")[\(AudioDevices.uint32(id, kAudioDevicePropertyTransportType).map { String(format: "%08x", $0) } ?? "?")]"
@@ -28,7 +28,7 @@ if CommandLine.arguments.contains("--aggregates") {
     exit(0)
 }
 if CommandLine.arguments.contains("--vp-hold") {
-    // Voice processing maintenu 40 s (pour observer le ducking à l'activation).
+    // vp held 40 s to watch ducking at activation
     let shm = try SharedMemory()
     let engine = VoiceEngine()
     let source = AudioDevices.resolveSource(preferredUID: nil)!
@@ -38,7 +38,7 @@ if CommandLine.arguments.contains("--vp-hold") {
     exit(0)
 }
 if CommandLine.arguments.contains("--duck-release") {
-    // Voice processing 10 s puis arrêt, le processus reste vivant 30 s (comme l'app).
+    // vp 10 s then stop, process stays alive 30 s (like the app)
     let shm = try SharedMemory()
     let engine = VoiceEngine()
     let source = AudioDevices.resolveSource(preferredUID: nil)!
@@ -56,7 +56,7 @@ let engine = VoiceEngine()
 guard let source = AudioDevices.resolveSource(preferredUID: nil) else { fatalError("pas de micro") }
 print("source : \(source.name)")
 if switchTest {
-    // 0-10 s : passage direct ; 10-20 s : voice processing ; 20-30 s : passage direct.
+    // 0-10 s passthrough, 10-20 s vp, 20-30 s passthrough
     try engine.startRawMonitor(device: source.id)
     try engine.setPassthrough(shm.pointer)
     DispatchQueue.global().asyncAfter(deadline: .now() + 10) {

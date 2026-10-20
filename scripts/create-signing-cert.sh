@@ -1,12 +1,11 @@
 #!/bin/bash
-# Crée (une fois) un certificat de signature de code auto-signé pour Hush et l'importe dans le
-# trousseau de session. Sans compte Apple Developer, il donne une identité de signature STABLE :
-# macOS conserve alors l'autorisation micro d'une version à l'autre (chez vous et chez vos utilisateurs).
-# Gatekeeper considère toujours l'app comme « développeur non identifié » (voir README).
+# creates a self-signed codesigning cert and imports it into the login keychain
+# w/o an apple developer account this is what gives a stable signing identity so macOS keeps
+# the mic permission across versions. gatekeeper still says "unidentified developer"
 #
-# Usage : scripts/create-signing-cert.sh [dossier de sauvegarde]
-# Produit <dossier>/hush-signing.p12 (+ mot de passe) : À SAUVEGARDER. Pour la CI, le contenu base64 du
-# .p12 et son mot de passe vont dans les secrets HUSH_SIGNING_P12 / HUSH_SIGNING_P12_PASSWORD.
+# usage: scripts/create-signing-cert.sh [backup dir]
+# .p12 and its password get written to that dir, back it up. for ci the base64 .p12
+# and its password go in secrets HUSH_SIGNING_P12 and HUSH_SIGNING_P12_PASSWORD
 set -euo pipefail
 NAME="Hush Self-Signed Code Signing"
 OUT="${1:-$HOME/Library/Application Support/Hush-signing}"
@@ -36,14 +35,14 @@ EOF
 openssl req -x509 -newkey rsa:3072 -sha256 -days 3650 -nodes -config "$TMP/cert.cnf" \
     -keyout "$TMP/key.pem" -out "$TMP/cert.pem" 2>/dev/null
 PASS="$(openssl rand -base64 24)"
-# Format p12 compatible avec le trousseau macOS (algorithmes « legacy »).
+# p12 format the macOS keychain accepts (legacy algos)
 openssl pkcs12 -export -inkey "$TMP/key.pem" -in "$TMP/cert.pem" -name "$NAME" \
     -out "$OUT/hush-signing.p12" -passout "pass:$PASS" -legacy 2>/dev/null \
   || openssl pkcs12 -export -inkey "$TMP/key.pem" -in "$TMP/cert.pem" -name "$NAME" \
     -out "$OUT/hush-signing.p12" -passout "pass:$PASS"
 printf '%s\n' "$PASS" > "$OUT/hush-signing.password"
 chmod 600 "$OUT"/hush-signing.*
-# -T : codesign peut utiliser la clé sans fenêtre d'autorisation.
+# -T lets codesign use the key w/o an auth prompt
 security import "$OUT/hush-signing.p12" -k "$HOME/Library/Keychains/login.keychain-db" -P "$PASS" \
     -T /usr/bin/codesign -T /usr/bin/security
 echo "Certificat « $NAME » importé."

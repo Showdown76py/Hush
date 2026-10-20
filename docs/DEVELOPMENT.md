@@ -3,7 +3,8 @@
 Hush est une app de barre de menus macOS (14+) qui applique le traitement de la voix d'Apple
 (`kAudioUnitSubType_VoiceProcessingIO`, le même que FaceTime) au micro, puis expose le résultat via un micro
 virtuel « Hush Microphone » (driver HAL maison) utilisable dans Discord, Zoom, Meet, OBS…
-Langue du projet : commentaires et messages de commit en français, interface en anglais (source) + français.
+Langue du projet : commentaires du code en anglais, courts et sans fioritures. Messages de commit
+en français. Interface en anglais (source) + français.
 
 Les chiffres détaillés de toutes les expériences sont dans `Prototypes/MEASUREMENTS.md`.
 
@@ -66,7 +67,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
 - **Niveau de la voix** : le gain automatique du VPIO (`kAUVoiceIOProperty_VoiceProcessingEnableAGC`) est
   **désactivé**, car il remonte le résidu de suppression quand la musique est forte (souffle « ventilateur »,
   bouffées jusqu'à -25 dB). Il est remplacé par `hush_agc` : gain piloté par la voix (détection = 12 dB au-dessus
-  du bruit de fond suivi ET au-dessus de -54 dBFS), cible -23 dB par bloc de parole (mesuré sur une vraie voix : environ -23 dB par seconde, crêtes vers -4 dBFS), montée
+  du bruit de fond suivi ET au-dessus de -54 dBFS), cible -23 dB par bloc de parole (sur une vraie voix : -20 à -25 dB par seconde, crête -8,3 dBFS), montée
   10 dB/s et descente 40 dB/s **uniquement pendant la parole**, gain figé sinon, limiteur doux, gain mémorisé
   entre les appels. Réglage « Voice level » : Automatique (défaut) ou gain fixe. Tests synthétiques dans
   `HushTests` (voix faible/forte, résidu jamais remonté, bruit seul, cri, changement de locuteur).
@@ -135,6 +136,6 @@ sudo scripts/install-driver.sh                          # installer le driver à
 
 ## À faire
 
-- Vérifier que l'autorisation micro survit à une mise à jour avec le certificat auto-signé (non encore testé).
+- Mise à jour Sparkle de 0.2.0 vers 0.2.1 : l'offre s'affiche (appcast et signature EdDSA acceptés). Reste à
+  vérifier l'installation, et que l'autorisation micro survit avec le certificat auto-signé.
 - Tester Developer ID + notarisation (pas de compte pour l'instant).
-- Première release (`git tag v0.1.0 && git push --tags`) puis vérifier une mise à jour Sparkle de bout en bout.

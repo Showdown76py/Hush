@@ -1,13 +1,12 @@
 import SwiftUI
 
-/// Vumètre horizontal animé (60 images/s), lissé avec maintien de crête.
 struct LevelMeter: View {
     let title: LocalizedStringKey
     let systemImage: String
     let tint: Color
-    /// Niveau RMS linéaire, lu à chaque image.
+    /// linear RMS level, read every frame
     let level: () -> Float
-    /// Décalage d'affichage en dB (compensation de gain).
+    /// added to measured level to make up for upstream attenuation
     var offsetDB: Float = 0
 
     @State private var smoother = Smoother()
@@ -48,7 +47,6 @@ struct LevelMeter: View {
 
     private func dB(_ linear: Float) -> Float { 20 * log10(max(linear, 1e-6)) }
 
-    /// État d'affichage : attaque rapide, retombée douce, crête maintenue 1 s.
     final class Smoother {
         private var shown: Float = -60
         private var peak: Float = -60
@@ -61,7 +59,7 @@ struct LevelMeter: View {
             let dt = Float(min(now.timeIntervalSince(last), 0.1))
             last = now
             let target = max(-60, min(0, db))
-            shown = target > shown ? target : max(target, shown - 30 * dt)   // retombe de 30 dB/s
+            shown = target > shown ? target : max(target, shown - 30 * dt)
             if shown >= peak || now.timeIntervalSince(peakTime) > 1 { peak = shown; peakTime = now }
             return Value(db: shown, fraction: (shown + 60) / 60, peakFraction: (peak + 60) / 60)
         }

@@ -1,20 +1,19 @@
 #!/bin/bash
-# Construit, signe, emballe (DMG) et, si possible, notarise Hush.
+# builds hush, signs it, wraps it in a dmg and notarizes if possible
 #
-# Usage : ./scripts/release.sh [version]
+# usage: ./scripts/release.sh [version]
 #
-# Trois modes de signature :
-#   a) Developer ID — définir CODESIGN_IDENTITY="Developer ID Application: Nom (TEAMID)".
-#      Hardened runtime + horodatage. Notarisation si NOTARY_PROFILE est défini
-#      (profil créé avec : xcrun notarytool store-credentials <profil> --apple-id … --team-id …).
-#   b) Auto-signé (automatique si le certificat « Hush Self-Signed Code Signing » est dans le trousseau,
-#      voir scripts/create-signing-cert.sh) — identité stable : l'autorisation micro est conservée entre
-#      les versions. Gatekeeper demande toujours « Ouvrir quand même » à la première installation.
-#   c) Ad-hoc (sinon) — l'app fonctionne, mais l'autorisation micro est redemandée à chaque version.
+# signing in priority order
+#   a) developer id if CODESIGN_IDENTITY="Developer ID Application: Name (TEAMID)" is set, w/
+#      hardened runtime + timestamp. notarize if NOTARY_PROFILE is set
+#      (xcrun notarytool store-credentials <profile> --apple-id ... --team-id ...)
+#   b) "Hush Self-Signed Code Signing" cert if it's in the keychain
+#      (scripts/create-signing-cert.sh). mic permission survives across versions but
+#      gatekeeper still asks "Open Anyway" on first install
+#   c) ad-hoc otherwise. mic permission re-prompted every version
 #
-# Mises à jour Sparkle : avec la clé privée EdDSA (trousseau, ou fichier SPARKLE_KEY_FILE), le DMG est
-# signé et build/release/appcast.xml est généré.
-# DOWNLOAD_URL_PREFIX : URL où le DMG sera publié (par défaut, les releases GitHub).
+# if sparkle's EdDSA private key is available (keychain or SPARKLE_KEY_FILE) the dmg gets signed and
+# build/release/appcast.xml generated. DOWNLOAD_URL_PREFIX = url where the dmg is published
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -43,8 +42,7 @@ command -v xcodegen >/dev/null && xcodegen generate --quiet
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-# Clé privée Sparkle pour signer l'appcast : fichier (SPARKLE_KEY_FILE, en CI) ou trousseau (machine du
-# mainteneur). La clé publique correspondante est dans project.yml (SPARKLE_PUBLIC_KEY).
+# SPARKLE_KEY_FILE in ci, keychain on maintainer's machine
 SPARKLE_SIGN=()
 if [ -n "${SPARKLE_KEY_FILE:-}" ]; then
     SPARKLE_SIGN=(--ed-key-file "$SPARKLE_KEY_FILE")
@@ -67,8 +65,8 @@ xcodebuild -project Hush.xcodeproj -scheme Hush -configuration Release \
     CODE_SIGN_IDENTITY="-" \
     build | (command -v xcbeautify >/dev/null && xcbeautify || grep -E "error: |warning: |\*\* BUILD")
 APP_SRC="$DERIVED/Build/Products/Release/Hush.app"
-# Signature et assemblage hors du dépôt : dans un dossier synchronisé (iCloud Drive / File Provider),
-# macOS ajoute aux bundles des attributs étendus que codesign refuse.
+# sign outside the repo. in a synced folder (file provider, icloud drive) macOS adds
+# xattrs to bundles that codesign rejects
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 APP="$WORK/Hush.app"
@@ -84,10 +82,10 @@ if [ "$MODE" = "developer-id" ]; then
     SIGN+=(--options runtime --timestamp)
     DRIVER_SIGN+=(--options runtime --timestamp)
 elif [ "$MODE" = "self-signed" ]; then
-    # Le driver n'a besoin d'aucune autorisation : il reste en ad-hoc, mode vérifié avec coreaudiod.
+    # driver has no permission to keep and coreaudiod accepts ad-hoc
     DRIVER_SIGN=(codesign --force --sign -)
 fi
-# De l'intérieur vers l'extérieur (pas de --deep).
+# inside out (no --deep)
 SPK="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
 "${SIGN[@]}" "$SPK/XPCServices/Installer.xpc"
 "${SIGN[@]}" --preserve-metadata=entitlements "$SPK/XPCServices/Downloader.xpc"

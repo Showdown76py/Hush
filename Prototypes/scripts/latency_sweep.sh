@@ -1,6 +1,6 @@
 #!/bin/bash
-# Mesure la latence du transport (VP en bypass) pour plusieurs couples (ring target, buffer BlackHole).
-# Usage : latency_sweep.sh <music> <outdir> "target:buffer" ...
+# transport latency (vp bypassed) for several (ring target, blackhole buffer) pairs
+# usage: latency_sweep.sh <music> <outdir> "target:buffer" ...
 set -u
 MUSIC="$1"; OUT="$2"; shift 2
 B="$(dirname "$0")/../.build/debug"

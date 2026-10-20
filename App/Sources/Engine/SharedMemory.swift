@@ -4,8 +4,8 @@ import HushRT
 import Foundation
 import os
 
-/// Mémoire partagée avec le driver (voir Shared/hush_shm.h). Elle survit aux redémarrages de
-/// coreaudiod : le driver rouvre le même objet, donc notre mapping reste valide.
+/// shm w/ the driver (see Shared/hush_shm.h). survives coreaudiod restarts
+/// since the driver reopens the same object so our mapping stays valid
 final class SharedMemory {
     let pointer: UnsafeMutableRawPointer
 
@@ -16,7 +16,7 @@ final class SharedMemory {
             throw HushError.sharedMemoryUnavailable
         }
         pointer = p
-        // Marge au-delà d'un buffer client, et tolérance avant de jeter l'excédent (voir le driver).
+        // margin past one client buffer + slack before dropping the excess (see driver)
         hush_app_set_latency(p, 256, 1024)
     }
 
@@ -32,7 +32,7 @@ final class SharedMemory {
         var driverAlive: Bool
     }
 
-    /// `driverAlive` : le driver a lu le ring récemment (un client est actif).
+    /// `driverAlive`: driver read the ring recently (a client is active)
     var stats: Stats {
         let s = hush_app_reader_stats(pointer)
         var tb = mach_timebase_info_data_t()

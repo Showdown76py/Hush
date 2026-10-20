@@ -1,5 +1,5 @@
-// Ring buffer audio SPSC (un producteur, un consommateur), lock-free, sans allocation.
-// La structure est "plate" : elle peut vivre dans une mémoire partagée entre processus.
+// SPSC audio ring buffer (one producer one consumer), lock-free, no alloc
+// struct is flat so it can live in shm across processes
 #ifndef RING_H
 #define RING_H
 
@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 typedef struct {
-    _Atomic uint64_t writePos;   // en frames, croissant, écrit par le producteur
-    _Atomic uint64_t readPos;    // en frames, croissant, écrit par le consommateur
-    uint32_t capacity;           // en frames, puissance de deux
+    _Atomic uint64_t writePos;   // frames, monotonic, written by producer
+    _Atomic uint64_t readPos;    // frames, monotonic, written by consumer
+    uint32_t capacity;           // frames, power of two
     uint32_t channels;
-    float data[];                // capacity * channels échantillons entrelacés
+    float data[];                // capacity * channels interleaved samples
 } ring_t;
 
 static inline size_t ring_bytes(uint32_t capacity, uint32_t channels) {
@@ -31,8 +31,8 @@ static inline uint64_t ring_fill(ring_t *r) {
            atomic_load_explicit(&r->readPos, memory_order_acquire);
 }
 
-// Écrit des frames entrelacées. Si le consommateur est en retard, les plus anciennes sont écrasées
-// (le consommateur le détecte et se recale).
+// writes interleaved frames. if consumer lags the oldest get overwritten
+// (consumer notices and resyncs)
 static inline void ring_write(ring_t *r, const float *src, uint32_t frames) {
     uint64_t w = atomic_load_explicit(&r->writePos, memory_order_relaxed);
     uint32_t mask = r->capacity - 1, ch = r->channels;
@@ -43,14 +43,14 @@ static inline void ring_write(ring_t *r, const float *src, uint32_t frames) {
     atomic_store_explicit(&r->writePos, w + frames, memory_order_release);
 }
 
-// Lit `frames` frames entrelacées. Maintient une latence cible : si le remplissage dépasse
-// maxFill, saute en avant ; s'il manque des données, complète avec du silence.
-// Retourne le nombre de frames réellement lues (le reste est du silence).
+// reads `frames` interleaved frames keeping a target latency. fill > maxFill -> jump ahead
+// missing data -> pad w/ silence
+// returns frames actually read (rest is silence)
 static inline uint32_t ring_read(ring_t *r, float *dst, uint32_t frames, uint32_t targetFill, uint32_t maxFill) {
     uint64_t w = atomic_load_explicit(&r->writePos, memory_order_acquire);
     uint64_t rd = atomic_load_explicit(&r->readPos, memory_order_relaxed);
     uint32_t mask = r->capacity - 1, ch = r->channels;
-    if (w - rd > maxFill || w < rd) rd = w - targetFill;   // trop en retard (ou écrasé) : on se recale
+    if (w - rd > maxFill || w < rd) rd = w - targetFill;   // too far behind (or overwritten) -> resync
     uint64_t avail = w - rd;
     uint32_t n = avail < frames ? (uint32_t)avail : frames;
     for (uint32_t i = 0; i < n; i++) {
@@ -62,8 +62,8 @@ static inline uint32_t ring_read(ring_t *r, float *dst, uint32_t frames, uint32_
     return n;
 }
 
-// Lecture simple, sans recalage : lit min(disponible, frames), complète par du silence.
-// Retourne le nombre de frames réellement lues.
+// no resync. reads up to `frames` available frames and pads w/ silence
+// returns frames actually read
 static inline uint32_t ring_read_avail(ring_t *r, float *dst, uint32_t frames) {
     uint64_t w = atomic_load_explicit(&r->writePos, memory_order_acquire);
     uint64_t rd = atomic_load_explicit(&r->readPos, memory_order_relaxed);

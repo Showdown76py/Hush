@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Contenu du popover de la barre de menus.
 struct MenuContentView: View {
     @EnvironmentObject private var controller: EngineController
     @EnvironmentObject private var updates: UpdateController
@@ -9,31 +8,31 @@ struct MenuContentView: View {
 
     var body: some View {
         HushGlassContainer(spacing: 4) {
-        VStack(alignment: .leading, spacing: 14) {
-            header
-            if controller.driverState == .updateAvailable {
-                DriverUpdateBanner()
-            }
-            PowerToggle(isOn: Binding(
-                get: { controller.mode != .off },
-                set: { controller.mode = $0 ? .automatic : .off }))
-            if controller.mode != .off {
-                Picker("", selection: $controller.mode) {
-                    Text("Automatic").tag(HushMode.automatic)
-                    Text("Always on").tag(HushMode.always)
+            VStack(alignment: .leading, spacing: 14) {
+                header
+                if controller.driverState == .updateAvailable {
+                    DriverUpdateBanner()
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                PowerToggle(isOn: Binding(
+                    get: { controller.mode != .off },
+                    set: { controller.mode = $0 ? .automatic : .off }))
+                if controller.mode != .off {
+                    Picker("", selection: $controller.mode) {
+                        Text("Automatic").tag(HushMode.automatic)
+                        Text("Always on").tag(HushMode.always)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+                if case .problem(let error) = controller.status {
+                    ProblemBanner(error: error)
+                }
+                meters
+                    .padding(14)
+                    .hushGlass(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                footer
             }
-            if case .problem(let error) = controller.status {
-                ProblemBanner(error: error)
-            }
-            meters
-                .padding(14)
-                .hushGlass(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            footer
-        }
         }
         .padding(16)
         .frame(width: 320)
@@ -94,7 +93,6 @@ struct MenuContentView: View {
     }
 }
 
-/// Gros interrupteur principal.
 struct PowerToggle: View {
     @Binding var isOn: Bool
 
@@ -189,8 +187,6 @@ struct ProblemBanner: View {
     }
 }
 
-
-/// Bannière proposée quand l'app embarque un micro virtuel plus récent que celui installé.
 struct DriverUpdateBanner: View {
     @EnvironmentObject private var controller: EngineController
     @State private var working = false

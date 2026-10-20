@@ -1,5 +1,5 @@
-# Cask Homebrew pour Hush. À publier dans un tap (ex. Showdown76py/homebrew-tap) après chaque release :
-# remplacer version et sha256 (affiché à la fin de ./scripts/release.sh).
+# homebrew cask for hush. publish to a tap (eg Showdown76py/homebrew-tap) after each release
+# bump version and sha256 (printed at the end of ./scripts/release.sh)
 #   brew install --cask showdown76py/tap/hush
 cask "hush" do
   version "0.1.0"
@@ -15,7 +15,7 @@ cask "hush" do
 
   app "Hush.app"
 
-  # Le micro virtuel est installé par l'app au premier lancement (une demande de mot de passe).
+  # virtual mic gets installed by the app on first launch (one password prompt)
   uninstall_preflight do
     system_command "/bin/rm", args: ["-rf", "/Library/Audio/Plug-Ins/HAL/Hush.driver"], sudo: true
     system_command "/usr/bin/killall", args: ["coreaudiod"], sudo: true, must_succeed: false

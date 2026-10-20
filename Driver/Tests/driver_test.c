@@ -1,5 +1,5 @@
-// Banc de test du driver : on compile HushDriver.c directement, avec un nom de mémoire partagée
-// propre au test, et on simule l'hôte coreaudiod et l'app.
+// driver test bench. compiles HushDriver.c directly w/ a test-only shm name
+// and fakes the coreaudiod host and the app
 #define HUSH_SHM_NAME "/hush.test.v1"
 #include "../HushDriver.c"
 
@@ -12,7 +12,7 @@ static int failures = 0;
 #define CHECK(cond, ...) do { if (!(cond)) { failures++; fprintf(stderr, "ÉCHEC %s:%d: ", __FILE__, __LINE__); \
     fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } } while (0)
 
-static AudioServerPlugInHostInterface gFakeHost;   // aucune fonction de l'hôte n'est appelée
+static AudioServerPlugInHostInterface gFakeHost;   // no host function ever gets called
 
 static UInt32 GetU32(AudioObjectID obj, AudioObjectPropertySelector sel, AudioObjectPropertyScope scope) {
     AudioObjectPropertyAddress a = {sel, scope, kAudioObjectPropertyElementMain};
@@ -41,7 +41,7 @@ static void TestProperties(void) {
     CHECK(Hush_GetPropertyData(gDriverRef, kObjectID_PlugIn, 0, &a, sizeof(uid), &uid, sizeof(found), &size, &found) == noErr &&
           found == kObjectID_Device, "TranslateUID");
 
-    // Pas de flux de sortie, un flux d'entrée.
+    // no output stream, one input stream
     a = (AudioObjectPropertyAddress){kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput, kAudioObjectPropertyElementMain};
     CHECK(Hush_GetPropertyDataSize(gDriverRef, kObjectID_Device, 0, &a, 0, NULL, &size) == noErr && size == 0, "pas de flux de sortie");
     a.mScope = kAudioObjectPropertyScopeInput;
@@ -62,7 +62,7 @@ static void TestProperties(void) {
     f.mSampleRate = 44100;
     CHECK(Hush_SetPropertyData(gDriverRef, kObjectID_Stream, 0, &a, 0, NULL, sizeof(f), &f) == kAudioDeviceUnsupportedFormatError, "refus 44,1 kHz");
 
-    // Propriété inconnue : HasProperty faux, et taille trop petite refusée.
+    // unknown property -> HasProperty false, too small size rejected
     a = (AudioObjectPropertyAddress){'zzzz', kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain};
     CHECK(!Hush_HasProperty(gDriverRef, kObjectID_Device, 0, &a), "propriété inconnue");
     a.mSelector = kAudioDevicePropertyNominalSampleRate;
@@ -95,19 +95,19 @@ static void TestIO(void) {
     CHECK(atomic_load(&s->clientsRunning) == 1, "clientsRunning");
 
     float buf[512];
-    // 1. App absente : silence.
+    // 1. no app -> silence
     for (int i = 0; i < 512; i++) buf[i] = 1;
     Read(buf, 512);
     int silent = 1;
     for (int i = 0; i < 512; i++) silent &= buf[i] == 0;
     CHECK(silent, "silence sans app");
 
-    // 2. L'app écrit une rampe par blocs de 480, le driver lit par blocs de 512 : continuité exacte.
+    // 2. app writes a ramp in 480 blocks, driver reads 512 blocks -> exact continuity
     atomic_store(&s->targetFill, 1024);
     atomic_store(&s->maxFill, 4096);
     float block[480];
     uint64_t produced = 0;
-    for (int k = 0; k < 4; k++) {     // amorçage : 1920 frames
+    for (int k = 0; k < 4; k++) {     // priming 1920 frames
         for (int i = 0; i < 480; i++) block[i] = (float)(produced + i);
         ring_write(&s->ring, block, 480);
         produced += 480;
@@ -117,7 +117,7 @@ static void TestIO(void) {
     int discontinuities = 0;
     uint64_t consumed = 0;
     for (int cycle = 0; cycle < 2000; cycle++) {
-        while (produced < consumed + 512 + 1024 + 512) {   // producteur au même débit moyen, en avance
+        while (produced < consumed + 512 + 1024 + 512) {   // producer at same avg rate, ahead
             for (int i = 0; i < 480; i++) block[i] = (float)(produced + i);
             ring_write(&s->ring, block, 480);
             produced += 480;
@@ -132,15 +132,15 @@ static void TestIO(void) {
     }
     CHECK(discontinuities == 0, "flux continu (%d discontinuités)", discontinuities);
     CHECK(atomic_load(&s->underruns) == 0, "aucun underrun (%llu)", (unsigned long long)atomic_load(&s->underruns));
-    // Remplissage stable (ni dérive ni croissance) : entre cible - bloc producteur et cible + bloc lecteur + marge.
+    // fill stays stable (no drift no growth) between target - producer block and target + reader block + margin
     UInt32 fill = atomic_load(&s->lastFill);
     CHECK(fill >= 512 + 1024 - 480 && fill <= 512 + 1024 + 480, "latence tenue autour de la cible (fill=%u)", fill);
 
-    // 3. Producteur en panne de données : silence complété + underrun compté.
+    // 3. producer starved -> padded w/ silence + underrun counted
     Read(buf, 512); Read(buf, 512); Read(buf, 512); Read(buf, 512);
     CHECK(atomic_load(&s->underruns) > 0, "underrun détecté");
 
-    // 4. Battement de cœur périmé : silence.
+    // 4. stale heartbeat -> silence
     atomic_store(&s->writerHeartbeat, mach_absolute_time() - 10 * gWriterTimeoutTicks);
     for (int i = 0; i < 480; i++) block[i] = 0.5f;
     ring_write(&s->ring, block, 480);
@@ -149,7 +149,7 @@ static void TestIO(void) {
     for (int i = 0; i < 512; i++) silent &= buf[i] == 0;
     CHECK(silent, "silence quand l'app est figée");
 
-    // 5. Retard énorme du lecteur : recalage sur la cible au lieu de lire du vieux son.
+    // 5. reader way behind -> resync to target instead of reading old audio
     atomic_store(&s->writerHeartbeat, mach_absolute_time());
     for (int k = 0; k < 10; k++) { for (int i = 0; i < 480; i++) block[i] = (float)k; ring_write(&s->ring, block, 480); }
     atomic_store(&s->writerHeartbeat, mach_absolute_time());
@@ -160,8 +160,8 @@ static void TestIO(void) {
     CHECK(atomic_load(&s->clientsRunning) == 0, "clientsRunning après StopIO");
 }
 
-// Cas réel observé avec Discord : client à 1024 frames, producteur (VPIO) par blocs irréguliers de ~128.
-// Simulation temporelle à 48 kHz avec gigue : aucun underrun en régime établi.
+// real case seen w/ Discord: 1024 frame client, producer (VPIO) in irregular ~128 blocks
+// 48 kHz timed sim w/ jitter -> no underrun in steady state
 static void TestBigClientBuffer(void) {
     hush_shm_t *s = MapAsApp();
     if (!s) return;
@@ -170,8 +170,8 @@ static void TestBigClientBuffer(void) {
     atomic_store(&s->maxFill, 1024);
     uint64_t before = atomic_load(&s->underruns);
     float out[1024], chunk[160];
-    // Le producteur suit une horloge idéale ; chaque callback arrive avec 0 à 1,5 ms de retard
-    // (gigue non cumulative, comme un callback cadencé par une horloge matérielle).
+    // producer follows an ideal clock, each callback lands 0 to 1.5 ms late
+    // (non cumulative jitter like a hw clocked callback)
     double ideal = 0, nextWrite = 0, nextRead = 0.005;
     unsigned seed = 1;
     int reads = 0;
@@ -202,7 +202,7 @@ static void TestClock(void) {
     Hush_StartIO(gDriverRef, kObjectID_Device, 2);
     Float64 st; UInt64 ht, seed;
     CHECK(Hush_GetZeroTimeStamp(gDriverRef, kObjectID_Device, 2, &st, &ht, &seed) == noErr && st == 0, "premier zéro");
-    usleep(400000);   // > 1 période (16384 frames = 341 ms)
+    usleep(400000);   // > 1 period (16384 frames = 341 ms)
     Float64 st2; UInt64 ht2;
     Hush_GetZeroTimeStamp(gDriverRef, kObjectID_Device, 2, &st2, &ht2, &seed);
     CHECK(st2 == kZeroTimeStampPeriod && ht2 > ht, "horloge avance d'une période");

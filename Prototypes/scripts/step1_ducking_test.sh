@@ -1,7 +1,7 @@
 #!/bin/bash
-# Étape 1 : musique (afplay) + micro brut (ffmpeg, 20 s) + VP démarré à t=4 s pendant 10 s.
-# Si le ducking était actif, le niveau de musique dans le micro brut chuterait pendant [4,14] s.
-# Usage : step1_ducking_test.sh <music file> <outdir> [--duck]
+# step 1: music (afplay) + raw mic (ffmpeg 20 s) + vp started at t=4 s for 10 s
+# if ducking were on the music level in the raw mic would drop during [4,14] s
+# usage: step1_ducking_test.sh <music file> <outdir> [--duck]
 set -euo pipefail
 MUSIC="$1"; OUT="$2"; shift 2
 BIN="$(dirname "$0")/../.build/debug/vpcapture"

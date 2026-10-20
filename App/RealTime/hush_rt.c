@@ -19,16 +19,16 @@ struct hush_rt {
     _Atomic(hush_shm_t *) passShm;
     _Atomic int passBusy;
     _Atomic int driftEnabled;
-    _Atomic float gain;          // gain fixe appliqué à la voix traitée (linéaire), si pas de gain automatique
-    _Atomic int autoGain;        // gain automatique piloté par la voix (hush_agc)
-    _Atomic int agcResetPending; // demande de réinitialisation, appliquée au début du callback suivant
+    _Atomic float gain;          // fixed linear gain, used if autoGain == 0
+    _Atomic int autoGain;
+    _Atomic int agcResetPending; // applied at start of next callback by the rt thread
     _Atomic float agcResetGainDB;
-    _Atomic float agcGainDB;     // gain automatique courant (pour le mémoriser)
-    hush_agc_t agc;              // thread temps réel du VP uniquement
+    _Atomic float agcGainDB;     // copy of agc.gainDB, app reads it to persist
+    hush_agc_t agc;              // vp rt thread only
 
-    float *vpScratch;    // SCRATCH_FRAMES + 1 (place pour un échantillon dupliqué)
+    float *vpScratch;
     float *rawScratch;
-    float *driftScratch; // SCRATCH_FRAMES + 1 (bloc rééchantillonné)
+    float *driftScratch; // SCRATCH_FRAMES + 1 since resampled block can be one sample longer
 
     _Atomic float levelClean;
     _Atomic float levelRaw;
@@ -37,12 +37,10 @@ struct hush_rt {
     _Atomic int32_t lastError;
     _Atomic int64_t driftSlips;
 
-    // Correction de dérive (thread temps réel du VP uniquement)
-    hush_drift_t drift;
+    hush_drift_t drift;          // vp rt thread only
     _Atomic int driftResetPending;
     double hostTicksPerSecond;
 
-    // Enregistrement
     float *record;
     _Atomic uint32_t recordWanted;
     _Atomic uint32_t recordCount;
@@ -52,7 +50,7 @@ struct hush_rt {
 hush_rt_t *hush_rt_create(void) {
     hush_rt_t *rt = calloc(1, sizeof(*rt));
     if (!rt) return NULL;
-    rt->vpScratch = calloc(SCRATCH_FRAMES + 1, sizeof(float));
+    rt->vpScratch = calloc(SCRATCH_FRAMES, sizeof(float));
     rt->rawScratch = calloc(SCRATCH_FRAMES, sizeof(float));
     rt->driftScratch = calloc(SCRATCH_FRAMES + 1, sizeof(float));
     rt->record = calloc(HUSH_RT_RECORD_MAX_FRAMES, sizeof(float));
@@ -84,7 +82,7 @@ void hush_rt_set_shm(hush_rt_t *rt, void *shm) { atomic_store(&rt->shm, (hush_sh
 void hush_rt_set_passthrough(hush_rt_t *rt, void *shm) {
     atomic_store(&rt->passShm, (hush_shm_t *)shm);
     if (shm == NULL) {
-        // Attend qu'aucun callback ne soit en train d'écrire avec l'ancien pointeur.
+        // wait until no callback is still writing w/ the old pointer
         while (atomic_load(&rt->passBusy) != 0) usleep(100);
     }
 }
@@ -105,7 +103,7 @@ void hush_rt_reset_auto_gain(hush_rt_t *rt, float initialGainDB) {
 
 float hush_rt_auto_gain_db(const hush_rt_t *rt) { return atomic_load(&((hush_rt_t *)rt)->agcGainDB); }
 
-// Gain fixe puis limiteur doux : linéaire jusqu'à 0,9, puis compression progressive vers 1,0.
+// fixed gain then soft limiter. linear up to 0.9 then smooth compression toward 1.0
 void hush_rt_apply_gain(float *x, uint32_t n, float gain) {
     const float knee = 0.9f, range = 0.1f;
     for (uint32_t i = 0; i < n; i++) {
@@ -134,8 +132,6 @@ static void record_push(hush_rt_t *rt, int source, const float *x, UInt32 n) {
     atomic_store_explicit(&rt->recordCount, count + k, memory_order_release);
 }
 
-// Rééchantillonne linéairement un bloc de n échantillons en m (m = n ± 1), en conservant exactement
-// le premier et le dernier échantillon : aucune discontinuité aux bords du bloc.
 void hush_rt_resample_linear(const float *src, uint32_t n, float *dst, uint32_t m) {
     if (n == 0 || m == 0) return;
     if (n == 1 || m == 1) { for (uint32_t i = 0; i < m; i++) dst[i] = src[0]; return; }
@@ -153,8 +149,8 @@ void hush_drift_reset(hush_drift_t *d) {
     memset(d, 0, sizeof(*d));
 }
 
-// La pente (secondes par frame) est estimée par régression sur tous les horodatages depuis le début,
-// ce qui moyenne leur gigue : quelques ppm de précision après 10 s, bien mieux ensuite.
+// slope (sec per frame) is a regression over all timestamps since start which averages out jitter
+// a few ppm accurate after 10 s, much better later
 int hush_drift_update(hush_drift_t *d, uint64_t hostTime, uint32_t frames, double hostTicksPerSecond) {
     if (d->firstHost == 0 || hostTime < d->firstHost) {
         hush_drift_reset(d);
@@ -168,13 +164,13 @@ int hush_drift_update(hush_drift_t *d, uint64_t hostTime, uint32_t frames, doubl
     d->meanY += (y - d->meanY) / d->n;
     d->cxy += dx * (y - d->meanY);
     d->cxx += dx * (x - d->meanX);
-    if (y < 10.0 || d->cxx <= 0) return 0;   // estimation encore imprécise
-    double rate = d->cxx / d->cxy;            // frames par seconde
+    if (y < 10.0 || d->cxx <= 0) return 0;   // estimate still too rough
+    double rate = d->cxx / d->cxy;            // frames per sec
     double ppm = (rate / 48000.0 - 1.0) * 1e6;
-    if (ppm > 1000.0) ppm = 1000.0;           // horodatages aberrants : on borne
+    if (ppm > 1000.0) ppm = 1000.0;           // bogus timestamps -> clamp
     if (ppm < -1000.0) ppm = -1000.0;
     d->ppm = ppm;
-    if (fabs(ppm) < 1.0) return 0;            // horloges verrouillées : rien à corriger
+    if (fabs(ppm) < 1.0) return 0;            // clocks locked, nothing to fix
     d->accumulator += (double)frames * ppm * 1e-6;
     if (d->accumulator >= 1.0) { d->accumulator -= 1.0; return -1; }
     if (d->accumulator <= -1.0) { d->accumulator += 1.0; return 1; }
@@ -218,8 +214,8 @@ OSStatus hush_rt_vp_input(void *refCon, AudioUnitRenderActionFlags *flags, const
         if (atomic_load_explicit(&rt->driftEnabled, memory_order_relaxed)) {
             int d = hush_drift_update(&rt->drift, ts->mHostTime, frames, rt->hostTicksPerSecond);
             if (d != 0 && n > 2) {
-                // Bloc rééchantillonné en n ± 1 échantillons (variation de hauteur ≈ 1/n, inaudible),
-                // au lieu de retirer ou dupliquer un échantillon sec, qui ferait un clic.
+                // resample block to n ± 1 (~1/n pitch change, inaudible) instead of
+                // dropping or duplicating a raw sample which clicks
                 uint32_t m = d < 0 ? n - 1 : n + 1;
                 hush_rt_resample_linear(rt->vpScratch, n, rt->driftScratch, m);
                 out = rt->driftScratch;
@@ -255,7 +251,7 @@ OSStatus hush_rt_raw_input(void *refCon, AudioUnitRenderActionFlags *flags, cons
     if (err != noErr) return err;
     atomic_store_explicit(&rt->levelRaw, rms(rt->rawScratch, frames), memory_order_relaxed);
     record_push(rt, 1, rt->rawScratch, frames);
-    atomic_fetch_add(&rt->passBusy, 1);              // avant de lire le pointeur (voir hush_rt_set_passthrough)
+    atomic_fetch_add(&rt->passBusy, 1);              // before reading the pointer (see hush_rt_set_passthrough)
     hush_shm_t *pass = atomic_load(&rt->passShm);
     if (pass) hush_app_write(pass, rt->rawScratch, frames, mach_absolute_time());
     atomic_fetch_sub(&rt->passBusy, 1);

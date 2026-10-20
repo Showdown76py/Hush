@@ -1,7 +1,6 @@
 import AVFoundation
 import SwiftUI
 
-/// Premier lancement : 5 écrans courts.
 struct OnboardingView: View {
     @EnvironmentObject private var controller: EngineController
     @Environment(\.dismissWindow) private var dismissWindow
@@ -53,8 +52,6 @@ struct OnboardingView: View {
         dismissWindow(id: WindowID.onboarding)
     }
 }
-
-// MARK: - Étapes
 
 private struct StepHeader: View {
     let symbol: String

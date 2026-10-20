@@ -28,8 +28,8 @@ Conclusions :
 
 Le tap système coupe les apps et rejoue leur son via la sortie du VPIO (`relay`) : 0 dB de ducking,
 mais le VPIO traite sa sortie comme de la voix. Plus rien au-dessus d'environ 12 kHz (-37 → -102 dB
-dans la bande 12-16 kHz), EQ modifié, et une annulation moins bonne (-14 dB). C'est inacceptable
-pour de la musique.
+dans la bande 12-16 kHz), EQ modifié, et une annulation moins bonne (-14 dB). Pour de la musique, c'est
+inécoutable.
 
 ## Musique retirée du micro
 
@@ -37,7 +37,7 @@ Micro → VPIO → ring buffer → BlackHole, relu avec ffmpeg, comparé au micr
 
 - **Musique seule : -43,5 dB** (médiane par seconde après environ 3 s de convergence, entre -32 et -48 dB).
 - Fichiers : `results/musique_seule_brut.wav`, `results/musique_seule_nettoyee.wav`.
-- Avec la voix : `results/voix_nettoyee.wav`. Le VP applique un AGC fort (voix vers -15 dB RMS, pics à -5 dBFS).
+- Avec la voix : `results/voix_nettoyee.wav`. Le gain automatique du VPIO, actif à l'époque, poussait fort (voix vers -15 dB RMS, pics à -5 dBFS).
 
 ## Latence
 
@@ -99,7 +99,7 @@ de la sortie système, blocs de 10 ms. Musique seule, atténuation médiane apr�
 | Convergence | ~3 s | ~5 s |
 | CPU | (dans coreaudiod / VPIO) | 6,9 % d'un cœur (0,69 ms par bloc de 10 ms) |
 | Permissions | micro | micro + enregistrement audio système (tap) |
-| Qualité de la voix en double-talk | très bonne (à l'écoute) | **à évaluer à l'oreille** |
+| Voix en double-talk | très bonne (à l'écoute) | coupée, « presque inaudible » (voir plus bas) |
 
 Le rejeu hors ligne (`aec3offline`) d'une prise enregistrée est identique au bit près au traitement en direct :
 une seule prise vocale suffit pour comparer tous les réglages.
@@ -124,8 +124,8 @@ peut être retiré qu'en supprimant aussi la voix. **Conclusion : le VP d'Apple 
 
 Remarquée à l'oreille, puis mesurée. Le signal envoyé aux haut-parleurs (tap) est plat. Le rapport
 acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP et remonte progressivement en 30 à 40 s
-(de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
-pas réglable par une API publique.
+(de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel », et
+aucune API publique n'y donne accès.
 
 À l'activation, c'est l'inverse : le son paraît faible puis remonte en quelques secondes, alors que le tap montre
 une baisse de 8 dB immédiate (creux à -9 dB pendant 1 s) puis parfaitement stable pendant 40 s. Là aussi, la
@@ -142,7 +142,7 @@ Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau
 | Gain automatique Hush piloté par la voix (`hush_agc`) | -39 dB (1 s, démarrage du VP) | -55 à -60 dB, stable |
 
 Le gain automatique d'Apple remonte le résidu de suppression quand personne ne parle. Celui de Hush ne bouge que
-pendant la parole : le résidu reste environ 35 dB sous le niveau visé pour la voix (-22 dB).
+pendant la parole : le résidu reste environ 35 dB sous le niveau visé pour la voix (-23 dB).
 
 ## Crépitements dans la voix
 

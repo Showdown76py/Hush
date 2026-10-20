@@ -6,8 +6,7 @@ import CoreAudio
 import Foundation
 import os
 
-/// Configure et pilote les audio units. Tout le traitement temps réel est en C (hush_rt.c).
-/// À utiliser depuis un seul thread (le thread principal, via EngineController).
+/// use from a single thread only (main, via EngineController)
 final class VoiceEngine {
     static let sampleRate = 48000.0
     private static let log = Logger(subsystem: "io.github.showdown76py.Hush", category: "engine")
@@ -16,7 +15,6 @@ final class VoiceEngine {
     private var vpUnit: AudioUnit?
     private var rawUnit: AudioUnit?
     private(set) var isRunning = false
-    private(set) var isMonitoringRaw = false
     private var shm: UnsafeMutableRawPointer?
 
     init() {
@@ -59,12 +57,11 @@ final class VoiceEngine {
         return unit!
     }
 
-    /// Démarre la capture avec voice processing. `shm` : mémoire partagée avec le driver (peut être nil).
     func start(_ config: Configuration, shm: UnsafeMutableRawPointer?) throws {
         stop()
-        try? setPassthrough(nil)   // un seul producteur dans le ring
+        try? setPassthrough(nil)   // single producer in the ring
         if let shm, hush_app_claim_writer(shm, Self.pid) == 0 { throw HushError.anotherInstanceRunning }
-        // Buffers IO courts pour ce processus : moins de latence (sans effet sur les autres apps).
+        // short IO buffers -> less latency
         AudioDevices.setBufferFrameSize(config.inputDevice, config.ioBufferFrames)
         if let output = AudioDevices.defaultDevice(input: false) {
             AudioDevices.setBufferFrameSize(output, config.ioBufferFrames)
@@ -77,14 +74,13 @@ final class VoiceEngine {
             var dev = config.inputDevice
             try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 1, &dev,
                                                 UInt32(MemoryLayout<AudioDeviceID>.size)), "CurrentDevice")
-            // Ducking des autres apps : minimum possible (-8 dB, plancher de macOS) sauf si l'utilisateur
-            // préfère le comportement d'Apple.
+            // .min = -8 dB (macOS floor). .default = -30 dB
             var duck = AUVoiceIOOtherAudioDuckingConfiguration(mEnableAdvancedDucking: false,
                                                                mDuckingLevel: config.keepAppleDucking ? .default : .min)
             try Self.check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_OtherAudioDuckingConfiguration, kAudioUnitScope_Global, 0,
                                                 &duck, UInt32(MemoryLayout<AUVoiceIOOtherAudioDuckingConfiguration>.size)), "Ducking")
-            // Pas de gain automatique : quand la musique est forte, il remonte le résidu de suppression
-            // (souffle « ventilateur »). Un gain fixe est appliqué à la place dans hush_rt.
+            // VPIO agc boosts the suppression residue when music is loud ("fan" hiss)
+            // hush_agc replaces it
             var agc: UInt32 = 0
             try Self.check(AudioUnitSetProperty(unit, kAUVoiceIOProperty_VoiceProcessingEnableAGC, kAudioUnitScope_Global, 0,
                                                 &agc, UInt32(MemoryLayout<UInt32>.size)), "AGC")
@@ -98,7 +94,7 @@ final class VoiceEngine {
             let cbSize = UInt32(MemoryLayout<AURenderCallbackStruct>.size)
             try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &input, cbSize), "callback micro")
             try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &output, cbSize), "callback sortie")
-            hush_rt_reset_drift(rt)   // nouvelle horloge : nouvelle estimation de dérive
+            hush_rt_reset_drift(rt)   // new clock -> new drift estimate
             hush_rt_set_vp_unit(rt, unit)
             self.shm = shm
             hush_rt_set_shm(rt, shm)
@@ -118,7 +114,7 @@ final class VoiceEngine {
         guard let unit = vpUnit else { return }
         hush_rt_set_shm(rt, nil)
         if let shm {
-            hush_app_stop(shm)   // le driver passe au silence tout de suite
+            hush_app_stop(shm)   // driver goes silent right away
             hush_app_release_writer(shm, Self.pid)
         }
         AudioOutputUnitStop(unit)
@@ -126,53 +122,46 @@ final class VoiceEngine {
         AudioComponentInstanceDispose(unit)
         vpUnit = nil
         isRunning = false
-        // Une unité brute ouverte pendant le voice processing reste dans le mode « altéré » de macOS
-        // (environ 10 dB plus bas) : elle sera rouverte à sa prochaine utilisation.
+        // a raw unit opened during vp stays in macOS's "altered" mode
+        // (~10 dB lower) so it gets reopened next time it's used
         rawUnitIsStale = rawUnit != nil
         Self.log.notice("voice processing arrêté")
     }
 
-    /// Niveau de la voix traitée : gain automatique piloté par la voix, ou gain fixe (dB).
     func setVoiceLevel(automatic: Bool, fixedDB: Float) {
         hush_rt_set_gain_db(rt, fixedDB)
         hush_rt_set_auto_gain(rt, automatic ? 1 : 0)
     }
 
-    /// Repart du gain automatique mémorisé (appelé à chaque démarrage du traitement).
     func resetAutomaticGain(to dB: Float) {
         hush_rt_reset_auto_gain(rt, dB)
     }
 
     var automaticGainDB: Float { hush_rt_auto_gain_db(rt) }
 
-    func setSharedMemory(_ shm: UnsafeMutableRawPointer?) {
-        self.shm = shm
-        if isRunning { hush_rt_set_shm(rt, shm) }
-    }
-
     private(set) var rawDevice: AudioDeviceID?
     private(set) var isPassingThrough = false
     private var rawUnitIsStale = false
+    private var shmForPassthrough: UnsafeMutableRawPointer?
 
     private static let pid = UInt32(getpid())
 
-    /// Micro brut envoyé tel quel au driver ("micro propre" désactivé). Exclusif avec `start`.
+    /// sends raw mic as is to the driver (Off mode). `nil` stops passthrough
     func setPassthrough(_ shm: UnsafeMutableRawPointer?) throws {
         precondition(shm == nil || !isRunning, "un seul producteur à la fois")
         if let shm, hush_app_claim_writer(shm, Self.pid) == 0 { throw HushError.anotherInstanceRunning }
         hush_rt_set_passthrough(rt, shm)
         if shm == nil, isPassingThrough, let s = shmForPassthrough {
-            hush_app_stop(s)   // driver → silence
+            hush_app_stop(s)   // driver -> silence
             hush_app_release_writer(s, Self.pid)
         }
         shmForPassthrough = shm
         isPassingThrough = shm != nil
         Self.log.notice("passage direct : \(shm != nil ? "actif" : "arrêté", privacy: .public)")
     }
-    private var shmForPassthrough: UnsafeMutableRawPointer?
 
-    /// Capture parallèle du micro sans traitement (vumètre "micro", enregistrement "sans Hush",
-    /// passage direct). Sans effet si elle tourne déjà sur ce périphérique.
+    /// used by the "mic" meter, the "without hush" recording and passthrough
+    /// no-op if already running on this device
     func startRawMonitor(device: AudioDeviceID) throws {
         if rawUnit != nil, rawDevice == device, !rawUnitIsStale { return }
         rawUnitIsStale = false
@@ -204,7 +193,6 @@ final class VoiceEngine {
         }
         rawUnit = unit
         rawDevice = device
-        isMonitoringRaw = true
     }
 
     func stopRawMonitor() {
@@ -214,10 +202,7 @@ final class VoiceEngine {
         AudioUnitUninitialize(unit)
         AudioComponentInstanceDispose(unit)
         rawUnit = nil
-        isMonitoringRaw = false
     }
-
-    // MARK: - État temps réel
 
     var cleanLevel: Float { hush_rt_level_clean(rt) }
     var rawLevel: Float { hush_rt_level_raw(rt) }

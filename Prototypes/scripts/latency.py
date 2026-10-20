@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Mesure la latence entre deux canaux d'un même enregistrement (alignés à l'échantillon) par
-corrélation croisée, sur des fenêtres glissantes. Usage : latency.py <stereo.wav> [ch_ref ch_test]"""
+"""latency between two channels of one recording (sample aligned) via
+cross correlation over sliding windows. usage: latency.py <stereo.wav> [ch_ref ch_test]"""
 import subprocess, sys
 import numpy as np
 
@@ -9,11 +9,11 @@ raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-f", "f32le", "-ac",
                      check=True, capture_output=True).stdout
 x = np.frombuffer(raw, dtype=np.float32).reshape(-1, 2)
 ref, test = x[:, 0].astype(np.float64), x[:, 1].astype(np.float64)
-SR, W, MAXLAG = 48000, 48000, 9600  # fenêtres de 1 s, latence max cherchée 200 ms
+SR, W, MAXLAG = 48000, 48000, 9600  # 1 s windows, max latency searched 200 ms
 lags = []
 for start in range(0, len(ref) - W - MAXLAG, W // 2):
     a = ref[start:start + W]
-    if np.sqrt(np.mean(a ** 2)) < 1e-5: continue      # fenêtre silencieuse
+    if np.sqrt(np.mean(a ** 2)) < 1e-5: continue      # silent window
     b = test[start:start + W + MAXLAG]
     n = 1 << int(np.ceil(np.log2(len(a) + len(b))))
     c = np.fft.irfft(np.conj(np.fft.rfft(a, n)) * np.fft.rfft(b, n), n)[:MAXLAG]

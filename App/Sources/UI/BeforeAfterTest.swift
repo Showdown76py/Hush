@@ -1,14 +1,13 @@
 import AVFoundation
 import SwiftUI
 
-/// Test avant/après de l'onboarding. Le voice processing modifie ce que les autres clients reçoivent
-/// du même micro : on ne peut donc pas enregistrer "brut" et "nettoyé" en même temps. On enregistre
-/// 5 s avec Hush (traitement déjà convergé), puis 5 s sans, pendant que l'utilisateur parle en musique.
+/// vp changes what other clients of the same mic get so we can't
+/// record raw and clean at once. record 5 s w/ hush then 5 s without
 @MainActor
 final class BeforeAfterTest: ObservableObject {
     enum Phase: Equatable {
         case idle
-        case warmingUp(remaining: Int)   // laisse le traitement converger sur la musique
+        case warmingUp(remaining: Int)   // let processing converge on the music
         case recordingWith
         case recordingWithout
         case done
@@ -49,7 +48,7 @@ final class BeforeAfterTest: ObservableObject {
         controller.suspendedForTest = true
         guard let source = AudioDevices.resolveSource(preferredUID: controller.sourceUID),
               (try? engine.startRawMonitor(device: source.id)) != nil else { phase = .failed; return }
-        try? await Task.sleep(nanoseconds: 300_000_000)   // laisse le micro se stabiliser
+        try? await Task.sleep(nanoseconds: 300_000_000)   // let the mic settle
         guard let without = await record(engine: engine, source: 1) else { phase = .failed; return }
         engine.stopRawMonitor()
 
@@ -72,7 +71,7 @@ final class BeforeAfterTest: ObservableObject {
         return Array(UnsafeBufferPointer(start: buf, count: Int(frames)))
     }
 
-    /// Normalise la crête à -1 dBFS pour comparer à volume égal, puis écrit un WAV temporaire.
+    /// peak normalized to -1 dBFS to compare both at equal volume
     private static func writeNormalized(_ samples: [Float], name: String) -> URL? {
         let peak = samples.map(abs).max() ?? 0
         let gain: Float = peak > 1e-4 ? 0.89 / peak : 1

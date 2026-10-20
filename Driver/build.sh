@@ -1,6 +1,6 @@
 #!/bin/bash
-# Construit Hush.driver (universal arm64 + x86_64) dans <outdir> (par défaut ../build).
-# Usage : build.sh [outdir] [version du driver]
+# builds Hush.driver (universal arm64 + x86_64) into <outdir> (default ../build)
+# usage: build.sh [outdir] [driver version]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OUT="${1:-$HERE/../build}"

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Retire Hush.driver et redémarre coreaudiod.
-# Usage : sudo scripts/uninstall-driver.sh
+# removes Hush.driver and restarts coreaudiod
+# usage: sudo scripts/uninstall-driver.sh
 set -euo pipefail
 DST="/Library/Audio/Plug-Ins/HAL/Hush.driver"
 if [ "$(id -u)" != 0 ]; then echo "Ce script doit être lancé avec sudo." >&2; exit 1; fi

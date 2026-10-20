@@ -82,16 +82,16 @@ Le menu affiche deux vumètres : ce que capte votre micro et ce que reçoivent l
 premier bouge, le second reste calme.
 
 Hush égalise aussi le niveau de votre voix. Il ne s'ajuste que pendant que vous parlez : voix forte ou douce, le
-niveau reste le même, et le bruit de fond n'est jamais amplifié. Les réglages permettent de choisir le micro
-source, un niveau de voix fixe, l'ouverture à la connexion, et une baisse plus forte des autres sons si vous
-préférez le réglage d'Apple.
+niveau reste le même, et le bruit de fond n'est jamais amplifié. Dans les réglages, vous choisissez le micro
+source, un niveau de voix fixe ou l'ouverture à la connexion, et vous pouvez revenir à la baisse des autres sons
+d'Apple, plus forte.
 
 ## FAQ
 
 <details>
 <summary>Ma voix baisse parfois quand la musique joue.</summary>
 
-C'est le suppresseur de double-talk du traitement d'Apple : quand vous parlez par-dessus un son fort, il baisse
+C'est le traitement d'Apple qui gère la double parole : quand vous parlez par-dessus un son fort, il baisse
 brièvement ce qu'il n'arrive pas à séparer, pour ne laisser passer aucun écho. On ne peut pas le régler. Baissez un
 peu les haut-parleurs ou utilisez des écouteurs.
 
@@ -101,7 +101,7 @@ peu les haut-parleurs ou utilisez des écouteurs.
 <summary>La musique baisse un peu quand Hush tourne.</summary>
 
 macOS baisse les autres sons dès que le traitement de la voix tourne. Hush demande la baisse la plus faible
-qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. Nous l'avons mesuré, impossible de descendre plus bas
+qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. On a tout essayé, rien ne descend plus bas
 (voir les [mesures](Prototypes/MEASUREMENTS.md)). Le mode Automatique limite ça à vos appels.
 
 </details>

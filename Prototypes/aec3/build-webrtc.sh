@@ -1,6 +1,6 @@
 #!/bin/bash
-# Compile webrtc-audio-processing 2.1 (BSD-3) en statique, avec l'abseil fourni par le projet.
-# Usage : build-webrtc.sh <dossier de travail>   → <dossier>/install/{include,lib}
+# builds webrtc-audio-processing 2.1 (BSD-3) static w/ the abseil bundled by the project
+# usage: build-webrtc.sh <workdir>   -> <workdir>/install/{include,lib}
 set -euo pipefail
 WORK="${1:?dossier de travail}"
 SHA256="ae9302824b2038d394f10213cab05312c564a038434269f11dbf68f511f9f9fe"

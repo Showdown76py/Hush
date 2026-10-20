@@ -1,9 +1,9 @@
-// Prototype architecture "relecture" :
-//   1. tap Core Audio global (sauf nous-mêmes) qui COUPE la sortie d'origine des autres apps,
-//   2. le son capturé est rejoué via la sortie du VPIO (canal "interlocuteur", jamais ducké,
-//      et référence d'écho parfaite),
-//   3. le micro traité par le VPIO est enregistré.
-// Usage : relay --dir <outdir> [--seconds 14] [--input <device name>] [--target <frames>]
+// "replay" architecture prototype
+//   1. global core audio tap (minus ourselves) that MUTES other apps' original output
+//   2. captured sound replayed through vpio output ("far end" channel, never ducked
+//      and perfect echo ref)
+//   3. vpio-processed mic gets recorded
+// usage: relay --dir <outdir> [--seconds 14] [--input <device name>] [--target <frames>]
 import AudioToolbox
 import AVFoundation
 import CoreAudio
@@ -50,7 +50,7 @@ func deviceID(named name: String) -> AudioDeviceID? {
 let sampleRate = 48000.0
 let channels: UInt32 = 2
 
-// --- Enregistreurs pré-alloués (mesure uniquement) ---
+// --- preallocated recorders (measurement only) ---
 final class Recorder {
     let cap: Int; let p: UnsafeMutablePointer<Float>; var n = 0
     init(seconds: Double) { cap = Int(sampleRate * (seconds + 1)); p = .allocate(capacity: cap); p.initialize(repeating: 0, count: cap) }
@@ -65,7 +65,7 @@ final class Recorder {
 }
 let recTapped = Recorder(seconds: seconds), recPlayed = Recorder(seconds: seconds), recMic = Recorder(seconds: seconds)
 
-// --- Ring buffer tap -> sortie VPIO ---
+// --- ring buffer tap -> vpio output ---
 let ringCapacity: UInt32 = 16384
 let ringMem = UnsafeMutableRawPointer.allocate(byteCount: ring_bytes(ringCapacity, channels), alignment: 64)
 let ring = ringMem.assumingMemoryBound(to: ring_t.self)
@@ -74,7 +74,7 @@ ring_init(ring, ringCapacity, channels)
 final class Stats { var underruns = 0; var tapCallbacks = 0; var outCallbacks = 0; var tapFrames = 0; var outFrames = 0 }
 let stats = Stats()
 
-// --- 1. Tap système, en excluant notre propre processus ---
+// --- 1. system tap excluding our own process ---
 var pid = getpid()
 var selfObj = AudioObjectID(kAudioObjectUnknown)
 var a1 = addr(kAudioHardwarePropertyTranslatePIDToProcessObject)
@@ -113,7 +113,7 @@ check(AudioDeviceCreateIOProcIDWithBlock(&tapProc, aggID, nil) { _, inData, _, _
     stats.tapCallbacks += 1; stats.tapFrames += Int(frames)
 }, "tap IOProc")
 
-// --- 2. VPIO : micro traité + sortie = son rejoué ---
+// --- 2. vpio: processed mic + output = replayed sound ---
 var desc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_VoiceProcessingIO,
                                      componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
 var maybeUnit: AudioUnit?

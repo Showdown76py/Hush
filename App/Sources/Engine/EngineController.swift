@@ -4,21 +4,20 @@ import Combine
 import CoreAudio
 import os
 
-/// Quand le voice processing doit tourner.
 enum HushMode: String, CaseIterable, Identifiable {
-    case automatic   // seulement quand une app utilise "Hush Microphone"
+    case automatic   // only when an app uses "Hush Microphone"
     case always
     case off
     var id: String { rawValue }
 }
 
-/// Cerveau de l'app : décide quand lancer le traitement, surveille les changements matériels
-/// (écouteurs, AirPods, fréquence, veille, redémarrage de coreaudiod) et relance automatiquement.
+/// decides when processing runs and restarts it after hw changes (headphones, airpods
+/// sample rate, sleep, coreaudiod restart)
 @MainActor
 final class EngineController: ObservableObject {
     enum Status: Equatable {
-        case off                 // désactivé par l'utilisateur
-        case waiting             // mode auto, aucune app n'utilise le micro
+        case off                 // turned off by the user
+        case waiting             // auto mode, no app using the mic
         case starting
         case running
         case problem(HushError)
@@ -28,7 +27,7 @@ final class EngineController: ObservableObject {
     private func setStatus(_ new: Status) { if status != new { status = new } }
     @Published private(set) var sourceName: String = ""
     @Published private(set) var clientCount = 0
-    /// "Micro propre" désactivé mais une app écoute : le micro brut est transmis tel quel.
+    /// "clean mic" off but an app is listening so raw mic is passed through as is
     @Published private(set) var passthroughActive = false
     private var passthroughError: HushError?
     @Published private(set) var driverState: DriverInstaller.State = DriverInstaller.state
@@ -45,7 +44,7 @@ final class EngineController: ObservableObject {
     @Published var keepAppleDucking: Bool {
         didSet { UserDefaults.standard.set(keepAppleDucking, forKey: Keys.ducking); scheduleRestart(reason: "ducking") }
     }
-    /// Niveau de la voix : "auto" (gain automatique piloté par la voix) ou un gain fixe en dB ("0", "6"…).
+    /// voice level: "auto" (voice driven agc) or a fixed gain in dB ("0", "6"…)
     @Published var voiceLevel: String {
         didSet {
             UserDefaults.standard.set(voiceLevel, forKey: Keys.voiceLevel)
@@ -56,7 +55,7 @@ final class EngineController: ObservableObject {
         didSet { UserDefaults.standard.set(onboardingCompleted, forKey: Keys.onboarding) }
     }
 
-    /// Gain de départ du gain automatique, avant qu'une session n'ait mémorisé le sien.
+    /// agc starting gain before a session has stored its own
     static let defaultAutomaticGainDB: Float = 10
 
     enum Keys {
@@ -78,9 +77,9 @@ final class EngineController: ObservableObject {
     private var failures = 0
     private var nextRetry = Date.distantPast
     private var sleeping = false
-    /// Forcé par l'onboarding (test avant/après) même en mode auto.
+    /// forced by onboarding (before/after test) even in auto mode
     @Published var forceRunning = false { didSet { reconcile() } }
-    /// Coupe le traitement pendant la partie "sans Hush" du test avant/après.
+    /// cuts processing during the "without hush" part of the before/after test
     @Published var suspendedForTest = false { didSet { reconcile() } }
     private var activeDevice: AudioDeviceID?
 
@@ -92,7 +91,7 @@ final class EngineController: ObservableObject {
         voiceLevel = d.string(forKey: Keys.voiceLevel) ?? "auto"
         onboardingCompleted = d.bool(forKey: Keys.onboarding)
         applyVoiceLevel()
-        guard !isHeadless else { return }   // pas d'audio ni de mémoire partagée (tests, captures d'écran)
+        guard !isHeadless else { return }   // no audio or shm (tests, screenshots)
         shm = try? SharedMemory()
         installListeners()
         timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
@@ -101,8 +100,6 @@ final class EngineController: ObservableObject {
         reconcile()
     }
 
-    // MARK: - Décision
-
     private var wantsRunning: Bool {
         if sleeping || suspendedForTest { return false }
         if forceRunning { return true }
@@ -110,14 +107,17 @@ final class EngineController: ObservableObject {
         case .off: return false
         case .always: return true
         case .automatic:
-            // Hystérésis : on garde le traitement 3 s après le départ du dernier client.
-            return clientCount > 0 || Date().timeIntervalSince(lastClientSeen) < 3
+            return hasRecentClient
         }
+    }
+
+    /// 3 s hysteresis after the last client leaves
+    private var hasRecentClient: Bool {
+        clientCount > 0 || Date().timeIntervalSince(lastClientSeen) < 3
     }
 
     var microphonePermission: AVAuthorizationStatus { AVCaptureDevice.authorizationStatus(for: .audio) }
 
-    /// Aligne l'état réel sur l'état voulu.
     func reconcile() {
         if !wantsRunning {
             if engine.isRunning { saveAutomaticGain(); engine.stop() }
@@ -137,7 +137,7 @@ final class EngineController: ObservableObject {
         case .authorized:
             break
         case .notDetermined:
-            // Jamais demandée pour cette version (ex. app remplacée : nouvelle signature) : on la demande.
+            // app replaced by a build w/ a different signature
             requestMicrophoneAccessOnce()
             setStatus(.starting)
             return
@@ -172,27 +172,22 @@ final class EngineController: ObservableObject {
         }
     }
 
-    // MARK: - Niveau de la voix
-
     private func applyVoiceLevel() {
         engine.setVoiceLevel(automatic: voiceLevel == "auto", fixedDB: Float(voiceLevel) ?? 0)
     }
 
-    /// Mémorise le gain automatique atteint, pour repartir au bon niveau au prochain appel.
     private func saveAutomaticGain() {
         guard voiceLevel == "auto" else { return }
         UserDefaults.standard.set(engine.automaticGainDB, forKey: Keys.automaticGain)
     }
 
-    // MARK: - Passage direct (micro propre désactivé)
-
     private var wantsPassthrough: Bool {
         mode == .off && !forceRunning && !suspendedForTest && !sleeping && microphonePermission == .authorized
-            && (clientCount > 0 || Date().timeIntervalSince(lastClientSeen) < 3)
+            && hasRecentClient
     }
 
-    /// Le micro brut n'est ouvert que si une app écoute Hush Microphone (sinon l'indicateur
-    /// orange de macOS resterait allumé en permanence).
+    /// raw mic only opened if an app listens to Hush Microphone (else macOS orange
+    /// indicator stays on forever)
     private func updatePassthrough() {
         guard wantsPassthrough, let shm, let source = AudioDevices.resolveSource(preferredUID: sourceUID) else {
             if engine.isPassingThrough { stopPassthrough() }
@@ -201,7 +196,7 @@ final class EngineController: ObservableObject {
         }
         guard !engine.isPassingThrough || engine.rawDevice != source.id else { return }
         do {
-            if engine.isPassingThrough { try? engine.setPassthrough(nil) }   // changement de micro
+            if engine.isPassingThrough { try? engine.setPassthrough(nil) }   // mic changed
             try engine.startRawMonitor(device: source.id)
             try engine.setPassthrough(shm.pointer)
             sourceName = source.name
@@ -218,10 +213,9 @@ final class EngineController: ObservableObject {
     private func stopPassthrough() {
         try? engine.setPassthrough(nil)
         passthroughActive = false
-        updateRawMonitor()   // coupe le micro si le popover est fermé
+        updateRawMonitor()   // cuts the mic if popover is closed
     }
 
-    /// Relance (débouncée) après un changement matériel ou de réglage.
     func scheduleRestart(reason: String, delay: TimeInterval = 0.5) {
         restartWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
@@ -242,8 +236,6 @@ final class EngineController: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
-    // MARK: - Surveillance périodique
-
     private func tick() {
         if let stats = shm?.stats {
             if stats.clients != clientCount {
@@ -257,7 +249,7 @@ final class EngineController: ObservableObject {
             lastGainSave = Date()
         }
         if engine.isRunning {
-            // Chien de garde : plus aucun callback audio depuis 1,5 s → relance.
+            // watchdog: no audio callback for 1.5 s so restart
             let count = engine.callbackCount
             if count != lastCallbackCount {
                 lastCallbackCount = count
@@ -273,14 +265,12 @@ final class EngineController: ObservableObject {
         reconcile()
     }
 
-    // MARK: - Événements système
-
     private func installListeners() {
         let sys = AudioDevices.system
         let restartSelectors: [AudioObjectPropertySelector] = [
-            kAudioHardwarePropertyDefaultOutputDevice,   // écouteurs, AirPods…
+            kAudioHardwarePropertyDefaultOutputDevice,   // headphones, airpods…
             kAudioHardwarePropertyDefaultInputDevice,
-            kAudioHardwarePropertyDevices,               // branchement / débranchement
+            kAudioHardwarePropertyDevices,               // plug / unplug
         ]
         for sel in restartSelectors {
             if let l = AudioPropertyListener(object: sys, selector: sel, handler: { [weak self] in
@@ -312,7 +302,7 @@ final class EngineController: ObservableObject {
         driverState = DriverInstaller.state
         guard engine.isRunning || engine.isPassingThrough else { return }
         if selector == kAudioHardwarePropertyDevices {
-            // On ne relance que si notre micro a disparu ou si un micro préféré vient d'apparaître.
+            // restart only if our mic vanished or the preferred mic just showed up
             let resolved = AudioDevices.resolveSource(preferredUID: sourceUID)?.id
             guard resolved != activeDevice else { return }
         }
@@ -326,15 +316,13 @@ final class EngineController: ObservableObject {
         }
     }
 
-    // MARK: - Popover
-
-    /// Le vumètre "micro" n'écoute le micro que pendant que le popover est ouvert.
+    /// "mic" meter only listens to the mic while the popover is open
     var popoverVisible = false {
         didSet { updateRawMonitor() }
     }
 
     func updateRawMonitor() {
-        if engine.isPassingThrough { return }   // l'unité brute sert déjà au passage direct
+        if engine.isPassingThrough { return }   // raw unit already used for passthrough
         guard popoverVisible, let source = AudioDevices.resolveSource(preferredUID: sourceUID),
               microphonePermission == .authorized else {
             engine.stopRawMonitor()
@@ -343,11 +331,11 @@ final class EngineController: ObservableObject {
         try? engine.startRawMonitor(device: source.id)
     }
 
-    /// Quand le voice processing tourne, macOS remet aux autres clients du même micro un signal
-    /// environ 17 dB plus faible (mesuré sur MacBook Air) : on compense pour l'affichage.
+    /// while vp runs other clients of the same mic get a signal
+    /// ~17 dB lower (measured on MacBook Air)
     var rawMeterOffsetDB: Float { engine.isRunning ? 17 : 0 }
 
-    // Niveaux des vumètres (remplaçables par des valeurs de démonstration pour les captures).
+    /// demo values for screenshots
     var previewLevels: (raw: Float, clean: Float)?
     func rawMeterLevel() -> Float { previewLevels?.raw ?? engine.rawLevel }
     func cleanMeterLevel() -> Float {
@@ -356,7 +344,6 @@ final class EngineController: ObservableObject {
         return engine.isPassingThrough ? engine.rawLevel : 0
     }
 
-    /// État de démonstration (captures d'écran uniquement).
     func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float),
                       driverState: DriverInstaller.State = .installed) {
         self.driverState = driverState
@@ -379,14 +366,12 @@ final class EngineController: ObservableObject {
         }
     }
 
-    // MARK: - Actions
-
     private var requestingPermission = false
 
     private func requestMicrophoneAccessOnce() {
         guard !requestingPermission else { return }
         requestingPermission = true
-        NSApp.activate(ignoringOtherApps: true)   // la fenêtre système doit passer devant
+        NSApp.activate(ignoringOtherApps: true)   // system dialog has to come to front
         Task {
             _ = await AVCaptureDevice.requestAccess(for: .audio)
             requestingPermission = false

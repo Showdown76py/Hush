@@ -1,9 +1,9 @@
-// Prototype étape 1 : capture micro avec (ou sans) voice processing vers un WAV.
-// Utilise directement l'audio unit VoiceProcessingIO (AVAudioEngine échoue avec -10875
-// à l'initialisation du noeud de sortie sur macOS 27).
-// Usage : vpcapture --out file.wav [--seconds 15] [--raw] [--duck]
-//   --raw   : HAL brut (AUHAL) au lieu du voice processing
-//   --duck  : garde le ducking par défaut d'Apple (sinon ducking désactivé)
+// step 1 prototype: mic capture w/ or w/o vp to a wav
+// uses the VoiceProcessingIO audio unit directly (AVAudioEngine fails w/ -10875
+// initializing the output node on macOS 27)
+// usage: vpcapture --out file.wav [--seconds 15] [--raw] [--duck]
+//   --raw   raw HAL (AUHAL) instead of vp
+//   --duck  keep apple's default ducking (otherwise ducking off)
 import AudioToolbox
 import AVFoundation
 import CoreAudio
@@ -73,7 +73,7 @@ let unit = maybeUnit!
 var one: UInt32 = 1, zero: UInt32 = 0
 check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &one, 4), "EnableIO in")
 if !useVP {
-    // AUHAL : entrée seule, sur le périphérique d'entrée par défaut.
+    // auhal input only on default input device
     check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &zero, 4), "EnableIO out")
     var dev = AudioDeviceID(0)
     var sz = UInt32(MemoryLayout<AudioDeviceID>.size)
@@ -124,7 +124,7 @@ if useVP {
     check(AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &fmt, fmtSize), "fmt out")
 }
 
-// Tampon pré-alloué pour toute la durée : aucune allocation dans le callback.
+// buffer preallocated for the whole run so no alloc in the callback
 final class State {
     let capacity: Int
     let samples: UnsafeMutablePointer<Float>
@@ -161,7 +161,7 @@ check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAud
                            UInt32(MemoryLayout<AURenderCallbackStruct>.size)), "SetInputCallback")
 
 if useVP && !disableOutput {
-    // Le bus de sortie du VPIO joue du silence (on ne joue rien nous-mêmes).
+    // vpio output bus plays silence (we don't play anything)
     let silence: AURenderCallback = { _, flags, _, _, _, ioData in
         let abl = UnsafeMutableAudioBufferListPointer(ioData!)
         for b in abl { memset(b.mData, 0, Int(b.mDataByteSize)) }

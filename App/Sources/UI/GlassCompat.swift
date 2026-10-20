@@ -1,14 +1,11 @@
 import SwiftUI
 
-// Liquid Glass sur macOS 26+, avec un rendu équivalent (matériaux) sur macOS 14 et 15.
-
 extension Color {
-    /// Violet de l'icône (indépendant de la couleur d'accentuation choisie par l'utilisateur).
+    /// icon purple, independent of the user's accent color
     static let hushBrand = Color(red: 0.43, green: 0.34, blue: 0.86)
 }
 
 extension View {
-    /// Surface en verre (carte, pastille). `tint` colore le verre ; `interactive` réagit au pointeur.
     @ViewBuilder
     func hushGlass<S: Shape>(in shape: S, tint: Color? = nil, interactive: Bool = false) -> some View {
         if #available(macOS 26.0, *) {
@@ -24,7 +21,6 @@ extension View {
         }
     }
 
-    /// Bouton en verre (`prominent` : action principale teintée).
     @ViewBuilder
     func hushGlassButton(prominent: Bool = false) -> some View {
         if #available(macOS 26.0, *) {
@@ -35,7 +31,6 @@ extension View {
     }
 }
 
-/// Regroupe des surfaces en verre pour qu'elles se fondent entre elles (macOS 26+).
 struct HushGlassContainer<Content: View>: View {
     var spacing: CGFloat = 12
     @ViewBuilder var content: Content

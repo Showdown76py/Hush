@@ -1,6 +1,6 @@
 name: Release
 
-# Publie une release GitHub avec le DMG à chaque tag vX.Y.Z (ex. : git tag v0.2.0 && git push --tags).
+# publishes a github release w/ the dmg on each vX.Y.Z tag (eg git tag v0.2.0 && git push --tags)
 on:
   push:
     tags: ["v*"]
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # le numéro de build = nombre de commits
+          fetch-depth: 0   # build number = commit count
 
       - name: Version
         run: |

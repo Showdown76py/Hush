@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Affiche le niveau RMS (dBFS) par fenêtre d'une seconde d'un fichier audio."""
+"""prints rms level (dBFS) per 1 s window of an audio file"""
 import subprocess, sys
 import numpy as np
 

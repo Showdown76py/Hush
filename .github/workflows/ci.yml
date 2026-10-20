@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-test:
-    # Liquid Glass et l'icône .icon demandent le SDK macOS 26 (Xcode 26 ou plus récent).
+    # liquid glass and the .icon icon need the macOS 26 sdk (xcode 26+)
     runs-on: macos-26
     timeout-minutes: 45
     steps:

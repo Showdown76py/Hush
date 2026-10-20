@@ -1,4 +1,4 @@
-// Liste les processus qui utilisent l'entrée ou la sortie audio en ce moment (macOS 14+).
+// lists processes currently using audio input or output (macOS 14+)
 import CoreAudio
 import Foundation
 

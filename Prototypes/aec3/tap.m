@@ -1,4 +1,4 @@
-// Création d'un tap global (classe Objective-C CATapDescription).
+// creates a global tap (objc class CATapDescription)
 #import <CoreAudio/CoreAudio.h>
 #import <CoreAudio/AudioHardwareTapping.h>
 #import <CoreAudio/CATapDescription.h>

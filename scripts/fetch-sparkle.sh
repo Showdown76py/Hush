@@ -1,12 +1,11 @@
 #!/bin/bash
-# Télécharge Sparkle (framework + outils de release) dans Vendor/Sparkle, avec vérification SHA-256.
-# Sparkle est sous licence MIT. Usage : scripts/fetch-sparkle.sh
+# downloads sparkle (framework + release tools) and checks its sha256
 set -euo pipefail
 VERSION="2.10.0"
 SHA256="c2bf58aa8387266ac179357b1415d6f2635f044da8be41042af32425dae6da0c"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# Extrait hors du dépôt : si le dépôt est dans un dossier synchronisé (iCloud Drive / File Provider),
-# macOS y ajoute des attributs étendus sur les bundles, que codesign refuse.
+# extracted outside the repo, Vendor/Sparkle is just a symlink. in a synced folder (file provider
+# icloud drive) macOS adds xattrs to bundles that codesign rejects
 CACHE="${HUSH_VENDOR_CACHE:-$HOME/Library/Caches/io.github.showdown76py.Hush}"
 DEST="$CACHE/Sparkle-$VERSION"
 mkdir -p "$ROOT/Vendor"

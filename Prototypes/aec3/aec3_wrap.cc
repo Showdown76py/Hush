@@ -5,7 +5,7 @@
 #include <optional>
 
 namespace {
-// Fabrique AEC3 avec une configuration personnalisée (absente de cette distribution de la bibliothèque).
+// aec3 factory w/ custom config (missing from this distro of the lib)
 class TunedFactory : public webrtc::EchoControlFactory {
  public:
   explicit TunedFactory(const webrtc::EchoCanceller3Config& c) : cfg_(c) {}
@@ -19,12 +19,12 @@ class TunedFactory : public webrtc::EchoControlFactory {
 webrtc::EchoCanceller3Config ConfigFor(int preset) {
   webrtc::EchoCanceller3Config c;
   if (preset >= 1) {
-    // Masques plus transparents : on laisse passer davantage le signal proche (la voix).
+    // more transparent masks, let more near-end signal (voice) through
     c.suppressor.normal_tuning.mask_lf.enr_transparent = preset == 1 ? .6f : 1.f;
     c.suppressor.normal_tuning.mask_lf.enr_suppress = preset == 1 ? .8f : 1.2f;
     c.suppressor.normal_tuning.mask_hf.enr_transparent = preset == 1 ? .2f : .4f;
     c.suppressor.normal_tuning.mask_hf.enr_suppress = preset == 1 ? .4f : .7f;
-    // Détection de la voix proche plus réactive, et maintenue plus longtemps.
+    // near-end voice detection faster and held longer
     c.suppressor.dominant_nearend_detection.enr_threshold = preset == 1 ? .1f : .05f;
     c.suppressor.dominant_nearend_detection.snr_threshold = preset == 1 ? 20.f : 12.f;
     c.suppressor.dominant_nearend_detection.trigger_threshold = preset == 1 ? 6 : 3;
@@ -80,7 +80,7 @@ extern "C" int aec3_process(aec3_t *a, const float *ref, const float *mic, float
     float *ro[1] = {refCopy};
     int e = a->apm->ProcessReverseStream(r, sc, sc, ro);
     if (e) return e;
-    a->apm->set_stream_delay_ms(0);   // AEC3 estime le retard lui-même
+    a->apm->set_stream_delay_ms(0);   // aec3 estimates delay itself
     const float *m[1] = {mic};
     float *o[1] = {out};
     return a->apm->ProcessStream(m, sc, sc, o);

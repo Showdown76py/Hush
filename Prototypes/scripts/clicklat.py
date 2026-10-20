@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Latence absolue (émission du clic -> détection) pour chaque canal d'un enregistrement dualrec.
-Usage : clicklat.py <dual.wav> <clicks.txt>"""
+"""absolute latency (click emitted -> detected) for each channel of a dualrec recording
+usage: clicklat.py <dual.wav> <clicks.txt>"""
 import subprocess, sys
 import numpy as np
 
@@ -16,8 +16,8 @@ for ch, name in [(0, "A"), (1, "B")]:
     for t in times:
         i = int(round((t - t0) / 1e9 * SR))
         if i < 9600 or i + 19200 > len(x): continue
-        pre = x[i - 9600:i, ch]                   # 200 ms avant le clic
-        win = np.abs(x[i:i + 19200, ch])           # 400 ms après
+        pre = x[i - 9600:i, ch]                   # 200 ms before the click
+        win = np.abs(x[i:i + 19200, ch])           # 400 ms after
         noise = np.percentile(np.abs(pre), 99) + 1e-9
         if win.max() < 4 * noise: lat.append(None); continue
         thr = max(4 * noise, 0.3 * win.max())
