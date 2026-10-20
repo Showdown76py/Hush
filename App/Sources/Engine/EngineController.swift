@@ -30,6 +30,7 @@ final class EngineController: ObservableObject {
     @Published private(set) var clientCount = 0
     /// "Micro propre" désactivé mais une app écoute : le micro brut est transmis tel quel.
     @Published private(set) var passthroughActive = false
+    private var passthroughError: HushError?
     @Published private(set) var driverState: DriverInstaller.State = DriverInstaller.state
     @Published var mode: HushMode {
         didSet {
@@ -122,7 +123,7 @@ final class EngineController: ObservableObject {
             if engine.isRunning { saveAutomaticGain(); engine.stop() }
             failures = 0
             updatePassthrough()
-            setStatus(mode == .off ? .off : .waiting)
+            if let passthroughError { setStatus(.problem(passthroughError)) } else { setStatus(mode == .off ? .off : .waiting) }
             return
         }
         if engine.isPassingThrough { stopPassthrough() }
@@ -195,24 +196,27 @@ final class EngineController: ObservableObject {
     private func updatePassthrough() {
         guard wantsPassthrough, let shm, let source = AudioDevices.resolveSource(preferredUID: sourceUID) else {
             if engine.isPassingThrough { stopPassthrough() }
+            passthroughError = nil
             return
         }
         guard !engine.isPassingThrough || engine.rawDevice != source.id else { return }
         do {
-            if engine.isPassingThrough { engine.setPassthrough(nil) }   // changement de micro
+            if engine.isPassingThrough { try? engine.setPassthrough(nil) }   // changement de micro
             try engine.startRawMonitor(device: source.id)
-            engine.setPassthrough(shm.pointer)
+            try engine.setPassthrough(shm.pointer)
             sourceName = source.name
             activeDevice = source.id
             watchDevice(source.id)
             passthroughActive = true
+            passthroughError = nil
         } catch {
             log.error("passage direct impossible : \(String(describing: error), privacy: .public)")
+            passthroughError = error as? HushError
         }
     }
 
     private func stopPassthrough() {
-        engine.setPassthrough(nil)
+        try? engine.setPassthrough(nil)
         passthroughActive = false
         updateRawMonitor()   // coupe le micro si le popover est fermé
     }
@@ -226,7 +230,7 @@ final class EngineController: ObservableObject {
                 self.log.notice("relance : \(reason, privacy: .public)")
                 if self.engine.isRunning { self.engine.stop() }
                 if self.engine.isPassingThrough {
-                    self.engine.setPassthrough(nil)
+                    try? self.engine.setPassthrough(nil)
                     self.engine.stopRawMonitor()
                     self.passthroughActive = false
                 }

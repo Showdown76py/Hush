@@ -48,9 +48,9 @@ print("source : \(source.name)")
 if switchTest {
     // 0-10 s : passage direct ; 10-20 s : voice processing ; 20-30 s : passage direct.
     try engine.startRawMonitor(device: source.id)
-    engine.setPassthrough(shm.pointer)
+    try engine.setPassthrough(shm.pointer)
     DispatchQueue.global().asyncAfter(deadline: .now() + 10) {
-        engine.setPassthrough(nil)
+        try? engine.setPassthrough(nil)
         try! engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
         print("→ voice processing")
     }
@@ -60,7 +60,7 @@ if switchTest {
             engine.stopRawMonitor()
             try! engine.startRawMonitor(device: source.id)
         }
-        engine.setPassthrough(shm.pointer)
+        try? engine.setPassthrough(shm.pointer)
         print("→ passage direct")
     }
 } else {
@@ -68,14 +68,16 @@ if switchTest {
     try engine.startRawMonitor(device: source.id)
 }
 hush_rt_record_start(engine.rt, 0, 48000)
+let interval: Double = CommandLine.arguments.contains("--fast") ? 1 : 5
 let t0 = Date()
 var lastCallbacks: UInt64 = 0
 while Date().timeIntervalSince(t0) < seconds {
-    Thread.sleep(forTimeInterval: 5)
+    Thread.sleep(forTimeInterval: interval)
     let s = shm.stats
     let cb = engine.callbackCount
+    print(String(format: "gain auto=%5.1f dB ", engine.automaticGainDB), terminator: "")
     print(String(format: "t=%3.0fs callbacks/s=%4.0f erreurs=%llu propre=%5.1f dB brut=%5.1f dB clients=%d fill=%4u underruns=%llu glissements=%lld enregistrement=%@",
-                 Date().timeIntervalSince(t0), Double(cb - lastCallbacks) / 5, engine.errorCount,
+                 Date().timeIntervalSince(t0), Double(cb - lastCallbacks) / interval, engine.errorCount,
                  20 * log10(max(engine.cleanLevel, 1e-6)), 20 * log10(max(engine.rawLevel, 1e-6)),
                  s.clients, s.fill, s.underruns, engine.driftSlips, hush_rt_record_done(engine.rt) != 0 ? "ok" : "en cours"))
     lastCallbacks = cb

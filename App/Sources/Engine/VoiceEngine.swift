@@ -62,7 +62,8 @@ final class VoiceEngine {
     /// Démarre la capture avec voice processing. `shm` : mémoire partagée avec le driver (peut être nil).
     func start(_ config: Configuration, shm: UnsafeMutableRawPointer?) throws {
         stop()
-        setPassthrough(nil)   // un seul producteur dans le ring
+        try? setPassthrough(nil)   // un seul producteur dans le ring
+        if let shm, hush_app_claim_writer(shm, Self.pid) == 0 { throw HushError.anotherInstanceRunning }
         // Buffers IO courts pour ce processus : moins de latence (sans effet sur les autres apps).
         AudioDevices.setBufferFrameSize(config.inputDevice, config.ioBufferFrames)
         if let output = AudioDevices.defaultDevice(input: false) {
@@ -115,7 +116,10 @@ final class VoiceEngine {
     func stop() {
         guard let unit = vpUnit else { return }
         hush_rt_set_shm(rt, nil)
-        if let shm { hush_app_stop(shm) }   // le driver passe au silence tout de suite
+        if let shm {
+            hush_app_stop(shm)   // le driver passe au silence tout de suite
+            hush_app_release_writer(shm, Self.pid)
+        }
         AudioOutputUnitStop(unit)
         AudioUnitUninitialize(unit)
         AudioComponentInstanceDispose(unit)
@@ -149,11 +153,17 @@ final class VoiceEngine {
     private(set) var isPassingThrough = false
     private var rawUnitIsStale = false
 
+    private static let pid = UInt32(getpid())
+
     /// Micro brut envoyé tel quel au driver ("micro propre" désactivé). Exclusif avec `start`.
-    func setPassthrough(_ shm: UnsafeMutableRawPointer?) {
+    func setPassthrough(_ shm: UnsafeMutableRawPointer?) throws {
         precondition(shm == nil || !isRunning, "un seul producteur à la fois")
+        if let shm, hush_app_claim_writer(shm, Self.pid) == 0 { throw HushError.anotherInstanceRunning }
         hush_rt_set_passthrough(rt, shm)
-        if shm == nil, isPassingThrough, let s = shmForPassthrough { hush_app_stop(s) }   // driver → silence
+        if shm == nil, isPassingThrough, let s = shmForPassthrough {
+            hush_app_stop(s)   // driver → silence
+            hush_app_release_writer(s, Self.pid)
+        }
         shmForPassthrough = shm
         isPassingThrough = shm != nil
         Self.log.notice("passage direct : \(shm != nil ? "actif" : "arrêté", privacy: .public)")

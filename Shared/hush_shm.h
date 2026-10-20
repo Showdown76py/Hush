@@ -4,6 +4,8 @@
 #ifndef HUSH_SHM_H
 #define HUSH_SHM_H
 
+#include <errno.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdatomic.h>
 #include "ring.h"
@@ -23,7 +25,7 @@ typedef struct {
     uint32_t magic;
     uint32_t version;
     uint32_t sampleRate;
-    uint32_t reserved0;
+    uint32_t writerPid;   // pid du seul processus autorisé à écrire (0 = libre), voir hush_app_claim_writer
 
     // Écrit par l'app
     _Atomic uint64_t writerHeartbeat;   // mach_absolute_time() de la dernière écriture
@@ -89,6 +91,23 @@ static inline void hush_app_write(void *mem, const float *frames, uint32_t count
     hush_shm_t *s = (hush_shm_t *)mem;
     ring_write(&s->ring, frames, count);
     atomic_store_explicit(&s->writerHeartbeat, hostTime, memory_order_release);
+}
+// Un seul producteur à la fois dans le ring : deux processus qui écrivent en même temps mélangent leurs
+// blocs (voix hachée, « robotique »). Retourne 1 si `pid` est (ou devient) le producteur, 0 si un autre
+// processus vivant l'est déjà. Un propriétaire mort est remplacé automatiquement.
+static inline int hush_app_claim_writer(void *mem, uint32_t pid) {
+    hush_shm_t *s = (hush_shm_t *)mem;
+    uint32_t cur = __atomic_load_n(&s->writerPid, __ATOMIC_ACQUIRE);
+    for (;;) {
+        if (cur == pid) return 1;
+        if (cur != 0 && (kill((pid_t)cur, 0) == 0 || errno == EPERM)) return 0;
+        if (__atomic_compare_exchange_n(&s->writerPid, &cur, pid, 0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) return 1;
+    }
+}
+static inline void hush_app_release_writer(void *mem, uint32_t pid) {
+    hush_shm_t *s = (hush_shm_t *)mem;
+    uint32_t expected = pid;
+    __atomic_compare_exchange_n(&s->writerPid, &expected, 0, 0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
 }
 static inline void hush_app_stop(void *mem) {   // le driver passe immédiatement au silence
     hush_shm_t *s = (hush_shm_t *)mem;

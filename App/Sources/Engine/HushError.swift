@@ -8,6 +8,7 @@ enum HushError: Error, Equatable {
     case virtualMicrophoneMissing
     case sharedMemoryUnavailable
     case voiceProcessingFailed
+    case anotherInstanceRunning
     case installCancelled
     case installFailed
     case uninstallFailed
@@ -19,6 +20,7 @@ enum HushError: Error, Equatable {
         case .virtualMicrophoneMissing: String(localized: "The Hush microphone isn’t installed")
         case .sharedMemoryUnavailable: String(localized: "Hush can’t reach its virtual microphone")
         case .voiceProcessingFailed: String(localized: "Voice cleanup couldn’t start")
+        case .anotherInstanceRunning: String(localized: "Another copy of Hush is running")
         case .installCancelled: String(localized: "Installation cancelled")
         case .installFailed: String(localized: "Installation didn’t work")
         case .uninstallFailed: String(localized: "Removal didn’t work")
@@ -37,6 +39,8 @@ enum HushError: Error, Equatable {
             String(localized: "Restart your Mac. If it keeps happening, reinstall the virtual microphone from Settings.")
         case .voiceProcessingFailed:
             String(localized: "Another app may be using the microphone in an exclusive way. Hush will retry automatically.")
+        case .anotherInstanceRunning:
+            String(localized: "Quit the other copy (look for a second Hush icon in the menu bar). This one will take over automatically.")
         case .installCancelled:
             String(localized: "The virtual microphone is needed for other apps to hear the cleaned-up voice.")
         case .installFailed, .uninstallFailed:

@@ -3,7 +3,7 @@
 #include <math.h>
 
 void hush_agc_init(hush_agc_t *agc, float sampleRate, float initialGainDB) {
-    agc->targetDB = -19.0f;   // par bloc de parole (syllabes) : environ -22 dB en moyenne sur une phrase
+    agc->targetDB = -23.0f;   // par bloc de parole : environ -23 dB par seconde de vraie parole, crêtes vers -4 dBFS
     agc->minGainDB = -6.0f;
     agc->maxGainDB = 24.0f;
     agc->riseDBPerSec = 10.0f;

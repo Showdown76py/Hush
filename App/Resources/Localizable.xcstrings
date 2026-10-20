@@ -126,6 +126,16 @@
         }
       }
     },
+    "Another copy of Hush is running": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une autre copie de Hush est déjà ouverte"
+          }
+        }
+      }
+    },
     "Apps get your normal microphone": {
       "localizations": {
         "fr": {
@@ -732,6 +742,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quitter Hush"
+          }
+        }
+      }
+    },
+    "Quit the other copy (look for a second Hush icon in the menu bar). This one will take over automatically.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quittez l’autre copie (cherchez une deuxième icône Hush dans la barre des menus). Celle-ci prendra le relais automatiquement."
           }
         }
       }

@@ -66,7 +66,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
 - **Niveau de la voix** : le gain automatique du VPIO (`kAUVoiceIOProperty_VoiceProcessingEnableAGC`) est
   **désactivé**, car il remonte le résidu de suppression quand la musique est forte (souffle « ventilateur »,
   bouffées jusqu'à -25 dB). Il est remplacé par `hush_agc` : gain piloté par la voix (détection = 12 dB au-dessus
-  du bruit de fond suivi ET au-dessus de -54 dBFS), cible -19 dB par syllabe (environ -22 dB par phrase), montée
+  du bruit de fond suivi ET au-dessus de -54 dBFS), cible -23 dB par bloc de parole (mesuré sur une vraie voix : environ -23 dB par seconde, crêtes vers -4 dBFS), montée
   10 dB/s et descente 40 dB/s **uniquement pendant la parole**, gain figé sinon, limiteur doux, gain mémorisé
   entre les appels. Réglage « Voice level » : Automatique (défaut) ou gain fixe. Tests synthétiques dans
   `HushTests` (voix faible/forte, résidu jamais remonté, bruit seul, cri, changement de locuteur).
