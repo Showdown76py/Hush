@@ -136,6 +136,6 @@ sudo scripts/install-driver.sh                          # installer le driver à
 
 ## À faire
 
-- Mise à jour Sparkle de 0.2.0 vers 0.2.1 : l'offre s'affiche (appcast et signature EdDSA acceptés). Reste à
-  vérifier l'installation, et que l'autorisation micro survit avec le certificat auto-signé.
+- Vérifier que l'autorisation micro survit à une mise à jour Sparkle avec le certificat auto-signé (la mise à jour
+  0.2.0 → 0.2.1 elle-même fonctionne de bout en bout).
 - Tester Developer ID + notarisation (pas de compte pour l'instant).
