@@ -1,3 +1,6 @@
+#if canImport(HushRT)
+import HushRT
+#endif
 import AudioToolbox
 import CoreAudio
 import Foundation

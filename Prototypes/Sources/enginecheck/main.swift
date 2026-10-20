@@ -1,0 +1,28 @@
+// Fait tourner le moteur réel de l'app (VoiceEngine + hush_rt.c) hors de l'app, vers le driver Hush.
+// Usage : enginecheck [secondes]
+import Foundation
+import HushRT
+
+let seconds = Double(CommandLine.arguments.dropFirst().first ?? "60") ?? 60
+let shm = try SharedMemory()
+let engine = VoiceEngine()
+guard let source = AudioDevices.resolveSource(preferredUID: nil) else { fatalError("pas de micro") }
+print("source : \(source.name)")
+try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+try engine.startRawMonitor(device: source.id)
+hush_rt_record_start(engine.rt, 0, 48000)
+let t0 = Date()
+var lastCallbacks: UInt64 = 0
+while Date().timeIntervalSince(t0) < seconds {
+    Thread.sleep(forTimeInterval: 5)
+    let s = shm.stats
+    let cb = engine.callbackCount
+    print(String(format: "t=%3.0fs callbacks/s=%4.0f erreurs=%llu propre=%5.1f dB brut=%5.1f dB clients=%d fill=%4u underruns=%llu glissements=%lld enregistrement=%@",
+                 Date().timeIntervalSince(t0), Double(cb - lastCallbacks) / 5, engine.errorCount,
+                 20 * log10(max(engine.cleanLevel, 1e-6)), 20 * log10(max(engine.rawLevel, 1e-6)),
+                 s.clients, s.fill, s.underruns, engine.driftSlips, hush_rt_record_done(engine.rt) != 0 ? "ok" : "en cours"))
+    lastCallbacks = cb
+}
+engine.stopRawMonitor()
+engine.stop()
+print("arrêt propre ; le driver repasse au silence")
