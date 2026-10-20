@@ -64,12 +64,12 @@
         }
       }
     },
-    "Allow Hush in System Settings › Privacy & Security › Microphone, then try again.": {
+    "Allow Hush in System Settings › Privacy & Security › Microphone. If it’s already on, turn it off and on again, then reopen Hush.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Autorisez Hush dans Réglages Système › Confidentialité et sécurité › Micro, puis réessayez."
+            "value": "Autorisez Hush dans Réglages Système › Confidentialité et sécurité › Micro. S’il est déjà activé, désactivez-le puis réactivez-le, et rouvrez Hush."
           }
         }
       }

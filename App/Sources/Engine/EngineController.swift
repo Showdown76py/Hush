@@ -114,7 +114,15 @@ final class EngineController: ObservableObject {
     }
 
     private func start() {
-        guard microphonePermission == .authorized else {
+        switch microphonePermission {
+        case .authorized:
+            break
+        case .notDetermined:
+            // Jamais demandée pour cette version (ex. app remplacée : nouvelle signature) : on la demande.
+            requestMicrophoneAccessOnce()
+            setStatus(.starting)
+            return
+        default:
             setStatus(.problem(.microphonePermissionDenied))
             return
         }
@@ -327,6 +335,19 @@ final class EngineController: ObservableObject {
     }
 
     // MARK: - Actions
+
+    private var requestingPermission = false
+
+    private func requestMicrophoneAccessOnce() {
+        guard !requestingPermission else { return }
+        requestingPermission = true
+        NSApp.activate(ignoringOtherApps: true)   // la fenêtre système doit passer devant
+        Task {
+            _ = await AVCaptureDevice.requestAccess(for: .audio)
+            requestingPermission = false
+            reconcile()
+        }
+    }
 
     func requestMicrophoneAccess() async -> Bool {
         let granted = await AVCaptureDevice.requestAccess(for: .audio)

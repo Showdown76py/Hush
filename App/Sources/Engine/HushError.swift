@@ -28,7 +28,7 @@ enum HushError: Error, Equatable {
     var advice: String {
         switch self {
         case .microphonePermissionDenied:
-            String(localized: "Allow Hush in System Settings › Privacy & Security › Microphone, then try again.")
+            String(localized: "Allow Hush in System Settings › Privacy & Security › Microphone. If it’s already on, turn it off and on again, then reopen Hush.")
         case .noInputDevice:
             String(localized: "Plug in a microphone or check that your Mac’s built-in microphone is enabled.")
         case .virtualMicrophoneMissing:
