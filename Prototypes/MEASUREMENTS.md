@@ -139,3 +139,11 @@ Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau
 
 Le gain automatique d'Apple remonte le résidu de suppression quand personne ne parle. Celui de Hush ne bouge que
 pendant la parole : le résidu reste environ 35 dB sous le niveau visé pour la voix (-22 dB).
+
+### Crépitements dans la voix
+
+Remarqués à l'écoute. Deux causes, mesurées : (1) la correction de dérive, pilotée par le remplissage du ring, se
+déclenchait sur la gigue du client (16 glissements d'un échantillon en 20 s, chacun audible) ; (2) ffmpeg perdait
+des morceaux pendant l'enregistrement (18,7 s sur 21). Après correction (estimation par horodatages, rééchantillonnage
+du bloc), enregistrement propre avec `dualrec` : 21,0 s exactes, 0 glissement en 40 s, dérive estimée -0,6 ppm,
+voix entre -20 et -25 dB par seconde (normal, doux, fort), crête -8,3 dBFS. Crépitements absents à l'écoute.

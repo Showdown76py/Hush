@@ -38,13 +38,9 @@ struct hush_rt {
     _Atomic int64_t driftSlips;
 
     // Correction de dérive (thread temps réel du VP uniquement)
-    hush_shm_t *driftShm;
-    uint64_t driftUnderruns;
-    uint32_t driftClients;
-    uint32_t driftCallbacks;
-    uint32_t driftSinceSlip;
-    double driftAvg;
-    double driftBaseline;   // < 0 : pas encore établie
+    hush_drift_t drift;
+    _Atomic int driftResetPending;
+    double hostTicksPerSecond;
 
     // Enregistrement
     float *record;
@@ -66,7 +62,10 @@ hush_rt_t *hush_rt_create(void) {
     atomic_store(&rt->autoGain, 1);
     hush_agc_init(&rt->agc, 48000.0f, 10.0f);
     atomic_store(&rt->agcGainDB, 10.0f);
-    rt->driftBaseline = -1;
+    hush_drift_reset(&rt->drift);
+    mach_timebase_info_data_t tb;
+    mach_timebase_info(&tb);
+    rt->hostTicksPerSecond = 1e9 * (double)tb.denom / (double)tb.numer;
     return rt;
 }
 
@@ -93,6 +92,9 @@ void hush_rt_set_passthrough(hush_rt_t *rt, void *shm) {
 void hush_rt_set_gain_db(hush_rt_t *rt, float db) {
     atomic_store(&rt->gain, powf(10.0f, db / 20.0f));
 }
+
+void hush_rt_reset_drift(hush_rt_t *rt) { atomic_store_explicit(&rt->driftResetPending, 1, memory_order_release); }
+double hush_rt_drift_ppm(const hush_rt_t *rt) { return rt->drift.ppm; }
 
 void hush_rt_set_auto_gain(hush_rt_t *rt, int enabled) { atomic_store(&rt->autoGain, enabled); }
 
@@ -147,34 +149,35 @@ void hush_rt_resample_linear(const float *src, uint32_t n, float *dst, uint32_t 
     }
 }
 
-// Retourne -1 pour retirer un échantillon, +1 pour en ajouter un, 0 sinon.
-// La vraie dérive d'horloge est lente (quelques dizaines de ppm au plus) : on compare une moyenne longue
-// (~10 s) du remplissage côté driver à sa valeur de référence, avec un seuil large, pour ne jamais réagir à
-// la gigue des lectures du client.
-static int drift_decision(hush_rt_t *rt, hush_shm_t *s, uint32_t frames) {
-    uint32_t clients = atomic_load_explicit(&s->clientsRunning, memory_order_relaxed);
-    uint64_t underruns = atomic_load_explicit(&s->underruns, memory_order_relaxed);
-    if (s != rt->driftShm || clients != rt->driftClients || underruns != rt->driftUnderruns || clients == 0) {
-        rt->driftShm = s;
-        rt->driftClients = clients;
-        rt->driftUnderruns = underruns;
-        rt->driftCallbacks = 0;
-        rt->driftBaseline = -1;
-        return 0;
+void hush_drift_reset(hush_drift_t *d) {
+    memset(d, 0, sizeof(*d));
+}
+
+// La pente (secondes par frame) est estimée par régression sur tous les horodatages depuis le début,
+// ce qui moyenne leur gigue : quelques ppm de précision après 10 s, bien mieux ensuite.
+int hush_drift_update(hush_drift_t *d, uint64_t hostTime, uint32_t frames, double hostTicksPerSecond) {
+    if (d->firstHost == 0 || hostTime < d->firstHost) {
+        hush_drift_reset(d);
+        d->firstHost = hostTime;
     }
-    double fill = (double)atomic_load_explicit(&s->lastFill, memory_order_relaxed);
-    if (rt->driftCallbacks == 0) rt->driftAvg = fill;
-    rt->driftAvg += (fill - rt->driftAvg) * (double)frames / (48000.0 * 10.0);   // moyenne sur ~10 s
-    rt->driftCallbacks++;
-    rt->driftSinceSlip++;
-    if (rt->driftBaseline < 0) {
-        if (rt->driftCallbacks * (uint64_t)frames >= 48000u * 20u) rt->driftBaseline = rt->driftAvg;   // après 20 s
-        return 0;
-    }
-    if (rt->driftSinceSlip < 64) return 0;
-    double delta = rt->driftAvg - rt->driftBaseline;
-    if (delta > 128) { rt->driftSinceSlip = 0; return -1; }
-    if (delta < -128) { rt->driftSinceSlip = 0; return 1; }
+    double x = d->frames, y = (double)(hostTime - d->firstHost) / hostTicksPerSecond;
+    d->frames += frames;
+    d->n += 1;
+    double dx = x - d->meanX;
+    d->meanX += dx / d->n;
+    d->meanY += (y - d->meanY) / d->n;
+    d->cxy += dx * (y - d->meanY);
+    d->cxx += dx * (x - d->meanX);
+    if (y < 10.0 || d->cxx <= 0) return 0;   // estimation encore imprécise
+    double rate = d->cxx / d->cxy;            // frames par seconde
+    double ppm = (rate / 48000.0 - 1.0) * 1e6;
+    if (ppm > 1000.0) ppm = 1000.0;           // horodatages aberrants : on borne
+    if (ppm < -1000.0) ppm = -1000.0;
+    d->ppm = ppm;
+    if (fabs(ppm) < 1.0) return 0;            // horloges verrouillées : rien à corriger
+    d->accumulator += (double)frames * ppm * 1e-6;
+    if (d->accumulator >= 1.0) { d->accumulator -= 1.0; return -1; }
+    if (d->accumulator <= -1.0) { d->accumulator += 1.0; return 1; }
     return 0;
 }
 
@@ -195,6 +198,7 @@ OSStatus hush_rt_vp_input(void *refCon, AudioUnitRenderActionFlags *flags, const
         atomic_store_explicit(&rt->lastError, err, memory_order_relaxed);
         return err;
     }
+    if (atomic_exchange_explicit(&rt->driftResetPending, 0, memory_order_acquire)) hush_drift_reset(&rt->drift);
     if (atomic_exchange_explicit(&rt->agcResetPending, 0, memory_order_acquire))
         hush_agc_init(&rt->agc, 48000.0f, atomic_load_explicit(&rt->agcResetGainDB, memory_order_relaxed));
     if (atomic_load_explicit(&rt->autoGain, memory_order_relaxed)) {
@@ -212,7 +216,7 @@ OSStatus hush_rt_vp_input(void *refCon, AudioUnitRenderActionFlags *flags, const
         UInt32 n = frames;
         const float *out = rt->vpScratch;
         if (atomic_load_explicit(&rt->driftEnabled, memory_order_relaxed)) {
-            int d = drift_decision(rt, s, frames);
+            int d = hush_drift_update(&rt->drift, ts->mHostTime, frames, rt->hostTicksPerSecond);
             if (d != 0 && n > 2) {
                 // Bloc rééchantillonné en n ± 1 échantillons (variation de hauteur ≈ 1/n, inaudible),
                 // au lieu de retirer ou dupliquer un échantillon sec, qui ferait un clic.

@@ -30,10 +30,24 @@ void hush_rt_reset_auto_gain(hush_rt_t *rt, float initialGainDB);   // repris au
 float hush_rt_auto_gain_db(const hush_rt_t *rt);
 void hush_rt_set_gain_db(hush_rt_t *rt, float db);
 void hush_rt_apply_gain(float *x, uint32_t n, float gain);
+// Estimation de la dérive d'horloge du micro par ses horodatages (le driver suit l'horloge hôte à 48 kHz
+// exactement) : renvoie -1 (retirer un échantillon), +1 (en ajouter un) ou 0, au rythme exact de la dérive.
+typedef struct {
+    uint64_t firstHost;
+    double frames;               // frames produites avant l'horodatage courant
+    double n, meanX, meanY, cxy, cxx;   // régression linéaire en ligne (Welford) secondes ~ frames
+    double ppm;                  // dérive estimée (positive : le micro va plus vite que 48 kHz)
+    double accumulator;          // frames en excès accumulées
+} hush_drift_t;
+void hush_drift_reset(hush_drift_t *d);
+int hush_drift_update(hush_drift_t *d, uint64_t hostTime, uint32_t frames, double hostTicksPerSecond);
+
 // Rééchantillonnage linéaire d'un bloc (n → m), bords conservés (utilisé par la correction de dérive).
 void hush_rt_resample_linear(const float *src, uint32_t n, float *dst, uint32_t m);
 // Correction de dérive d'horloge par glissement d'échantillons (activée par défaut).
 void hush_rt_set_drift_correction(hush_rt_t *rt, int enabled);
+void hush_rt_reset_drift(hush_rt_t *rt);              // à chaque (re)démarrage du voice processing
+double hush_rt_drift_ppm(const hush_rt_t *rt);        // diagnostic (lecture non synchronisée)
 
 // Callbacks à brancher sur les audio units
 // Signatures identiques à AURenderCallback (nullabilité comprise, pour Swift).

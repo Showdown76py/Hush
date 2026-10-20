@@ -75,7 +75,7 @@ while Date().timeIntervalSince(t0) < seconds {
     Thread.sleep(forTimeInterval: interval)
     let s = shm.stats
     let cb = engine.callbackCount
-    print(String(format: "gain auto=%5.1f dB ", engine.automaticGainDB), terminator: "")
+    print(String(format: "gain auto=%5.1f dB dérive=%+6.2f ppm ", engine.automaticGainDB, engine.driftPPM), terminator: "")
     print(String(format: "t=%3.0fs callbacks/s=%4.0f erreurs=%llu propre=%5.1f dB brut=%5.1f dB clients=%d fill=%4u underruns=%llu glissements=%lld enregistrement=%@",
                  Date().timeIntervalSince(t0), Double(cb - lastCallbacks) / interval, engine.errorCount,
                  20 * log10(max(engine.cleanLevel, 1e-6)), 20 * log10(max(engine.rawLevel, 1e-6)),

@@ -98,6 +98,7 @@ final class VoiceEngine {
             let cbSize = UInt32(MemoryLayout<AURenderCallbackStruct>.size)
             try Self.check(AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &input, cbSize), "callback micro")
             try Self.check(AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &output, cbSize), "callback sortie")
+            hush_rt_reset_drift(rt)   // nouvelle horloge : nouvelle estimation de dérive
             hush_rt_set_vp_unit(rt, unit)
             self.shm = shm
             hush_rt_set_shm(rt, shm)
@@ -223,4 +224,5 @@ final class VoiceEngine {
     var callbackCount: UInt64 { hush_rt_vp_callbacks(rt) }
     var errorCount: UInt64 { hush_rt_vp_errors(rt) }
     var driftSlips: Int64 { hush_rt_drift_slips(rt) }
+    var driftPPM: Double { hush_rt_drift_ppm(rt) }
 }

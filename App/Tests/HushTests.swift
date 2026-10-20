@@ -223,6 +223,45 @@ final class DriftResampleTests: XCTestCase {
     }
 }
 
+final class DriftEstimatorTests: XCTestCase {
+    /// Simule un micro à `ppm` de 48 kHz (blocs de 256, horodatages avec gigue de ±0,5 ms) pendant `seconds`.
+    private func slips(ppm: Double, seconds: Double) -> (dropped: Int, added: Int, estimate: Double) {
+        var d = hush_drift_t()
+        hush_drift_reset(&d)
+        let ticksPerSecond = 1e9, rate = 48000 * (1 + ppm * 1e-6)
+        var frames = 0.0, dropped = 0, added = 0
+        var seed: UInt32 = 7
+        while frames / rate < seconds {
+            seed = seed &* 1664525 &+ 1013904223
+            let jitter = (Double(seed >> 8) / Double(1 << 24) - 0.5) * 0.001
+            let host = UInt64((1 + frames / rate + jitter) * ticksPerSecond)
+            let r = hush_drift_update(&d, host, 256, ticksPerSecond)
+            if r < 0 { dropped += 1 } else if r > 0 { added += 1 }
+            frames += 256
+        }
+        return (dropped, added, d.ppm)
+    }
+
+    func testFastMicrophoneDropsExactlyItsExcess() {
+        let r = slips(ppm: 100, seconds: 60)
+        XCTAssertEqual(r.estimate, 100, accuracy: 2)
+        // corrections à partir de 10 s : 50 s × 4,8 frames/s ≈ 240
+        XCTAssertEqual(Double(r.dropped), 240, accuracy: 10)
+        XCTAssertEqual(r.added, 0)
+    }
+
+    func testSlowMicrophoneAddsSamples() {
+        let r = slips(ppm: -50, seconds: 60)
+        XCTAssertEqual(Double(r.added), 120, accuracy: 8)
+        XCTAssertEqual(r.dropped, 0)
+    }
+
+    func testLockedClockNeverCorrectsDespiteJitter() {
+        let r = slips(ppm: 0, seconds: 120)
+        XCTAssertLessThanOrEqual(r.dropped + r.added, 1, "la gigue ne déclenche aucune correction")
+    }
+}
+
 final class LevelMeterTests: XCTestCase {
     func testFastAttackSlowRelease() {
         let s = LevelMeter.Smoother()
