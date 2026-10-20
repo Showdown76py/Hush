@@ -13,6 +13,7 @@ let package = Package(
         .executableTarget(name: "dualrec", path: "Sources/dualrec"),
         .executableTarget(name: "clicktest", path: "Sources/clicktest"),
         .target(name: "HushRT", path: "Sources/HushRT"),
+        .executableTarget(name: "whoaudio", path: "Sources/whoaudio"),
         .executableTarget(name: "enginecheck", dependencies: ["HushRT"], path: "Sources/enginecheck"),
     ],
     swiftLanguageModes: [.v5]

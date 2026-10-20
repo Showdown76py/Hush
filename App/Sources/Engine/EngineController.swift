@@ -32,7 +32,11 @@ final class EngineController: ObservableObject {
     @Published private(set) var passthroughActive = false
     @Published private(set) var driverState: DriverInstaller.State = DriverInstaller.state
     @Published var mode: HushMode {
-        didSet { UserDefaults.standard.set(mode.rawValue, forKey: Keys.mode); reconcile() }
+        didSet {
+            UserDefaults.standard.set(mode.rawValue, forKey: Keys.mode)
+            log.notice("mode : \(self.mode.rawValue, privacy: .public)")
+            reconcile()
+        }
     }
     @Published var sourceUID: String {
         didSet { UserDefaults.standard.set(sourceUID, forKey: Keys.source); scheduleRestart(reason: "source") }
@@ -191,7 +195,7 @@ final class EngineController: ObservableObject {
         let work = DispatchWorkItem { [weak self] in
             MainActor.assumeIsolated {
                 guard let self else { return }
-                self.log.info("relance : \(reason, privacy: .public)")
+                self.log.notice("relance : \(reason, privacy: .public)")
                 if self.engine.isRunning { self.engine.stop() }
                 if self.engine.isPassingThrough {
                     self.engine.setPassthrough(nil)
@@ -210,7 +214,10 @@ final class EngineController: ObservableObject {
 
     private func tick() {
         if let stats = shm?.stats {
-            if stats.clients != clientCount { clientCount = stats.clients }
+            if stats.clients != clientCount {
+                log.notice("apps clientes de Hush Microphone : \(stats.clients)")
+                clientCount = stats.clients
+            }
             if stats.clients > 0 { lastClientSeen = Date() }
         }
         if engine.isRunning {

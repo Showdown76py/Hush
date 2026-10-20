@@ -104,7 +104,7 @@ final class VoiceEngine {
         }
         vpUnit = unit
         isRunning = true
-        Self.log.info("voice processing démarré (entrée \(config.inputDevice))")
+        Self.log.notice("voice processing démarré (entrée \(config.inputDevice), ducking Apple : \(config.keepAppleDucking))")
     }
 
     func stop() {
@@ -119,7 +119,7 @@ final class VoiceEngine {
         // Une unité brute ouverte pendant le voice processing reste dans le mode « altéré » de macOS
         // (environ 10 dB plus bas) : elle sera rouverte à sa prochaine utilisation.
         rawUnitIsStale = rawUnit != nil
-        Self.log.info("voice processing arrêté")
+        Self.log.notice("voice processing arrêté")
     }
 
     func setSharedMemory(_ shm: UnsafeMutableRawPointer?) {
@@ -138,6 +138,7 @@ final class VoiceEngine {
         if shm == nil, isPassingThrough, let s = shmForPassthrough { hush_app_stop(s) }   // driver → silence
         shmForPassthrough = shm
         isPassingThrough = shm != nil
+        Self.log.notice("passage direct : \(shm != nil ? "actif" : "arrêté", privacy: .public)")
     }
     private var shmForPassthrough: UnsafeMutableRawPointer?
 

@@ -4,6 +4,19 @@ import Foundation
 import HushRT
 
 let switchTest = CommandLine.arguments.contains("--switch")
+if CommandLine.arguments.contains("--duck-release") {
+    // Voice processing 10 s puis arrêt, le processus reste vivant 30 s (comme l'app).
+    let shm = try SharedMemory()
+    let engine = VoiceEngine()
+    let source = AudioDevices.resolveSource(preferredUID: nil)!
+    try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+    print("VP démarré"); fflush(stdout)
+    Thread.sleep(forTimeInterval: 10)
+    engine.stop()
+    print("VP arrêté à t=10 s"); fflush(stdout)
+    Thread.sleep(forTimeInterval: 30)
+    exit(0)
+}
 let seconds = switchTest ? 30 : (Double(CommandLine.arguments.dropFirst().first ?? "60") ?? 60)
 let shm = try SharedMemory()
 let engine = VoiceEngine()
