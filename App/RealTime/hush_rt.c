@@ -28,6 +28,7 @@ struct hush_rt {
 
     float *vpScratch;    // SCRATCH_FRAMES + 1 (place pour un échantillon dupliqué)
     float *rawScratch;
+    float *driftScratch; // SCRATCH_FRAMES + 1 (bloc rééchantillonné)
 
     _Atomic float levelClean;
     _Atomic float levelRaw;
@@ -57,8 +58,9 @@ hush_rt_t *hush_rt_create(void) {
     if (!rt) return NULL;
     rt->vpScratch = calloc(SCRATCH_FRAMES + 1, sizeof(float));
     rt->rawScratch = calloc(SCRATCH_FRAMES, sizeof(float));
+    rt->driftScratch = calloc(SCRATCH_FRAMES + 1, sizeof(float));
     rt->record = calloc(HUSH_RT_RECORD_MAX_FRAMES, sizeof(float));
-    if (!rt->vpScratch || !rt->rawScratch || !rt->record) { hush_rt_destroy(rt); return NULL; }
+    if (!rt->vpScratch || !rt->rawScratch || !rt->driftScratch || !rt->record) { hush_rt_destroy(rt); return NULL; }
     atomic_store(&rt->driftEnabled, 1);
     atomic_store(&rt->gain, 1.0f);
     atomic_store(&rt->autoGain, 1);
@@ -72,6 +74,7 @@ void hush_rt_destroy(hush_rt_t *rt) {
     if (!rt) return;
     free(rt->vpScratch);
     free(rt->rawScratch);
+    free(rt->driftScratch);
     free(rt->record);
     free(rt);
 }
@@ -129,10 +132,26 @@ static void record_push(hush_rt_t *rt, int source, const float *x, UInt32 n) {
     atomic_store_explicit(&rt->recordCount, count + k, memory_order_release);
 }
 
-// Retourne -1 pour retirer un échantillon, +1 pour en dupliquer un, 0 sinon.
-// Principe : on mémorise le remplissage moyen du ring côté driver une fois le régime établi, puis on
-// le maintient en glissant un échantillon de temps en temps (au plus un toutes les 32 callbacks).
-static int drift_decision(hush_rt_t *rt, hush_shm_t *s) {
+// Rééchantillonne linéairement un bloc de n échantillons en m (m = n ± 1), en conservant exactement
+// le premier et le dernier échantillon : aucune discontinuité aux bords du bloc.
+void hush_rt_resample_linear(const float *src, uint32_t n, float *dst, uint32_t m) {
+    if (n == 0 || m == 0) return;
+    if (n == 1 || m == 1) { for (uint32_t i = 0; i < m; i++) dst[i] = src[0]; return; }
+    double step = (double)(n - 1) / (double)(m - 1);
+    for (uint32_t i = 0; i < m; i++) {
+        double pos = i * step;
+        uint32_t k = (uint32_t)pos;
+        if (k >= n - 1) { dst[i] = src[n - 1]; continue; }
+        float frac = (float)(pos - k);
+        dst[i] = src[k] + (src[k + 1] - src[k]) * frac;
+    }
+}
+
+// Retourne -1 pour retirer un échantillon, +1 pour en ajouter un, 0 sinon.
+// La vraie dérive d'horloge est lente (quelques dizaines de ppm au plus) : on compare une moyenne longue
+// (~10 s) du remplissage côté driver à sa valeur de référence, avec un seuil large, pour ne jamais réagir à
+// la gigue des lectures du client.
+static int drift_decision(hush_rt_t *rt, hush_shm_t *s, uint32_t frames) {
     uint32_t clients = atomic_load_explicit(&s->clientsRunning, memory_order_relaxed);
     uint64_t underruns = atomic_load_explicit(&s->underruns, memory_order_relaxed);
     if (s != rt->driftShm || clients != rt->driftClients || underruns != rt->driftUnderruns || clients == 0) {
@@ -145,17 +164,17 @@ static int drift_decision(hush_rt_t *rt, hush_shm_t *s) {
     }
     double fill = (double)atomic_load_explicit(&s->lastFill, memory_order_relaxed);
     if (rt->driftCallbacks == 0) rt->driftAvg = fill;
-    rt->driftAvg += (fill - rt->driftAvg) / 256.0;
+    rt->driftAvg += (fill - rt->driftAvg) * (double)frames / (48000.0 * 10.0);   // moyenne sur ~10 s
     rt->driftCallbacks++;
     rt->driftSinceSlip++;
     if (rt->driftBaseline < 0) {
-        if (rt->driftCallbacks >= 1000) rt->driftBaseline = rt->driftAvg;   // ~2,7 s à 128 frames
+        if (rt->driftCallbacks * (uint64_t)frames >= 48000u * 20u) rt->driftBaseline = rt->driftAvg;   // après 20 s
         return 0;
     }
-    if (rt->driftSinceSlip < 32) return 0;
+    if (rt->driftSinceSlip < 64) return 0;
     double delta = rt->driftAvg - rt->driftBaseline;
-    if (delta > 64) { rt->driftSinceSlip = 0; return -1; }
-    if (delta < -64) { rt->driftSinceSlip = 0; return 1; }
+    if (delta > 128) { rt->driftSinceSlip = 0; return -1; }
+    if (delta < -128) { rt->driftSinceSlip = 0; return 1; }
     return 0;
 }
 
@@ -191,18 +210,20 @@ OSStatus hush_rt_vp_input(void *refCon, AudioUnitRenderActionFlags *flags, const
     hush_shm_t *s = atomic_load_explicit(&rt->shm, memory_order_acquire);
     if (s) {
         UInt32 n = frames;
+        const float *out = rt->vpScratch;
         if (atomic_load_explicit(&rt->driftEnabled, memory_order_relaxed)) {
-            int d = drift_decision(rt, s);
-            if (d < 0 && n > 1) {
-                n -= 1;                                             // on retire le dernier échantillon
-                atomic_fetch_add_explicit(&rt->driftSlips, 1, memory_order_relaxed);
-            } else if (d > 0) {
-                rt->vpScratch[n] = rt->vpScratch[n - 1];            // on duplique le dernier échantillon
-                n += 1;
-                atomic_fetch_sub_explicit(&rt->driftSlips, 1, memory_order_relaxed);
+            int d = drift_decision(rt, s, frames);
+            if (d != 0 && n > 2) {
+                // Bloc rééchantillonné en n ± 1 échantillons (variation de hauteur ≈ 1/n, inaudible),
+                // au lieu de retirer ou dupliquer un échantillon sec, qui ferait un clic.
+                uint32_t m = d < 0 ? n - 1 : n + 1;
+                hush_rt_resample_linear(rt->vpScratch, n, rt->driftScratch, m);
+                out = rt->driftScratch;
+                n = m;
+                atomic_fetch_add_explicit(&rt->driftSlips, d < 0 ? 1 : -1, memory_order_relaxed);
             }
         }
-        hush_app_write(s, rt->vpScratch, n, mach_absolute_time());
+        hush_app_write(s, out, n, mach_absolute_time());
     }
     return noErr;
 }

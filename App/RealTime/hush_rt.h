@@ -30,6 +30,8 @@ void hush_rt_reset_auto_gain(hush_rt_t *rt, float initialGainDB);   // repris au
 float hush_rt_auto_gain_db(const hush_rt_t *rt);
 void hush_rt_set_gain_db(hush_rt_t *rt, float db);
 void hush_rt_apply_gain(float *x, uint32_t n, float gain);
+// Rééchantillonnage linéaire d'un bloc (n → m), bords conservés (utilisé par la correction de dérive).
+void hush_rt_resample_linear(const float *src, uint32_t n, float *dst, uint32_t m);
 // Correction de dérive d'horloge par glissement d'échantillons (activée par défaut).
 void hush_rt_set_drift_correction(hush_rt_t *rt, int enabled);
 

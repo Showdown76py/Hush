@@ -206,6 +206,23 @@ final class VoiceAGCTests: XCTestCase {
     }
 }
 
+final class DriftResampleTests: XCTestCase {
+    /// La correction de dérive ne doit créer aucune discontinuité : bords conservés, signal lisse.
+    func testDropAndAddKeepEdgesAndSmoothness() {
+        let n = 256
+        let src = (0..<n).map { sinf(2 * .pi * 440 * Float($0) / 48000) }
+        for m in [n - 1, n + 1] {
+            var dst = [Float](repeating: 0, count: m)
+            hush_rt_resample_linear(src, UInt32(n), &dst, UInt32(m))
+            XCTAssertEqual(dst.first!, src.first!, accuracy: 1e-6)
+            XCTAssertEqual(dst.last!, src.last!, accuracy: 1e-6)
+            let maxStep = zip(dst, dst.dropFirst()).map { abs($1 - $0) }.max()!
+            let maxSrcStep = zip(src, src.dropFirst()).map { abs($1 - $0) }.max()!
+            XCTAssertLessThan(maxStep, maxSrcStep * 1.02, "pas de saut plus grand que dans le signal d'origine")
+        }
+    }
+}
+
 final class LevelMeterTests: XCTestCase {
     func testFastAttackSlowRelease() {
         let s = LevelMeter.Smoother()
