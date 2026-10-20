@@ -9,6 +9,9 @@ let package = Package(
         .executableTarget(name: "systap", path: "Sources/systap"),
         .target(name: "CRing", path: "Sources/CRing"),
         .executableTarget(name: "relay", dependencies: ["CRing"], path: "Sources/relay"),
+        .executableTarget(name: "vp2out", dependencies: ["CRing"], path: "Sources/vp2out"),
+        .executableTarget(name: "dualrec", path: "Sources/dualrec"),
+        .executableTarget(name: "clicktest", path: "Sources/clicktest"),
     ],
     swiftLanguageModes: [.v5]
 )
