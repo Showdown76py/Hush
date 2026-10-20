@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+*.wav
+DerivedData/
+build/
+.DS_Store
+xcuserdata/
