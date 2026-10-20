@@ -127,6 +127,10 @@ acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP e
 (de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
 pas réglable par une API publique.
 
+À l'activation, c'est l'inverse : le son paraît faible puis remonte en quelques secondes, alors que le tap montre
+une baisse de 8 dB immédiate (creux à -9 dB pendant 1 s) puis parfaitement stable pendant 40 s. Là aussi, la
+variation progressive se passe dans le traitement des haut-parleurs.
+
 ## Souffle « ventilateur » quand la musique est forte
 
 Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau par seconde) :

@@ -108,7 +108,10 @@ qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. Nous l'avons mes
 semble plus forte, vérifiez l'atténuation de Discord.
 
 **Mes haut-parleurs sonnent différemment quand Hush tourne.**
-macOS les passe en mode appel, comme pendant un appel FaceTime. En mode Automatique, ça n'arrive que pendant vos appels.
+macOS les passe en mode appel, comme pendant un appel FaceTime. À l'activation de Hush, le son paraît faible pendant
+quelques secondes puis se stabilise. Le signal laissé passer par Hush baisse de 8 dB d'un coup puis reste stable
+(nous l'avons mesuré) : le changement progressif vient du traitement des haut-parleurs. En mode Automatique, tout ça
+n'arrive que pendant vos appels.
 
 **Après un appel, le son reste faible puis remonte lentement.**
 macOS fait sortir les haut-parleurs du mode appel en 30 à 40 secondes. Le signal envoyé par Hush est intact : la

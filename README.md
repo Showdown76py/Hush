@@ -104,7 +104,9 @@ macOS lowers other audio whenever voice processing runs. Hush requests the small
 Automatic mode limits this to your calls. If the drop feels bigger, check Discord's Attenuation setting.
 
 **My speakers sound different while Hush runs.**
-macOS puts the speakers in call mode, like during a FaceTime call. In Automatic mode that only happens during calls.
+macOS puts the speakers in call mode, like during a FaceTime call. When Hush turns on, the speakers sound quiet for
+a few seconds and then settle. The signal Hush lets through drops by 8 dB at once and stays flat (we measured it),
+so the slow change comes from the speaker processing. In Automatic mode all of this only happens during calls.
 
 **After a call, the speakers stay quiet and slowly come back.**
 macOS takes the speakers out of call mode over 30 to 40 seconds. The signal Hush sends is untouched; the slow ramp

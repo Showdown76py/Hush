@@ -27,6 +27,16 @@ if CommandLine.arguments.contains("--aggregates") {
     }
     exit(0)
 }
+if CommandLine.arguments.contains("--vp-hold") {
+    // Voice processing maintenu 40 s (pour observer le ducking à l'activation).
+    let shm = try SharedMemory()
+    let engine = VoiceEngine()
+    let source = AudioDevices.resolveSource(preferredUID: nil)!
+    try engine.start(.init(inputDevice: source.id, keepAppleDucking: false), shm: shm.pointer)
+    Thread.sleep(forTimeInterval: 40)
+    engine.stop()
+    exit(0)
+}
 if CommandLine.arguments.contains("--duck-release") {
     // Voice processing 10 s puis arrêt, le processus reste vivant 30 s (comme l'app).
     let shm = try SharedMemory()
