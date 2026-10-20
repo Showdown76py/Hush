@@ -9,7 +9,7 @@ BUILD="${3:-1}"
 B="$OUT/Hush.driver/Contents"
 rm -rf "$OUT/Hush.driver"
 mkdir -p "$B/MacOS" "$B/Resources"
-sed -e "s/\$(VERSION)/$VERSION/" -e "s/\$(BUILD)/$BUILD/" "$HERE/Info.plist" > "$B/Info.plist"
+sed -e "s/\$(MARKETING_VERSION)/$VERSION/" -e "s/\$(CURRENT_PROJECT_VERSION)/$BUILD/" "$HERE/Info.plist" > "$B/Info.plist"
 clang -bundle -O2 -Wall -Wextra -Werror -std=c11 \
   -arch arm64 -arch x86_64 -mmacosx-version-min=14.0 \
   -fvisibility=hidden -I "$HERE/../Shared" \

@@ -1,0 +1,40 @@
+{
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "NSMicrophoneUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hush listens to your microphone to remove the sound of your speakers before passing your voice to other apps. Nothing is recorded or sent anywhere."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hush écoute votre micro pour retirer le son de vos haut-parleurs avant de transmettre votre voix aux autres apps. Rien n’est enregistré ni envoyé ailleurs."
+          }
+        }
+      }
+    },
+    "CFBundleDisplayName": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hush"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hush"
+          }
+        }
+      }
+    }
+  }
+}

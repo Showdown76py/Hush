@@ -1,0 +1,756 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		032C1A6CEB8AEAB40E747095 /* BeforeAfterTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3374866CB4E43BFA89E02B89 /* BeforeAfterTest.swift */; };
+		1319A53149C081D53EB90E11 /* DiscordGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */; };
+		16A74F7279FC20B6C14648C8 /* VoiceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643D0FA740F53EF4CE4A718 /* VoiceEngine.swift */; };
+		2851EDCED9D7105AEC45391D /* hush_rt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66FA5173A5EC9FF62939EF64 /* hush_rt.c */; };
+		40105AE33C412B5B76FE8F3F /* EngineController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E622253C65EB346B5BF78618 /* EngineController.swift */; };
+		4A6C943E71220CAF9EAE19ED /* HushApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E294F847708222F5ACE13A /* HushApp.swift */; };
+		511ECE4895699773519D28F9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0642A549CAFB34F4B2D70 /* OnboardingView.swift */; };
+		57A1062384F3AAEFB6945388 /* SharedMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC30536C3454924A1E40A763 /* SharedMemory.swift */; };
+		594B71F5EB710F8CBF58DB99 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AD303383E70238854530C8A /* Sparkle.framework */; };
+		59C7269D7546482F0D5D52B7 /* HushError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FF6FB7813BEF88BF9D3706 /* HushError.swift */; };
+		5DE0304E928C10D57562A49C /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D62C487ECC4D6EB8EE3BA /* MenuContentView.swift */; };
+		6A8A90B3D580C258E21DD47F /* AudioDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5857C55ECEA19366E371E2A7 /* AudioDevices.swift */; };
+		6AB5802BE57F019FE2C4148B /* HushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654F958ABA81F8BFE55E9395 /* HushTests.swift */; };
+		89CDE18C7CCEDEF865FF939A /* LevelMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329A2B479160410654DCBB /* LevelMeter.swift */; };
+		92727255D1807D1698509C45 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3B441E844E805B05E732ED6D /* Localizable.xcstrings */; };
+		9476FB996FF32B0650C1F6AE /* HushDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 0B94DE077A98962D3B46A2A8 /* HushDriver.c */; };
+		96B0139B0FDA4CF2FAB63CC5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215D733E0AB78A4DDF599F8A /* SettingsView.swift */; };
+		B7C76DD4362766C6CB5B269E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE0FA2754F2AF00ACD3F8601 /* InfoPlist.xcstrings */; };
+		C4094500A084E64D8574A8EF /* driver-admin.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1250082F2B61D146862261F6 /* driver-admin.sh */; };
+		CD0EF97A179A858EAB69BE62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 998EE92588640F00901C68F9 /* Assets.xcassets */; };
+		D13857F1BF351D8248240F5E /* DriverInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5665B5D5C90635F49202F95 /* DriverInstaller.swift */; };
+		F5ABADA1265E74FF8D393091 /* Sparkle.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9AD303383E70238854530C8A /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BD7491D95690BADC24F86397 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0F21E0AB7C84BD6590133952 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 800B0AC188EDDE0685E05FE9;
+			remoteInfo = HushDriver;
+		};
+		F5434C51744FF75DF1420683 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0F21E0AB7C84BD6590133952 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B3E4653A7BBE0607CCC48A4;
+			remoteInfo = Hush;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A8FDACFAC30E2662C408FE77 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F5ABADA1265E74FF8D393091 /* Sparkle.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0B94DE077A98962D3B46A2A8 /* HushDriver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = HushDriver.c; sourceTree = "<group>"; };
+		1250082F2B61D146862261F6 /* driver-admin.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "driver-admin.sh"; sourceTree = "<group>"; };
+		1B1BA1904F4C2DB154DF5AFF /* hush_app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hush_app.h; sourceTree = "<group>"; };
+		1F045775289FE8DCD27C0585 /* Hush-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Hush-Bridging-Header.h"; sourceTree = "<group>"; };
+		215D733E0AB78A4DDF599F8A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		27B317C9808163C26D60EC64 /* hush_shm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hush_shm.h; sourceTree = "<group>"; };
+		2B7D62C487ECC4D6EB8EE3BA /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
+		3374866CB4E43BFA89E02B89 /* BeforeAfterTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforeAfterTest.swift; sourceTree = "<group>"; };
+		35329A2B479160410654DCBB /* LevelMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelMeter.swift; sourceTree = "<group>"; };
+		3643D0FA740F53EF4CE4A718 /* VoiceEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceEngine.swift; sourceTree = "<group>"; };
+		3B441E844E805B05E732ED6D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		50E294F847708222F5ACE13A /* HushApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushApp.swift; sourceTree = "<group>"; };
+		5857C55ECEA19366E371E2A7 /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
+		654F958ABA81F8BFE55E9395 /* HushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushTests.swift; sourceTree = "<group>"; };
+		664D0852F7C4BB53CCD3F928 /* Hush.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hush.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		66FA5173A5EC9FF62939EF64 /* hush_rt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hush_rt.c; sourceTree = "<group>"; };
+		7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordGuideView.swift; sourceTree = "<group>"; };
+		7F654EC87DB3D46438DB275B /* HushDriver.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HushDriver.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		8372E1B68A4B3AE002388487 /* hush_rt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hush_rt.h; sourceTree = "<group>"; };
+		88D5F1E34276D7F28423D584 /* HushTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HushTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		998EE92588640F00901C68F9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9AD303383E70238854530C8A /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = "<group>"; };
+		A7BF3AF6473EBDB20122AC07 /* ring.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ring.h; sourceTree = "<group>"; };
+		BE0FA2754F2AF00ACD3F8601 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		DDE0642A549CAFB34F4B2D70 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		E622253C65EB346B5BF78618 /* EngineController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineController.swift; sourceTree = "<group>"; };
+		EC30536C3454924A1E40A763 /* SharedMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedMemory.swift; sourceTree = "<group>"; };
+		F5665B5D5C90635F49202F95 /* DriverInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverInstaller.swift; sourceTree = "<group>"; };
+		F9FF6FB7813BEF88BF9D3706 /* HushError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushError.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		05FFFB4393FEDC3D6D020F97 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				594B71F5EB710F8CBF58DB99 /* Sparkle.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2141B7C04FC0DDA979BCAC32 = {
+			isa = PBXGroup;
+			children = (
+				FFBF330A6BA344E309430813 /* App */,
+				72286BE12EFA1D70E39BEC19 /* Driver */,
+				7B53C84968F6225273C1F2E1 /* Shared */,
+				22CE2B585FA3CD3CFEF10E56 /* Frameworks */,
+				E3B8C55CC9776F358EDB9706 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		22CE2B585FA3CD3CFEF10E56 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9AD303383E70238854530C8A /* Sparkle.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2AC695B4FC4544096795FFD1 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				5857C55ECEA19366E371E2A7 /* AudioDevices.swift */,
+				F5665B5D5C90635F49202F95 /* DriverInstaller.swift */,
+				E622253C65EB346B5BF78618 /* EngineController.swift */,
+				F9FF6FB7813BEF88BF9D3706 /* HushError.swift */,
+				EC30536C3454924A1E40A763 /* SharedMemory.swift */,
+				3643D0FA740F53EF4CE4A718 /* VoiceEngine.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		31EC7202F6B77DDD66780FC0 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				3374866CB4E43BFA89E02B89 /* BeforeAfterTest.swift */,
+				7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */,
+				35329A2B479160410654DCBB /* LevelMeter.swift */,
+				2B7D62C487ECC4D6EB8EE3BA /* MenuContentView.swift */,
+				DDE0642A549CAFB34F4B2D70 /* OnboardingView.swift */,
+				215D733E0AB78A4DDF599F8A /* SettingsView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		3AB0D082DD9BDBE114943403 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				50E294F847708222F5ACE13A /* HushApp.swift */,
+				2AC695B4FC4544096795FFD1 /* Engine */,
+				31EC7202F6B77DDD66780FC0 /* UI */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		6A42A415084A4B4D3C8E4E1A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				998EE92588640F00901C68F9 /* Assets.xcassets */,
+				1250082F2B61D146862261F6 /* driver-admin.sh */,
+				BE0FA2754F2AF00ACD3F8601 /* InfoPlist.xcstrings */,
+				3B441E844E805B05E732ED6D /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		72286BE12EFA1D70E39BEC19 /* Driver */ = {
+			isa = PBXGroup;
+			children = (
+				0B94DE077A98962D3B46A2A8 /* HushDriver.c */,
+			);
+			path = Driver;
+			sourceTree = "<group>";
+		};
+		7B53C84968F6225273C1F2E1 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				1B1BA1904F4C2DB154DF5AFF /* hush_app.h */,
+				27B317C9808163C26D60EC64 /* hush_shm.h */,
+				A7BF3AF6473EBDB20122AC07 /* ring.h */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		7C17ED15946BD6A0E9153F82 /* RealTime */ = {
+			isa = PBXGroup;
+			children = (
+				66FA5173A5EC9FF62939EF64 /* hush_rt.c */,
+				8372E1B68A4B3AE002388487 /* hush_rt.h */,
+			);
+			path = RealTime;
+			sourceTree = "<group>";
+		};
+		B7E6BA7623E7C0476B2FCABD /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				654F958ABA81F8BFE55E9395 /* HushTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		E3B8C55CC9776F358EDB9706 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				664D0852F7C4BB53CCD3F928 /* Hush.app */,
+				7F654EC87DB3D46438DB275B /* HushDriver.bundle */,
+				88D5F1E34276D7F28423D584 /* HushTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FFBF330A6BA344E309430813 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				1F045775289FE8DCD27C0585 /* Hush-Bridging-Header.h */,
+				7C17ED15946BD6A0E9153F82 /* RealTime */,
+				6A42A415084A4B4D3C8E4E1A /* Resources */,
+				3AB0D082DD9BDBE114943403 /* Sources */,
+				B7E6BA7623E7C0476B2FCABD /* Tests */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		08C995CFEA3C9C419FF9D310 /* HushTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EADFD108EA6DBEE7C26A032C /* Build configuration list for PBXNativeTarget "HushTests" */;
+			buildPhases = (
+				A19A82A038F5504AECD899D6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0CBF55A5D81BC0082038EFD4 /* PBXTargetDependency */,
+			);
+			name = HushTests;
+			packageProductDependencies = (
+			);
+			productName = HushTests;
+			productReference = 88D5F1E34276D7F28423D584 /* HushTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2B3E4653A7BBE0607CCC48A4 /* Hush */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 177968F7A9DE2E587E4673AC /* Build configuration list for PBXNativeTarget "Hush" */;
+			buildPhases = (
+				3B5BE0B8938861B0F0795209 /* Sources */,
+				05B466E4A94D9C58BE3EBFF5 /* Resources */,
+				05FFFB4393FEDC3D6D020F97 /* Frameworks */,
+				A8FDACFAC30E2662C408FE77 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C447D82848AF7DC9EDD7FAF1 /* PBXTargetDependency */,
+			);
+			name = Hush;
+			packageProductDependencies = (
+			);
+			productName = Hush;
+			productReference = 664D0852F7C4BB53CCD3F928 /* Hush.app */;
+			productType = "com.apple.product-type.application";
+		};
+		800B0AC188EDDE0685E05FE9 /* HushDriver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 558BBAF709BF50B53E773F1D /* Build configuration list for PBXNativeTarget "HushDriver" */;
+			buildPhases = (
+				6A9C960BCBAB2B1AA436E3D7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HushDriver;
+			packageProductDependencies = (
+			);
+			productName = HushDriver;
+			productReference = 7F654EC87DB3D46438DB275B /* HushDriver.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0F21E0AB7C84BD6590133952 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					08C995CFEA3C9C419FF9D310 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					2B3E4653A7BBE0607CCC48A4 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					800B0AC188EDDE0685E05FE9 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 5E562B37A696A22839D3BF87 /* Build configuration list for PBXProject "Hush" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				fr,
+			);
+			mainGroup = 2141B7C04FC0DDA979BCAC32;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E3B8C55CC9776F358EDB9706 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2B3E4653A7BBE0607CCC48A4 /* Hush */,
+				800B0AC188EDDE0685E05FE9 /* HushDriver */,
+				08C995CFEA3C9C419FF9D310 /* HushTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		05B466E4A94D9C58BE3EBFF5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD0EF97A179A858EAB69BE62 /* Assets.xcassets in Resources */,
+				B7C76DD4362766C6CB5B269E /* InfoPlist.xcstrings in Resources */,
+				92727255D1807D1698509C45 /* Localizable.xcstrings in Resources */,
+				C4094500A084E64D8574A8EF /* driver-admin.sh in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3B5BE0B8938861B0F0795209 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A8A90B3D580C258E21DD47F /* AudioDevices.swift in Sources */,
+				032C1A6CEB8AEAB40E747095 /* BeforeAfterTest.swift in Sources */,
+				1319A53149C081D53EB90E11 /* DiscordGuideView.swift in Sources */,
+				D13857F1BF351D8248240F5E /* DriverInstaller.swift in Sources */,
+				40105AE33C412B5B76FE8F3F /* EngineController.swift in Sources */,
+				4A6C943E71220CAF9EAE19ED /* HushApp.swift in Sources */,
+				59C7269D7546482F0D5D52B7 /* HushError.swift in Sources */,
+				89CDE18C7CCEDEF865FF939A /* LevelMeter.swift in Sources */,
+				5DE0304E928C10D57562A49C /* MenuContentView.swift in Sources */,
+				511ECE4895699773519D28F9 /* OnboardingView.swift in Sources */,
+				96B0139B0FDA4CF2FAB63CC5 /* SettingsView.swift in Sources */,
+				57A1062384F3AAEFB6945388 /* SharedMemory.swift in Sources */,
+				16A74F7279FC20B6C14648C8 /* VoiceEngine.swift in Sources */,
+				2851EDCED9D7105AEC45391D /* hush_rt.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6A9C960BCBAB2B1AA436E3D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9476FB996FF32B0650C1F6AE /* HushDriver.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A19A82A038F5504AECD899D6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6AB5802BE57F019FE2C4148B /* HushTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0CBF55A5D81BC0082038EFD4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B3E4653A7BBE0607CCC48A4 /* Hush */;
+			targetProxy = F5434C51744FF75DF1420683 /* PBXContainerItemProxy */;
+		};
+		C447D82848AF7DC9EDD7FAF1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 800B0AC188EDDE0685E05FE9 /* HushDriver */;
+			targetProxy = BD7491D95690BADC24F86397 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0A8D4D0F2032A9B637FE6B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Hush.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SRCROOT)/Vendor/Sparkle",
+					"\"Vendor/Sparkle\"",
+				);
+				GCC_C_LANGUAGE_STANDARD = c11;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/App/RealTime",
+				);
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush;
+				PRODUCT_NAME = Hush;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/Hush-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		1FAC0BCB90171D57937F6700 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SPARKLE_PUBLIC_KEY = "";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5A7331402C57388FC0819F74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SPARKLE_PUBLIC_KEY = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		68204AE203AACC682C91261B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SRCROOT)/Vendor/Sparkle",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/App/RealTime",
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush.Tests;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/Hush-Bridging-Header.h";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hush.app/Contents/MacOS/Hush";
+			};
+			name = Debug;
+		};
+		6DBB96D1DC366948035ECD48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Hush.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SRCROOT)/Vendor/Sparkle",
+					"\"Vendor/Sparkle\"",
+				);
+				GCC_C_LANGUAGE_STANDARD = c11;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/App/RealTime",
+				);
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush;
+				PRODUCT_NAME = Hush;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/Hush-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		B33412F631B6695F51B8AF0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = NO;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+				);
+				INFOPLIST_FILE = Driver/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					CoreAudio,
+					"-framework",
+					CoreFoundation,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush.Driver;
+				PRODUCT_NAME = Hush;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Release;
+		};
+		DA551031ABA0DC6667B078AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = NO;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+				);
+				INFOPLIST_FILE = Driver/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					CoreAudio,
+					"-framework",
+					CoreFoundation,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush.Driver;
+				PRODUCT_NAME = Hush;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Debug;
+		};
+		F30917ABFB8B49EBC31AF08C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SRCROOT)/Vendor/Sparkle",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/App/RealTime",
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.showdown76py.Hush.Tests;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/Hush-Bridging-Header.h";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hush.app/Contents/MacOS/Hush";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		177968F7A9DE2E587E4673AC /* Build configuration list for PBXNativeTarget "Hush" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A8D4D0F2032A9B637FE6B21 /* Debug */,
+				6DBB96D1DC366948035ECD48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		558BBAF709BF50B53E773F1D /* Build configuration list for PBXNativeTarget "HushDriver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA551031ABA0DC6667B078AD /* Debug */,
+				B33412F631B6695F51B8AF0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5E562B37A696A22839D3BF87 /* Build configuration list for PBXProject "Hush" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A7331402C57388FC0819F74 /* Debug */,
+				1FAC0BCB90171D57937F6700 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EADFD108EA6DBEE7C26A032C /* Build configuration list for PBXNativeTarget "HushTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68204AE203AACC682C91261B /* Debug */,
+				F30917ABFB8B49EBC31AF08C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0F21E0AB7C84BD6590133952 /* Project object */;
+}

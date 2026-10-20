@@ -107,6 +107,8 @@ final class Ctx {
     var underruns = 0, reprimes = 0, peakIn: Float = 0, peakOut: Float = 0
     var injectPos = 0
     var lastChunk: UInt32 = 0
+    var prevFrames: UInt32 = 0
+    var firstHost: UInt64 = 0, lastHost: UInt64 = 0, framesSinceFirst: UInt64 = 0
     var injectData: UnsafeMutablePointer<Float>?
     var injectCount = 0
 }
@@ -155,6 +157,10 @@ let micCB: AURenderCallback = { r, flags, ts, bus, frames, _ in
     if err != noErr { return err }
     for i in 0..<Int(frames) { c.peakIn = max(c.peakIn, abs(c.micBuf[i])) }
     c.lastChunk = frames
+    // frames produites avant ce callback / temps hôte écoulé depuis le premier callback
+    if c.firstHost == 0 { c.firstHost = ts.pointee.mHostTime } else { c.framesSinceFirst += UInt64(c.prevFrames) }
+    c.prevFrames = frames
+    c.lastHost = ts.pointee.mHostTime
     if let shm {
         hush_app_write(shm, c.micBuf, frames, mach_absolute_time())
     } else {
@@ -180,6 +186,9 @@ if useShm {
     while seconds <= 0 || Date().timeIntervalSince(t0) < seconds {
         Thread.sleep(forTimeInterval: 1)
         let r = hush_app_reader_stats(shm!)
+        var tbi = mach_timebase_info_data_t(); mach_timebase_info(&tbi)
+        let secs = Double(ctx.lastHost - ctx.firstHost) * Double(tbi.numer) / Double(tbi.denom) / 1e9
+        if secs > 0 { print(String(format: "rate=%.3f Hz (%.1f ppm)", Double(ctx.framesSinceFirst) / secs, (Double(ctx.framesSinceFirst) / secs / 48000 - 1) * 1e6)) }
         print(String(format: "t=%4.1f in=%6.1f dB chunk=%u driverFill=%4u underruns=%llu clients=%u", Date().timeIntervalSince(t0),
                      20 * log10(max(ctx.peakIn, 1e-9)), ctx.lastChunk, r.lastFill, r.underruns, r.clientsRunning))
         ctx.peakIn = 0
