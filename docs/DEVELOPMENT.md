@@ -34,7 +34,7 @@ cd Prototypes && swift build                            # outils : vpcapture, vp
 sudo scripts/install-driver.sh                          # installer le driver à la main (mot de passe admin)
 ```
 
-## Pièges de l'environnement de développement
+## Pièges de l'environnement
 
 - **Le dépôt est dans `~/Documents`, géré par un File Provider (iCloud Drive)**. macOS y ajoute des attributs
   étendus (`com.apple.FinderInfo`, `com.apple.fileprovider.fpfs#P`) aux bundles, que `codesign` refuse
@@ -47,7 +47,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
   `HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1` pour installer des outils sans effet de bord.
 - Toute réinstallation du driver demande un mot de passe administrateur : regrouper les changements du driver.
 
-## Ce qui marche (décisions validées)
+## Choix techniques retenus
 
 - **Moteur : VoiceProcessingIO d'Apple**, via l'audio unit directement (pas AVAudioEngine). -43,5 dB de musique
   retirée, voix jugée très bonne à l'écoute.
@@ -89,9 +89,9 @@ sudo scripts/install-driver.sh                          # installer le driver à
   Le workflow Release publie le DMG et `appcast.xml` ; l'app lit `releases/latest/download/appcast.xml`.
 - **Liquid Glass** : `hushGlass` / `hushGlassButton` dans `GlassCompat.swift` (macOS 26+, repli matériaux sur 14 et 15).
 
-## Ce qui a été tenté et NE marche PAS (ne pas recommencer sans raison nouvelle)
+## Pistes écartées
 
-| Tentative | Résultat |
+| Piste | Résultat |
 |---|---|
 | `AVAudioEngine.inputNode.setVoiceProcessingEnabled(true)` | échoue (-10875 à l'init du nœud de sortie) sur macOS 27 → AU VPIO directe |
 | Supprimer complètement le ducking (ducking avancé, `DuckNonVoiceAudio`=2102, sortie VPIO coupée ou en sourdine) | toujours -8 dB ; 2102 = iOS uniquement (-10879) ; MuteOutput coupe aussi le micro |
@@ -127,7 +127,7 @@ sudo scripts/install-driver.sh                          # installer le driver à
 - Toute nouvelle chaîne d'interface va dans `App/Resources/Localizable.xcstrings`, avec sa traduction française.
 - Le driver doit rester simple : pas de logique métier, la politique (latence, modes) est décidée par l'app.
 
-## En suspens
+## À faire
 
 - Vérifier que l'autorisation micro survit à une mise à jour avec le certificat auto-signé (non encore testé).
 - Tester Developer ID + notarisation (pas de compte pour l'instant).

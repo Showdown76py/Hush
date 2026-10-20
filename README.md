@@ -1,244 +1,232 @@
 <p align="center">
-  <img src="docs/screenshots/onboarding-1-light.png" width="420" alt="Hush">
+  <img src="docs/icon.png" width="128" alt="Hush icon">
 </p>
 
 <h1 align="center">Hush</h1>
 
-<p align="center"><b>A clean microphone for Discord, Zoom, Meet, OBS… on your Mac.</b><br>
-Your friends hear your voice — not the music or videos playing on your speakers.</p>
+<p align="center">A clean microphone for Discord, Zoom, Meet and OBS on your Mac.<br>
+People hear your voice, not the music playing on your speakers.</p>
 
 <p align="center">English · <a href="README.fr.md">Français</a></p>
 
 ---
 
-## The problem
+On a MacBook, the built-in microphone picks up whatever the speakers play. Discord only cancels its own sound, so
+your Spotify playlist, a YouTube video or a game ends up in everyone's ears.
 
-On a MacBook, the built-in microphone picks up everything coming out of the speakers. Discord only cancels
-**its own** sound, so Spotify, a YouTube video or a game goes straight to your friends.
-
-Apple's voice processing (the one FaceTime uses) can remove **all** of your Mac's sound. Hush applies it to your
-microphone and exposes the result as a new microphone, **“Hush Microphone”**, that you pick in any app.
+Apple's voice processing, the one FaceTime uses, removes all of the Mac's sound from the microphone. Hush runs it
+on your microphone and gives you the result as a new input, "Hush Microphone", that any app can use.
 
 ```
-Mac microphone ──► Hush (Apple voice processing) ──► “Hush Microphone” ──► Discord, Zoom, OBS…
+Mac microphone ──► Hush (Apple voice processing) ──► "Hush Microphone" ──► Discord, Zoom, OBS…
                          ▲
-        speaker sound (echo reference)
+        speaker output (echo reference)
 ```
 
 <p align="center">
-  <img src="docs/screenshots/menu-light.png" width="300" alt="Hush menu (light)">
-  <img src="docs/screenshots/menu-dark.png" width="300" alt="Hush menu (dark)">
+  <img src="docs/screenshots/menu-light.png" width="300" alt="Hush menu, light mode">
+  <img src="docs/screenshots/menu-dark.png" width="300" alt="Hush menu, dark mode">
 </p>
 
-## Install (for everyone)
+## Install
 
-1. Download **Hush-x.y.z.dmg** from [Releases](https://github.com/Showdown76py/Hush/releases).
-2. Open the DMG and drag **Hush** into **Applications**.
-3. Open Hush from Applications. If macOS refuses to open it, see [below](#macos-wont-open-hush).
-4. Follow the 5 welcome screens:
-   1. a one-sentence explanation;
-   2. **allow the microphone**;
-   3. **install the virtual microphone** (macOS asks for your password once);
-   4. **try it**: play music, talk for 10 seconds, then listen to “without Hush” and “with Hush”;
-   5. set up Discord.
+1. Download `Hush-x.y.z.dmg` from [Releases](https://github.com/Showdown76py/Hush/releases).
+2. Open it and drag Hush into Applications.
+3. Open Hush. If macOS blocks it, see [macOS won't open Hush](#macos-wont-open-hush).
+4. The welcome screens walk you through the rest: allow the microphone, install the virtual microphone (macOS asks
+   for your password once), record a 10-second before/after test, and set up Discord.
 
-### Discord setup
+### Discord settings
 
-Discord › **User Settings** › **Voice & Video**:
+In Discord, open User Settings › Voice & Video:
 
 | Setting | Value |
 |---|---|
-| Input device | **Hush Microphone** |
+| Input device | Hush Microphone |
 | Echo Cancellation | off |
 | Noise Suppression | None |
 | Automatic Gain Control | off |
+| Attenuation | 0% |
 
-Hush already does this work, and leaving Discord's processing on would clean your voice twice and degrade it.
-In Zoom, Meet or OBS, just pick “Hush Microphone” as the microphone.
+Hush already cleans your voice. Leave Discord's processing on and your voice gets cleaned twice and sounds worse.
+Attenuation lowers your other apps whenever someone talks, on top of what macOS already does, so set it to 0%.
+Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone.
 
 <p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Discord settings diagram"></p>
 
 ### macOS won't open Hush
 
-Builds published **without an Apple Developer account** aren't notarized by Apple. On first launch, macOS says
-“Apple could not verify Hush is free of malware”. To open it anyway:
+Releases built without an Apple Developer account aren't notarized, so macOS says it "could not verify Hush is
+free of malware" on first launch. To open it:
 
-- **macOS 15 and later**: try to open Hush once, then go to **System Settings › Privacy & Security**,
-  scroll down, click **Open Anyway** next to Hush and confirm.
-- **macOS 14**: right-click (or Control-click) Hush in Applications › **Open** › **Open**.
-- **Or in Terminal** (any macOS):
+- macOS 15 or later: try to open Hush once, then go to System Settings › Privacy & Security and click Open Anyway.
+- macOS 14: Control-click Hush in Applications, choose Open, then Open again.
+- Any version, from Terminal:
   ```bash
   xattr -dr com.apple.quarantine /Applications/Hush.app
   ```
 
-You only need to do this once. Builds signed with an Apple Developer account open without any warning.
+You only do this once.
 
 ### Uninstall
 
-Hush › Settings › **Uninstall Virtual Microphone…**, then move Hush to the Trash. Or in Terminal:
+In Hush, open Settings and click Uninstall Virtual Microphone, then move Hush to the Trash. From Terminal:
+
 ```bash
 sudo rm -rf /Library/Audio/Plug-Ins/HAL/Hush.driver && sudo killall coreaudiod
 ```
 
 ## Using Hush
 
-- **Automatic** (default): Hush only runs while an app is using “Hush Microphone” (for example while you're in a
-  Discord voice channel). The rest of the time, your Mac sounds exactly as usual.
-- **Always on**: processing runs all the time.
-- **Off**: no processing, and “Hush Microphone” passes your microphone through unchanged, so there's no need to
-  switch microphones in Discord: just flip the switch.
+- Automatic (default): Hush cleans your voice only while an app uses "Hush Microphone", during a Discord call for
+  example. The rest of the time your Mac sounds normal.
+- Always on: the cleanup runs all the time.
+- Off: Hush passes your microphone through untouched, so you can switch the cleanup off without changing
+  microphones in Discord.
 
-The menu shows two live meters: what the microphone hears, and what is sent to apps. With music playing, the first
-one moves and the second one stays quiet.
+The menu shows two meters: what your microphone hears and what apps receive. Play music and you'll see the first
+one move while the second stays quiet.
 
-Settings: source microphone, open at login, an option to lower other sounds more, and removal of the virtual
-microphone. The interface is in English and French.
+Hush also evens out your voice level. It adjusts only while you speak, so loud and soft voices come out at the same
+level and background noise never gets boosted. Settings let you pick the source microphone, a fixed voice level,
+launch at login, and stronger ducking if you prefer Apple's default.
 
 ## FAQ
 
-**Why is my voice sometimes slightly cut when music is playing?**
-That's the “double-talk” suppressor in Apple's voice processing. When you talk while loud sound comes out of the
-speakers, it briefly attenuates what it can't separate, so that no echo gets through. It can barely be tuned.
-Lowering the speaker volume a little, or using headphones, almost always avoids it.
+**My voice sometimes dips while music plays.**
+That's the double-talk suppressor in Apple's voice processing: when you talk over loud speaker sound, it briefly
+turns down what it can't separate so no echo gets through. You can't tune it. Turn the speakers down a little or
+use headphones.
 
-**Why does the music get a little quieter while Hush is on?**
-As soon as voice processing runs, macOS lowers other sounds. Hush asks for the smallest reduction allowed:
-**about 8 dB** instead of 30 dB by default. Apple's APIs don't allow going lower (we measured it, see
-[the measurements](Prototypes/MEASUREMENTS.md)). That's why **Automatic** mode exists.
+**The music gets a bit quieter while Hush runs.**
+macOS lowers other audio whenever voice processing runs. Hush requests the smallest reduction Apple allows, about
+8 dB instead of the default 30 dB. We measured it and couldn't go lower (see the [measurements](Prototypes/MEASUREMENTS.md)).
+Automatic mode limits this to your calls. If the drop feels bigger, check Discord's Attenuation setting.
 
-**Why do my speakers sound different while Hush is on?**
-macOS switches the speakers to “call mode”, like in FaceTime. In Automatic mode, this only happens during your calls.
+**My speakers sound different while Hush runs.**
+macOS puts the speakers in call mode, like during a FaceTime call. In Automatic mode that only happens during calls.
 
-**After a call, my speakers stay quieter and then slowly come back. Why?**
-When voice processing stops, macOS takes the speakers out of “call mode” gradually: the sound returns to its normal
-level in about 30 to 40 seconds. We measured it: Hush isn't lowering anything (the signal sent to the speakers is
-untouched); it's the Mac's internal speaker processing, and no API can speed it up. If you're in a hurry, this
-command restarts the macOS audio service and brings the sound back immediately (it cuts all sound for 1 to 2
-seconds and asks for your password):
+**After a call, the speakers stay quiet and slowly come back.**
+macOS takes the speakers out of call mode over 30 to 40 seconds. The signal Hush sends is untouched; the slow ramp
+happens inside the Mac's speaker processing and no API speeds it up. To get your sound back right away, restart
+the audio service (it cuts all sound for a second or two and asks for your password):
+
 ```bash
 sudo killall coreaudiod
 ```
-With headphones, this doesn't happen.
 
-**Does Hush record what I say?**
-No. Everything is processed live, in memory, on your Mac. Nothing is recorded or sent anywhere, apart from the
-before/after test in the welcome screens, which stays in a local temporary file.
+Headphones don't have this problem.
 
-**Does it work with headphones or AirPods?**
-Yes. Hush follows audio output changes automatically (headphones, AirPods, external display…). With headphones,
-there's little echo to remove anyway.
+**Does Hush record me?**
+No. Hush processes audio live, in memory. The only recording is the before/after test in the welcome screens, kept
+in a local temporary file.
 
-**I can hear a slight delay.**
-Apple's voice processing adds about 65 ms and Hush about 15 ms. The people you talk to usually don't notice.
-See the limitations below.
+**Headphones, AirPods?**
+They work. Hush follows output changes on its own.
 
-## Known limitations (honestly)
+**Is there a delay?**
+About 80 ms in total: Apple's processing adds about 65 ms, Hush about 15 ms. People on the other end don't notice it
+in conversation.
 
-- **About 8 dB of ducking** on the music while processing runs: this is the floor macOS allows.
-- **Speakers in “call mode”** while processing runs.
-- **About 80 ms of added latency** in total (measured), of which about 65 ms comes from Apple's processing and can't be tuned.
-- While Hush runs, **other apps reading the built-in microphone directly** get a quieter (about -20 dB) signal,
-  partially processed by macOS. Use “Hush Microphone” in those apps.
-- The virtual microphone is **mono, 48 kHz**. Apps convert automatically when needed.
-- **macOS 14 or later** is required. Liquid Glass shows on macOS 26+, with an equivalent look on earlier versions.
-- **Without an Apple Developer account** (ad-hoc signature):
-  - Gatekeeper blocks the first launch (see above);
-  - the virtual microphone works normally (verified: coreaudiod loads an ad-hoc signed driver);
-  - official releases are signed with a **stable self-signed certificate**, so macOS keeps the microphone
-    permission across versions. A pure ad-hoc build would ask again with every version;
-  - automatic updates work, with an EdDSA signature that Sparkle checks.
+## Known limitations
+
+- Other audio drops by about 8 dB while the cleanup runs. macOS sets that floor.
+- The speakers switch to call mode during the cleanup and take 30 to 40 seconds to recover afterwards.
+- Added latency is about 80 ms, mostly from Apple's processing.
+- While Hush runs, apps that read the built-in microphone directly get a quieter, partly processed signal (about
+  -20 dB). Point them at "Hush Microphone" instead.
+- The virtual microphone is mono at 48 kHz. Apps convert as needed.
+- Hush needs macOS 14 or later. The Liquid Glass look needs macOS 26; older versions get an equivalent design.
+- Without an Apple Developer account, Gatekeeper blocks the first launch. Releases carry a stable self-signed
+  certificate, so macOS keeps your microphone permission across updates, and Sparkle checks an EdDSA signature on
+  every update.
 
 ## Measurements
 
-Measured on a MacBook Air (Apple Silicon, macOS 27). Details are in [Prototypes/MEASUREMENTS.md](Prototypes/MEASUREMENTS.md) (in French):
+Measured on a MacBook Air (Apple Silicon, macOS 27). Full details, in French, in
+[Prototypes/MEASUREMENTS.md](Prototypes/MEASUREMENTS.md).
 
 | | Result |
 |---|---|
-| Music removed from the microphone | **-43.5 dB** (median, after about 3 s of convergence) |
-| Music ducking | -8 dB (vs -30 dB with Apple's default) |
-| Total added latency | **80.9 ms** (of which about 14 ms is Hush's own transport) |
-| Mic / driver clock drift | -0.2 ppm |
+| Music removed from the microphone | -43.5 dB (median, after about 3 s) |
+| Music ducking | -8 dB (Apple's default: -30 dB) |
+| Total added latency | 80.9 ms, including 14 ms of Hush transport |
+| Voice level, soft to loud speech | -20 to -25 dB, peaks at -8 dBFS |
+| Mic and driver clock drift | under 1 ppm, no correction needed |
 
-An alternative based on **WebRTC AEC3** was also prototyped (`Prototypes/aec3`). It has no ducking, leaves the
-speakers untouched and adds **16.6 ms** of latency, but removes less music (-28 to -35 dB). The full comparison
-is in the same file.
+We also prototyped a WebRTC AEC3 engine (`Prototypes/aec3`). It avoids ducking, leaves the speakers alone and adds
+only 16.6 ms, but it removes less music (-16 dB without noise suppression) and cuts your voice when you talk over
+the music. Apple's processing stays.
 
 ## For developers
 
-### Requirements
-
-- macOS 14+ to run; **Xcode 26 or later** to build (Liquid Glass, `.icon` app icon)
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
-
-### Build and run
+You need Xcode 26 or later (Liquid Glass and the `.icon` app icon) and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```bash
-scripts/fetch-sparkle.sh          # downloads Sparkle (SHA-256 verified)
-xcodegen generate                 # regenerates Hush.xcodeproj from project.yml
-open Hush.xcodeproj               # or: xcodebuild -scheme Hush build
+brew install xcodegen
+scripts/fetch-sparkle.sh          # downloads Sparkle, checks its SHA-256
+xcodegen generate                 # rebuilds Hush.xcodeproj from project.yml
+open Hush.xcodeproj
 ```
 
-> If the repository lives in an iCloud Drive synced folder, keep Xcode's DerivedData in its default location:
-> macOS adds extended attributes to bundles there, and `codesign` rejects them.
+If the repository sits in an iCloud Drive folder, keep Xcode's DerivedData in its default location. macOS adds
+extended attributes to bundles in synced folders and `codesign` rejects them.
 
 ### Tests
 
 ```bash
-# Driver: 2000 simulated audio cycles, with AddressSanitizer and UBSan
+# Driver: 2,000 simulated audio cycles under AddressSanitizer and UBSan
 clang -O1 -g -fsanitize=address,undefined -std=c11 -I Shared -framework CoreAudio -framework CoreFoundation \
   Driver/Tests/driver_test.c -o build/driver_test && build/driver_test
-# App
+# App: 23 tests (shared memory, voice level, drift, limiter…)
 xcodebuild -scheme Hush test
 ```
 
-### Installing the driver by hand (development)
+### Driver by hand
 
 ```bash
-Driver/build.sh                       # → build/Hush.driver (universal)
-sudo scripts/install-driver.sh        # copies to /Library/Audio/Plug-Ins/HAL and restarts coreaudiod
+Driver/build.sh                       # builds build/Hush.driver (universal)
+sudo scripts/install-driver.sh        # copies it to /Library/Audio/Plug-Ins/HAL and restarts coreaudiod
 sudo scripts/uninstall-driver.sh
 ```
 
 ### Releasing
 
-```bash
-./scripts/release.sh 1.0.0
-```
+`./scripts/release.sh 1.0.0` builds a universal app (arm64 and x86_64), signs it, and writes the DMG to
+`build/release/`. Signing picks, in order:
 
-The script builds a universal binary (arm64 + x86_64), signs it, creates the DMG in `build/release/`, then:
+1. `CODESIGN_IDENTITY="Developer ID Application: …"`: hardened runtime and timestamp. Add
+   `NOTARY_PROFILE=<notarytool profile>` to notarize and staple.
+2. The "Hush Self-Signed Code Signing" certificate from your keychain (create it once with
+   `scripts/create-signing-cert.sh` and back it up).
+3. An ad-hoc signature.
 
-- **no identity**: the “Hush Self-Signed Code Signing” certificate if it is in the keychain (create it once with
-  `scripts/create-signing-cert.sh`, then **back it up**), otherwise an ad-hoc signature;
-- with `CODESIGN_IDENTITY="Developer ID Application: …"`: hardened runtime + timestamp;
-- also with `NOTARY_PROFILE=<notarytool profile>`: notarization and stapling;
-- with the Sparkle private key (keychain, or a file via `SPARKLE_KEY_FILE`): an EdDSA-signed `appcast.xml`,
-  published with the DMG in the GitHub release. The matching public key is in `project.yml` (`SPARKLE_PUBLIC_KEY`).
+With the Sparkle private key in your keychain, or in a file passed as `SPARKLE_KEY_FILE`, the script also writes a
+signed `appcast.xml`. The matching public key lives in `project.yml`.
 
-GitHub Actions CI builds the app, runs the driver and app tests, and produces a DMG on every push (as a workflow
-artifact). Pushing a `vX.Y.Z` tag automatically publishes a GitHub release with the DMG. It uses three
-repository secrets: `HUSH_SIGNING_P12` (base64 self-signed certificate), `HUSH_SIGNING_P12_PASSWORD` and
-`SPARKLE_PRIVATE_KEY` (EdDSA update key). **Back these keys up**: without the Sparkle key, existing users could no
-longer receive updates.
+CI builds, tests and produces a DMG on every push. Push a `vX.Y.Z` tag and the Release workflow publishes a GitHub
+release with the DMG and the appcast. It reads three repository secrets: `HUSH_SIGNING_P12`,
+`HUSH_SIGNING_P12_PASSWORD` and `SPARKLE_PRIVATE_KEY`. Back these keys up. Lose the Sparkle key and existing users
+stop receiving updates.
 
 ### Architecture
 
 ```
 App/            SwiftUI menu bar app
-  RealTime/     audio callbacks in C: no allocation, no lock, no Swift runtime
-  Sources/      engine (VoiceProcessingIO), controller (modes, auto-recovery), installer, UI
-Driver/         AudioServerPlugIn in C (“Hush Microphone”): only relays audio
-Shared/         app ↔ driver shared-memory contract (lock-free SPSC ring buffer)
-Prototypes/     measurement tools and prototypes (VP, BlackHole, playback relay, AEC3)
+  RealTime/     audio callbacks in C: no allocation, no locks, no Swift runtime
+  Sources/      engine (VoiceProcessingIO), controller (modes, recovery), installer, UI
+Driver/         AudioServerPlugIn in C ("Hush Microphone"), relays audio and nothing else
+Shared/         app/driver contract: lock-free single-producer ring buffer in shared memory
+Prototypes/     measurement tools and engine experiments (BlackHole, playback relay, AEC3)
 scripts/        release, driver install, Sparkle
 ```
 
-- **Transport**: the app writes into a lock-free ring buffer in POSIX shared memory. The driver reads it on every
-  IO cycle, keeping a safety margin beyond the client app's buffer, and outputs silence when the app isn't running.
-- **Auto-recovery**: output changes (headphones, AirPods), microphones plugged in or out, sample-rate changes,
-  sleep and wake, coreaudiod restarts, and a watchdog on audio callbacks.
-- The driver was written from scratch from the `AudioServerPlugIn.h` documentation: no BlackHole (GPL) code.
+The app writes cleaned audio into a lock-free ring buffer in POSIX shared memory. The driver reads it on each IO
+cycle with a safety margin past the client's buffer, and sends silence when the app isn't running. The app restarts
+the cleanup on its own after output changes, plugged or unplugged microphones, sample rate changes, sleep, and
+coreaudiod restarts. The driver follows the `AudioServerPlugIn.h` documentation and contains no BlackHole (GPL) code.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Hush uses [Sparkle](https://sparkle-project.org) (MIT). The AEC3 prototype uses
+MIT, see [LICENSE](LICENSE). Hush ships [Sparkle](https://sparkle-project.org) (MIT). The AEC3 prototype uses
 [webrtc-audio-processing](https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing) (BSD-3).

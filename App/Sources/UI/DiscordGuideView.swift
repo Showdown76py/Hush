@@ -16,7 +16,7 @@ struct DiscordGuideView: View {
                     .multilineTextAlignment(.center)
             }
             VoiceSettingsSchematic()
-            Text("Hush already removes echo and noise: turning Discord’s own processing off avoids cleaning your voice twice. The same goes for Zoom, Meet or OBS — just pick “Hush Microphone” as the microphone.")
+            Text("Hush already removes echo and noise, so turn Discord’s own processing off to avoid cleaning your voice twice. Set Attenuation to 0% too: otherwise Discord lowers your music whenever someone talks. In Zoom, Meet or OBS, pick “Hush Microphone” as the microphone.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -50,13 +50,15 @@ private struct VoiceSettingsSchematic: View {
             SchematicToggle(label: "Echo Cancellation", number: 2)
             SchematicToggle(label: "Noise Suppression", value: "None", number: 3)
             SchematicToggle(label: "Automatic Gain Control", number: 4)
+            Divider().overlay(Color.white.opacity(0.15))
+            SchematicToggle(label: "Attenuation", value: "0%", number: 5)
         }
         .padding(18)
         .frame(maxWidth: 440)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color(red: 0.19, green: 0.2, blue: 0.23)))
         .environment(\.colorScheme, .dark)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Input device: Hush Microphone. Echo Cancellation off, Noise Suppression None, Automatic Gain Control off."))
+        .accessibilityLabel(Text("Input device: Hush Microphone. Echo Cancellation off, Noise Suppression None, Automatic Gain Control off, Attenuation 0%."))
     }
 }
 

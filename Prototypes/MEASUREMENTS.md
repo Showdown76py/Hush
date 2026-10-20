@@ -1,9 +1,9 @@
-# Mesures — étapes 1 à 3 (20/10/2026)
+# Mesures (octobre 2026)
 
 Machine : MacBook Air (Apple Silicon), macOS 27.0.1, haut-parleurs et micro intégrés, volume 19 % puis 38 %.
 Musique : un morceau pop (mp3) joué avec `afplay`.
 
-## Ducking (étape 1)
+## Ducking
 
 Mesuré à la **sortie système** avec un tap Core Audio global (`systap`), comparé à un passage de
 référence sans voice processing sur le même extrait (`scripts/compare.py`).
@@ -14,7 +14,7 @@ référence sans voice processing sur le même extrait (`scripts/compare.py`).
 | `duckingLevel=.min`, `enableAdvancedDucking=false` | **-8 dB** | -32 dB |
 | idem + ducking avancé | -8 dB | -34 dB |
 | idem + sortie VPIO désactivée | -8 dB | -28 dB |
-| `kAUVoiceIOProperty_DuckNonVoiceAudio` | refusé (-10879, iOS uniquement) | — |
+| `kAUVoiceIOProperty_DuckNonVoiceAudio` | refusé (-10879, iOS uniquement) | sans objet |
 | sortie VPIO dirigée vers BlackHole | 0 dB | -12 dB (pas d'annulation, seulement débruitage) |
 
 Conclusions :
@@ -31,7 +31,7 @@ mais le VPIO traite sa sortie comme de la voix. Plus rien au-dessus d'environ 12
 dans la bande 12-16 kHz), EQ modifié, et une annulation moins bonne (-14 dB). C'est inacceptable
 pour de la musique.
 
-## Atténuation (étapes 2-3)
+## Musique retirée du micro
 
 Micro → VPIO → ring buffer → BlackHole, relu avec ffmpeg, comparé au micro brut sur le même extrait :
 
@@ -39,7 +39,7 @@ Micro → VPIO → ring buffer → BlackHole, relu avec ffmpeg, comparé au micr
 - Fichiers : `results/musique_seule_brut.wav`, `results/musique_seule_nettoyee.wav`.
 - Avec la voix : `results/voix_nettoyee.wav`. Le VP applique un AGC fort (voix vers -15 dB RMS, pics à -5 dBFS).
 
-## Latence (étape 3)
+## Latence
 
 Mesures par corrélation croisée entre le flux micro intégré et la sortie BlackHole, enregistrés en
 parallèle et alignés par horodatage hôte (`dualrec`, `scripts/latency.py`).
@@ -61,7 +61,7 @@ significative. Une mesure absolue par clics a échoué : dès que le VPIO tourne
 
 Base acoustique sans l'app : haut-parleur → micro brut = 33,1 ms (constant).
 
-## Driver maison (étape 4)
+## Driver HAL
 
 Driver HAL "Hush Microphone" (AudioServerPlugIn en C, signé ad-hoc) + ring buffer en mémoire partagée POSIX.
 
@@ -120,14 +120,14 @@ Des préréglages de suppresseur plus transparents (fabrique `EchoCanceller3` pe
 Le filtre linéaire d'AEC3 plafonne à environ 16 dB sur les haut-parleurs (non linéaires) d'un MacBook : le reste ne
 peut être retiré qu'en supprimant aussi la voix. **Conclusion : le VP d'Apple reste le moteur de Hush.**
 
-### Remontée lente du volume après l'arrêt du VP
+## Remontée lente du volume après l'arrêt du VP
 
 Remarquée à l'oreille, puis mesurée. Le signal envoyé aux haut-parleurs (tap) est plat. Le rapport
 acoustique micro/sortie est environ 10 dB plus bas juste après l'arrêt du VP et remonte progressivement en 30 à 40 s
 (de -42 à -33 dB). C'est le traitement des haut-parleurs de macOS qui quitte lentement le « mode appel » ; ce n'est
 pas réglable par une API publique.
 
-### Souffle « ventilateur » quand la musique est forte
+## Souffle « ventilateur » quand la musique est forte
 
 Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau par seconde) :
 
@@ -140,7 +140,7 @@ Remarqué à l'écoute. Micro nettoyé, musique forte, personne ne parle (niveau
 Le gain automatique d'Apple remonte le résidu de suppression quand personne ne parle. Celui de Hush ne bouge que
 pendant la parole : le résidu reste environ 35 dB sous le niveau visé pour la voix (-22 dB).
 
-### Crépitements dans la voix
+## Crépitements dans la voix
 
 Remarqués à l'écoute. Deux causes, mesurées : (1) la correction de dérive, pilotée par le remplissage du ring, se
 déclenchait sur la gigue du client (16 glissements d'un échantillon en 20 s, chacun audible) ; (2) ffmpeg perdait

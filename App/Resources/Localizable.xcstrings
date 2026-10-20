@@ -26,6 +26,9 @@
     "+6 dB": {
       "shouldTranslate": false
     },
+    "0%": {
+      "shouldTranslate": false
+    },
     "Active": {
       "localizations": {
         "fr": {
@@ -152,6 +155,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les apps qui utilisent « Hush Microphone » perdront leur micro. macOS vous demandera votre mot de passe."
+          }
+        }
+      }
+    },
+    "Attenuation": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atténuation"
           }
         }
       }
@@ -366,12 +379,12 @@
         }
       }
     },
-    "Hush already removes echo and noise: turning Discord’s own processing off avoids cleaning your voice twice. The same goes for Zoom, Meet or OBS — just pick “Hush Microphone” as the microphone.": {
+    "Hush already removes echo and noise, so turn Discord’s own processing off to avoid cleaning your voice twice. Set Attenuation to 0% too: otherwise Discord lowers your music whenever someone talks. In Zoom, Meet or OBS, pick “Hush Microphone” as the microphone.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hush supprime déjà l’écho et le bruit : désactiver le traitement de Discord évite de nettoyer votre voix deux fois. Même chose pour Zoom, Meet ou OBS : choisissez simplement « Hush Microphone » comme micro."
+            "value": "Hush supprime déjà l’écho et le bruit : désactivez le traitement de Discord pour ne pas nettoyer votre voix deux fois. Réglez aussi l’Atténuation sur 0 %, sinon Discord baisse votre musique dès que quelqu’un parle. Dans Zoom, Meet ou OBS, choisissez « Hush Microphone » comme micro."
           }
         }
       }
@@ -446,12 +459,12 @@
         }
       }
     },
-    "Input device: Hush Microphone. Echo Cancellation off, Noise Suppression None, Automatic Gain Control off.": {
+    "Input device: Hush Microphone. Echo Cancellation off, Noise Suppression None, Automatic Gain Control off, Attenuation 0%.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Périphérique d’entrée : Hush Microphone. Suppression de l’écho désactivée, Réduction du bruit sur Aucune, Contrôle automatique du gain désactivé."
+            "value": "Périphérique d’entrée : Hush Microphone. Suppression de l’écho désactivée, Réduction du bruit sur Aucune, Contrôle automatique du gain désactivé, Atténuation à 0 %."
           }
         }
       }
