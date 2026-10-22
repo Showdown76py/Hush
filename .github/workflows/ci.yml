@@ -3,9 +3,9 @@ name: CI
 on:
   # the website doesn't need a macOS build
   push:
-    paths-ignore: ["site/**", "scripts/site-audio/**", "scripts/make-site-audio.py"]
+    paths-ignore: ["site/**", "scripts/site-audio/**", "scripts/make-site-audio.py", "scripts/serve-site.py"]
   pull_request:
-    paths-ignore: ["site/**", "scripts/site-audio/**", "scripts/make-site-audio.py"]
+    paths-ignore: ["site/**", "scripts/site-audio/**", "scripts/make-site-audio.py", "scripts/serve-site.py"]
 
 jobs:
   build-and-test:

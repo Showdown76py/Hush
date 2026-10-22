@@ -18,7 +18,8 @@ Driver/           AudioServerPlugIn en C (HushDriver.c) + Tests/driver_test.c (b
 Shared/           contrat app ↔ driver : ring.h (SPSC lock-free), hush_shm.h, hush_app.h
 Prototypes/       paquet SwiftPM d'outils de mesure + prototypes (voir plus bas) ; aec3/ = prototype WebRTC
 scripts/          release.sh, fetch-sparkle.sh, install/uninstall-driver.sh, create-signing-cert.sh, make-site-audio.py
-site/             site vitrine hush.showdown.boo : HTML/CSS/JS statique, sans build ni framework
+site/             site vitrine hush.showdown.boo : HTML/CSS/JS statique, sans build ni framework. En ligne via un
+                  serveur Pelican (egg Python) qui clone le dépôt et lance scripts/serve-site.py (git pull toutes les 10 min)
 project.yml       source de vérité du projet Xcode (XcodeGen) ; Hush.xcodeproj est généré ET committé
 ```
 
