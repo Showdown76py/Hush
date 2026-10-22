@@ -17,7 +17,8 @@ App/AppIcon.icon  icône Liquid Glass en couches (Icon Composer), validable avec
 Driver/           AudioServerPlugIn en C (HushDriver.c) + Tests/driver_test.c (banc de test sans coreaudiod)
 Shared/           contrat app ↔ driver : ring.h (SPSC lock-free), hush_shm.h, hush_app.h
 Prototypes/       paquet SwiftPM d'outils de mesure + prototypes (voir plus bas) ; aec3/ = prototype WebRTC
-scripts/          release.sh, fetch-sparkle.sh, install/uninstall-driver.sh, create-signing-cert.sh
+scripts/          release.sh, fetch-sparkle.sh, install/uninstall-driver.sh, create-signing-cert.sh, make-site-audio.py
+site/             site vitrine hush.showdown.boo : HTML/CSS/JS statique, sans build ni framework
 project.yml       source de vérité du projet Xcode (XcodeGen) ; Hush.xcodeproj est généré ET committé
 ```
 
@@ -33,6 +34,8 @@ clang -O1 -g -fsanitize=address,undefined -std=c11 -Wall -Werror -I Shared -fram
 .../Hush.app/Contents/MacOS/Hush --render-screenshots <dir>   # captures (fenêtres réellement affichées)
 cd Prototypes && swift build                            # outils : vpcapture, vp2out, dualrec, systap, enginecheck, whoaudio…
 sudo scripts/install-driver.sh                          # installer le driver à la main (mot de passe admin)
+python3 -m http.server 8765 --directory site            # aperçu local du site
+scripts/make-site-audio.py                              # démo audio du site : micro brut vs Hush, simulés d'après les mesures
 ```
 
 ## Pièges de l'environnement

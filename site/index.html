@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hush: a clean microphone for your Mac</title>
+  <meta name="description" content="Hush removes the music and videos playing on your Mac from your microphone, using Apple's FaceTime voice processing. Works with Discord, Zoom, Meet and OBS. Free and open source.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://hush.showdown.boo/">
+  <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hush: your voice, not your music">
+  <meta property="og:description" content="A clean microphone for Discord, Zoom, Meet and OBS on your Mac.">
+  <meta property="og:url" content="https://hush.showdown.boo/">
+  <meta property="og:image" content="https://hush.showdown.boo/assets/img/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add('js')</script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="#top" aria-label="Hush">
+        <img src="assets/img/icon-256.webp" alt="" width="24" height="24">
+        <span>Hush</span>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#listen" data-i18n="nav.listen">Listen</a>
+        <a href="#how" data-i18n="nav.how">How it works</a>
+        <a href="#setup" data-i18n="nav.setup">Setup</a>
+        <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="lang" type="button" id="lang" aria-label="Passer en français">FR</button>
+        <a class="nav-icon" href="https://github.com/Showdown76py/Hush" aria-label="GitHub">
+          <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+        </a>
+        <a class="btn btn-small js-download" href="https://github.com/Showdown76py/Hush/releases/latest" data-i18n="nav.download">Download</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <img class="hero-icon" src="assets/img/icon-256.webp" alt="" width="112" height="112" data-intro>
+      <p class="eyebrow" data-intro data-i18n="hero.eyebrow">Hush for Mac</p>
+      <h1 class="display" data-intro>
+        <span data-i18n="hero.title1">Your voice.</span><br>
+        <span class="muted" data-i18n="hero.title2">Not your music.</span>
+      </h1>
+      <p class="lede" data-intro data-i18n="hero.lede">A clean microphone for Discord, Zoom, Meet and OBS. Hush runs the voice processing FaceTime uses, so people hear you and not what your Mac is playing.</p>
+      <div class="hero-cta" data-intro>
+        <a class="btn js-download" href="https://github.com/Showdown76py/Hush/releases/latest">
+          <span data-i18n="hero.download">Download for Mac</span>
+        </a>
+        <a class="link" href="#listen"><span data-i18n="hero.listen">Hear the difference</span> <span aria-hidden="true">›</span></a>
+      </div>
+      <p class="fine" data-intro><span data-i18n="hero.meta">Free and open source · macOS 14 or later</span><span class="js-version"></span></p>
+
+      <div class="desk" data-intro>
+        <picture>
+          <source media="(max-width: 600px)" srcset="assets/img/hero-desk-mobile.webp">
+          <img class="desk-shot" src="assets/img/hero-desk.webp" srcset="assets/img/hero-desk-1x.webp 1470w, assets/img/hero-desk.webp 2940w" sizes="(max-width: 1100px) 100vw, 1100px" width="2940" height="1240" alt="The Hush menu open in the macOS menu bar, with its microphone and sent-to-apps meters" data-i18n-alt="hero.alt">
+        </picture>
+        <img class="menu" id="menu" src="assets/img/hero-menu.webp" alt="" width="640" height="738">
+        <button class="desk-hit" type="button" id="mbHush" tabindex="-1" aria-hidden="true"></button>
+      </div>
+    </section>
+
+    <section class="scene" id="scene" aria-labelledby="scene-title">
+      <div class="scene-sticky">
+        <h2 class="sr-only" id="scene-title" data-i18n="scene.title">How Hush cleans your microphone</h2>
+        <ol class="scene-steps">
+          <li class="step" data-i18n-html="scene.s1"><strong>Your Mac plays music.</strong> The microphone sits right next to the speakers.</li>
+          <li class="step" data-i18n-html="scene.s2"><strong>You start talking.</strong> The mic can't tell your voice from the song.</li>
+          <li class="step" data-i18n-html="scene.s3"><strong>Without Hush,</strong> your friends get both. Your playlist, the video, the game.</li>
+          <li class="step" data-i18n-html="scene.s4"><strong>Hush turns on.</strong> Apple's voice processing removes everything the Mac plays.</li>
+          <li class="step" data-i18n-html="scene.s5"><strong>Only your voice gets through.</strong> About 43 dB less music.</li>
+        </ol>
+        <div class="scene-stage">
+          <canvas class="scene-canvas" aria-hidden="true"></canvas>
+          <span class="tag tag-music" data-i18n="scene.music">Music from your speakers</span>
+          <span class="tag tag-voice" data-i18n="scene.voice">Your voice</span>
+          <span class="tag tag-out" data-i18n="scene.out">What your friends hear</span>
+          <div class="node" aria-hidden="true">
+            <span class="node-mic">
+              <svg viewBox="0 0 24 24" width="30" height="30"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3.5M9 20.5h6"/></g></svg>
+            </span>
+            <img class="node-hush" src="assets/img/icon-256.webp" alt="" width="76" height="76">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section listen" id="listen" aria-labelledby="listen-title">
+      <div class="wrap narrow">
+        <p class="eyebrow" data-reveal data-i18n="listen.eyebrow">Listen</p>
+        <h2 class="headline" id="listen-title" data-reveal data-i18n="listen.title">Flip the switch. Hear the music go.</h2>
+        <p class="sub" data-reveal data-i18n="listen.sub">Press play, then turn Hush on and off while it plays.</p>
+      </div>
+      <div class="player" data-reveal>
+        <div class="player-head">
+          <span class="player-label" data-i18n="listen.label">What your friends hear</span>
+          <span class="legend" aria-hidden="true"><i class="dot dot-voice"></i><span data-i18n="listen.lvoice">Voice</span><i class="dot dot-music"></i><span data-i18n="listen.lmusic">Music</span></span>
+          <span class="badge" data-i18n="listen.badge">Simulated</span>
+        </div>
+        <canvas class="player-wave" aria-hidden="true"></canvas>
+        <div class="player-controls">
+          <button class="play" type="button" id="play" aria-label="Play">
+            <svg class="i-play" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.3" fill="currentColor"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.3" fill="currentColor"/></svg>
+          </button>
+          <div class="switch-wrap">
+            <button class="switch" type="button" role="switch" aria-checked="false" id="hushSwitch" aria-labelledby="switchLabel">
+              <span class="switch-knob"></span>
+            </button>
+            <div class="switch-text">
+              <span class="switch-label" id="switchLabel">Hush</span>
+              <span class="switch-state" aria-live="polite">
+                <span class="state-off" data-i18n="listen.off">Off: they hear your music too</span>
+                <span class="state-on" data-i18n="listen.on">On: they only hear you</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="player-note"><span data-i18n="listen.note">Simulation based on measurements of the real app.</span><span class="credit" data-i18n="listen.credit">Music: “Be Chillin” by Alexander Nakarada</span></p>
+      </div>
+    </section>
+
+    <section class="section how" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <p class="eyebrow" data-reveal data-i18n="how.eyebrow">How it works</p>
+        <h2 class="headline" id="how-title" data-reveal data-i18n="how.title">Quiet work, right in your menu bar.</h2>
+        <div class="bento">
+          <article class="card card-menu" data-reveal>
+            <div class="card-text">
+              <h3 data-i18n="how.menu.t">Lives in your menu bar.</h3>
+              <p data-i18n="how.menu.p">Two meters show what your microphone hears and what apps receive. Play music and watch the first one move while the second stays quiet.</p>
+            </div>
+            <picture>
+              <source srcset="assets/img/menu-dark.webp" media="(prefers-color-scheme: dark)">
+              <img src="assets/img/menu-light.webp" alt="The Hush menu with its two level meters" width="320" height="370" loading="lazy">
+            </picture>
+          </article>
+          <article class="card card-apple" data-reveal>
+            <div class="meters" aria-hidden="true">
+              <div class="meter"><span class="meter-name" data-i18n="how.apple.mic">Microphone</span><span class="meter-bar"><i class="m-raw"></i></span></div>
+              <div class="meter"><span class="meter-name" data-i18n="how.apple.sent">Sent to apps</span><span class="meter-bar"><i class="m-clean"></i></span></div>
+            </div>
+            <h3 data-i18n="how.apple.t">FaceTime's voice processing.</h3>
+            <p data-i18n="how.apple.p">The same Apple processing that keeps FaceTime calls clean removes all of your Mac's sound from the mic.</p>
+          </article>
+          <article class="card card-apps" data-reveal>
+            <h3 data-i18n="how.apps.t">Works with every app.</h3>
+            <p data-i18n="how.apps.p">Hush adds a microphone called “Hush Microphone”. Pick it in any app that lets you choose an input.</p>
+            <ul class="chips" aria-label="Apps">
+              <li title="Discord"><span class="sr-only">Discord</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24" style="color:#5865F2"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></li>
+              <li title="Zoom"><span class="sr-only">Zoom</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0B5CFF"/><rect x="4.5" y="8" width="10.5" height="8" rx="2.2" fill="#fff"/><path d="M15.8 11l3.7-2.4v6.8L15.8 13z" fill="#fff"/></svg></li>
+              <li title="Google Meet"><span class="sr-only">Google Meet</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24" style="color:#00897B"><path fill="currentColor" d="M5.53 2.13 0 7.75h5.53zm.398 0v5.62h7.608v3.65l5.47-4.45c-.014-1.22.031-2.25-.025-3.46-.148-1.09-1.287-1.47-2.236-1.36zM23.1 4.32c-.802.295-1.358.995-2.047 1.49-2.506 2.05-4.982 4.12-7.468 6.19 3.025 2.59 6.04 5.18 9.065 7.76 1.218.671 1.428-.814 1.328-1.64v-13a.828.828 0 0 0-.877-.825zM.038 8.15v7.7h5.53v-7.7zm13.577 8.1H6.008v5.62c3.864-.006 7.737.011 11.58-.009 1.02-.07 1.618-1.12 1.468-2.07v-2.51l-5.47-4.68v3.65zm-13.577 0c.02 1.44-.041 2.88.033 4.31.162.948 1.158 1.43 2.047 1.31h3.464v-5.62z"/></svg></li>
+              <li title="OBS"><span class="sr-only">OBS</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12,24C5.383,24,0,18.617,0,12S5.383,0,12,0s12,5.383,12,12S18.617,24,12,24z M12,1.109 C5.995,1.109,1.11,5.995,1.11,12C1.11,18.005,5.995,22.89,12,22.89S22.89,18.005,22.89,12C22.89,5.995,18.005,1.109,12,1.109z M6.182,5.99c0.352-1.698,1.503-3.229,3.05-3.996c-0.269,0.273-0.595,0.483-0.844,0.78c-1.02,1.1-1.48,2.692-1.199,4.156 c0.355,2.235,2.455,4.06,4.732,4.028c1.765,0.079,3.485-0.937,4.348-2.468c1.848,0.063,3.645,1.017,4.7,2.548 c0.54,0.799,0.962,1.736,0.991,2.711c-0.342-1.295-1.202-2.446-2.375-3.095c-1.135-0.639-2.529-0.802-3.772-0.425 c-1.56,0.448-2.849,1.723-3.293,3.293c-0.377,1.25-0.216,2.628,0.377,3.772c-0.825,1.429-2.315,2.449-3.932,2.756 c-1.244,0.261-2.551,0.059-3.709-0.464c1.036,0.302,2.161,0.355,3.191-0.011c1.381-0.457,2.522-1.567,3.024-2.935 c0.556-1.49,0.345-3.261-0.591-4.54c-0.7-1.007-1.803-1.717-3.002-1.969c-0.38-0.068-0.764-0.098-1.148-0.134 c-0.611-1.231-0.834-2.66-0.528-3.996L6.182,5.99z"/></svg></li>
+              <li title="WhatsApp"><span class="sr-only">WhatsApp</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24" style="color:#25D366"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></li>
+              <li title="Telegram"><span class="sr-only">Telegram</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24" style="color:#26A5E4"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></li>
+            </ul>
+          </article>
+          <article class="card card-auto" data-reveal>
+            <div class="states" aria-hidden="true">
+              <figure class="state"><svg class="mb-icon is-idle" viewBox="0 0 22 16" aria-hidden="true">
+                <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                  <rect x="8.6" y="1.2" width="4.8" height="8.2" rx="2.4" fill="currentColor" stroke="none"/>
+                  <path d="M6.865 8.105A4.4 4.4 0 0 0 15.135 8.105M11 11v2.6M8.4 14.4h5.2"/>
+                  <path class="waves" d="M4.412 1.872A8.6 8.6 0 0 0 4.412 12.928M17.588 1.872A8.6 8.6 0 0 1 17.588 12.928"/>
+                </g>
+              </svg><figcaption data-i18n="how.auto.idle">Standby</figcaption></figure>
+              <svg class="state-arrow" viewBox="0 0 40 12"><path d="M1 6h36M32 1.5 37.5 6 32 10.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <figure class="state"><svg class="mb-icon is-live" viewBox="0 0 22 16" aria-hidden="true">
+                <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                  <rect x="8.6" y="1.2" width="4.8" height="8.2" rx="2.4" fill="currentColor" stroke="none"/>
+                  <path d="M6.865 8.105A4.4 4.4 0 0 0 15.135 8.105M11 11v2.6M8.4 14.4h5.2"/>
+                  <path class="waves" d="M4.412 1.872A8.6 8.6 0 0 0 4.412 12.928M17.588 1.872A8.6 8.6 0 0 1 17.588 12.928"/>
+                </g>
+              </svg><figcaption data-i18n="how.auto.live">In a call</figcaption></figure>
+            </div>
+            <h3 data-i18n="how.auto.t">Only on when you talk to someone.</h3>
+            <p data-i18n="how.auto.p">In automatic mode, Hush runs only while an app listens to Hush Microphone. The rest of the time, your Mac sounds normal.</p>
+          </article>
+          <article class="card card-level" data-reveal>
+            <div class="levels" aria-hidden="true">
+              <div class="lv"><span class="lv-name" data-i18n="how.level.before">Your mic</span><div class="lv-bars lv-raw"><i style="--h:0.22"></i><i style="--h:0.25"></i><i style="--h:0.19"></i><i style="--h:0.35"></i><i style="--h:0.32"></i><i style="--h:0.28"></i><i style="--h:0.21"></i><i style="--h:0.22"></i><i style="--h:0.33"></i><i style="--h:0.32"></i><i style="--h:0.05"></i><i style="--h:0.06"></i><i style="--h:0.06"></i><i style="--h:0.07"></i><i style="--h:0.97"></i><i style="--h:0.91"></i><i style="--h:0.89"></i><i style="--h:0.88"></i><i style="--h:0.99"></i><i style="--h:0.9"></i><i style="--h:0.98"></i><i style="--h:0.97"></i><i style="--h:0.89"></i><i style="--h:0.91"></i><i style="--h:0.82"></i><i style="--h:0.06"></i><i style="--h:0.04"></i><i style="--h:0.04"></i><i style="--h:0.06"></i><i style="--h:0.23"></i><i style="--h:0.26"></i><i style="--h:0.36"></i><i style="--h:0.25"></i><i style="--h:0.29"></i><i style="--h:0.24"></i><i style="--h:0.24"></i><i style="--h:0.34"></i><i style="--h:0.19"></i></div></div>
+              <div class="lv"><span class="lv-name" data-i18n="how.level.after">Sent</span><div class="lv-bars lv-even"><i style="--h:0.59"></i><i style="--h:0.6"></i><i style="--h:0.63"></i><i style="--h:0.68"></i><i style="--h:0.61"></i><i style="--h:0.61"></i><i style="--h:0.59"></i><i style="--h:0.69"></i><i style="--h:0.68"></i><i style="--h:0.6"></i><i style="--h:0.05"></i><i style="--h:0.06"></i><i style="--h:0.06"></i><i style="--h:0.07"></i><i style="--h:0.59"></i><i style="--h:0.66"></i><i style="--h:0.6"></i><i style="--h:0.59"></i><i style="--h:0.68"></i><i style="--h:0.62"></i><i style="--h:0.65"></i><i style="--h:0.68"></i><i style="--h:0.63"></i><i style="--h:0.63"></i><i style="--h:0.62"></i><i style="--h:0.06"></i><i style="--h:0.04"></i><i style="--h:0.04"></i><i style="--h:0.06"></i><i style="--h:0.64"></i><i style="--h:0.62"></i><i style="--h:0.6"></i><i style="--h:0.6"></i><i style="--h:0.61"></i><i style="--h:0.67"></i><i style="--h:0.65"></i><i style="--h:0.59"></i><i style="--h:0.61"></i></div></div>
+            </div>
+            <h3 data-i18n="how.level.t">An even voice level.</h3>
+            <p data-i18n="how.level.p">Hush adjusts your level only while you speak, so soft and loud voices come out the same and background noise never gets boosted.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section stats" aria-label="Measurements">
+      <div class="wrap stats-row">
+        <div class="stat" data-reveal>
+          <span class="stat-num">−43<small>dB</small></span>
+          <span class="stat-label" data-i18n="stats.removed">of speaker music removed from your mic</span>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-num">~80<small>ms</small></span>
+          <span class="stat-label" data-i18n="stats.delay">of total delay, unnoticeable in conversation</span>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-num">0</span>
+          <span class="stat-label" data-i18n="stats.rec">recordings. Audio is processed live, in memory</span>
+        </div>
+      </div>
+      <p class="stats-note fine" data-reveal data-i18n-html="stats.note">Full measurement details available <a href="https://github.com/Showdown76py/Hush/blob/main/Prototypes/MEASUREMENTS.md">on GitHub</a>.</p>
+    </section>
+
+    <section class="section setup" id="setup" aria-labelledby="setup-title">
+      <div class="wrap">
+        <p class="eyebrow" data-reveal data-i18n="setup.eyebrow">Setup</p>
+        <h2 class="headline" id="setup-title" data-reveal data-i18n="setup.title">Ready in about a minute.</h2>
+        <p class="sub" data-reveal data-i18n="setup.sub">Drag Hush into Applications and open it. The welcome screens take care of the rest.</p>
+      </div>
+      <div class="rail-wrap" data-reveal>
+        <ol class="rail" id="rail">
+          <li class="slide">
+            <picture><source srcset="assets/img/onboarding-1-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-1-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
+            <div class="slide-text"><span class="slide-n">1</span><h3 data-i18n="setup.1.t">Open Hush</h3><p data-i18n="setup.1.p">It lives in the menu bar, with no Dock icon.</p></div>
+          </li>
+          <li class="slide">
+            <picture><source srcset="assets/img/onboarding-2-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-2-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
+            <div class="slide-text"><span class="slide-n">2</span><h3 data-i18n="setup.2.t">Allow the microphone</h3><p data-i18n="setup.2.p">Nothing is recorded or sent anywhere.</p></div>
+          </li>
+          <li class="slide">
+            <picture><source srcset="assets/img/onboarding-3-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-3-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
+            <div class="slide-text"><span class="slide-n">3</span><h3 data-i18n="setup.3.t">Add Hush Microphone</h3><p data-i18n="setup.3.p">macOS asks for your password once.</p></div>
+          </li>
+          <li class="slide">
+            <picture><source srcset="assets/img/onboarding-4-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-4-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
+            <div class="slide-text"><span class="slide-n">4</span><h3 data-i18n="setup.4.t">Hear the difference</h3><p data-i18n="setup.4.p">A 10-second before/after test with your own voice.</p></div>
+          </li>
+          <li class="slide">
+            <picture><img src="assets/img/setup-pick-mic.webp" alt="" width="600" height="540" loading="lazy"></picture>
+            <div class="slide-text"><span class="slide-n">5</span><h3 data-i18n="setup.5.t">Pick it in your app</h3><p data-i18n="setup.5.p">Choose Hush Microphone as the input in Discord, Zoom, Meet or OBS.</p></div>
+          </li>
+        </ol>
+        <div class="rail-nav">
+          <button class="round" type="button" id="railPrev" aria-label="Previous step"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="round" type="button" id="railNext" aria-label="Next step"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <h2 class="headline" id="faq-title" data-reveal data-i18n="faq.title">Questions.</h2>
+        <div class="faq-list" data-reveal>
+          <details>
+            <summary data-i18n="faq.open.q">macOS won't open Hush.</summary>
+            <div class="answer">
+              <p data-i18n="faq.open.a">Hush isn't notarized by Apple yet, so macOS warns you on first launch. To open it:</p>
+              <ul>
+                <li data-i18n-html="faq.open.l1"><strong>macOS 15 or later:</strong> try to open Hush once, then go to System Settings › Privacy &amp; Security and click Open Anyway.</li>
+                <li data-i18n-html="faq.open.l2"><strong>macOS 14:</strong> Control-click Hush in Applications, choose Open, then Open again.</li>
+                <li data-i18n-html="faq.open.l3"><strong>From Terminal:</strong></li>
+              </ul>
+              <pre><code>xattr -dr com.apple.quarantine /Applications/Hush.app</code></pre>
+            </div>
+          </details>
+          <details>
+            <summary data-i18n="faq.rec.q">Does Hush record me?</summary>
+            <div class="answer"><p data-i18n="faq.rec.a">No. Audio is processed live, in memory. The only recording is the before/after test in the welcome screens, kept in a local temporary file.</p></div>
+          </details>
+          <details>
+            <summary data-i18n="faq.delay.q">Is there a delay?</summary>
+            <div class="answer"><p data-i18n="faq.delay.a">About 80 ms in total: Apple's processing adds about 65 ms, Hush about 15 ms. People on the other end don't notice it in conversation.</p></div>
+          </details>
+          <details>
+            <summary data-i18n="faq.duck.q">Why does my music get a bit quieter?</summary>
+            <div class="answer"><p data-i18n="faq.duck.a">macOS lowers other audio whenever voice processing runs. Hush asks for the smallest reduction Apple allows, about 8 dB instead of the default 30 dB. In automatic mode this only happens during calls.</p></div>
+          </details>
+          <details>
+            <summary data-i18n="faq.phones.q">Headphones, AirPods?</summary>
+            <div class="answer"><p data-i18n="faq.phones.a">They work. Hush follows output changes on its own.</p></div>
+          </details>
+          <details>
+            <summary data-i18n="faq.uninstall.q">How do I uninstall it?</summary>
+            <div class="answer"><p data-i18n="faq.uninstall.a">In Hush, open Settings and click Uninstall Virtual Microphone, then move Hush to the Trash.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section final" aria-labelledby="final-title">
+      <div class="wrap narrow">
+        <img class="final-icon" src="assets/img/icon-256.webp" alt="" width="88" height="88" data-reveal loading="lazy">
+        <h2 class="headline" id="final-title" data-reveal data-i18n="final.title">Talk freely. Keep the music on.</h2>
+        <div class="hero-cta" data-reveal>
+          <a class="btn js-download" href="https://github.com/Showdown76py/Hush/releases/latest" data-i18n="hero.download">Download for Mac</a>
+          <a class="link" href="https://github.com/Showdown76py/Hush"><span data-i18n="final.source">View the source</span> <span aria-hidden="true">›</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <span>Hush · <span data-i18n="footer.by">made by</span> <a href="https://github.com/Showdown76py">Showdown76py</a></span>
+      <span><a href="https://github.com/Showdown76py/Hush/blob/main/LICENSE" data-i18n="footer.license">MIT License</a> · <a href="https://github.com/Showdown76py/Hush/releases" data-i18n="footer.releases">Releases</a></span>
+    </div>
+  </footer>
+</body>
+</html>
