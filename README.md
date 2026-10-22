@@ -7,6 +7,8 @@
 <p align="center">A clean microphone for Discord, Zoom, Meet and OBS on your Mac.<br>
 People hear your voice, not the music playing on your speakers.</p>
 
+<p align="center"><a href="https://hush.showdown.boo"><b>hush.showdown.boo</b></a> · <a href="https://github.com/Showdown76py/Hush/releases/latest">Download</a></p>
+
 <p align="center">English · <a href="README.fr.md">Français</a></p>
 
 ---
