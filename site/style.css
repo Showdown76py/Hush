@@ -283,10 +283,6 @@ p { margin: 0; }
 .dot-voice { background: var(--voice); }
 .dot-music { background: var(--music); }
 .player-label { font-weight: 600; font-size: 1.0625rem; }
-.badge {
-  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; padding: 3px 9px; border-radius: 999px;
-  color: var(--text-2); background: color-mix(in srgb, var(--text) 7%, transparent);
-}
 .player-wave { display: block; width: 100%; height: 150px; margin: 20px 0 22px; }
 .player-controls { display: flex; align-items: center; gap: 22px; }
 .play {

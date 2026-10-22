@@ -64,12 +64,13 @@
         <span data-i18n="hero.title1">Your voice.</span><br>
         <span class="muted" data-i18n="hero.title2">Not your music.</span>
       </h1>
-      <p class="lede" data-intro data-i18n="hero.lede">A clean microphone for Discord, Zoom, Meet and OBS. Hush runs the voice processing FaceTime uses, so people hear you and not what your Mac is playing.</p>
+      <p class="lede" data-intro data-i18n="hero.lede">A clean microphone for Discord, Zoom, Meet and OBS. Hush processes your voice through Apple's filter, so people hear you and not what your Mac is playing.</p>
       <div class="hero-cta" data-intro>
         <a class="btn js-download" href="https://github.com/Showdown76py/Hush/releases/latest">
           <span data-i18n="hero.download">Download for Mac</span>
         </a>
-        <a class="link" href="#listen"><span data-i18n="hero.listen">Hear the difference</span> <span aria-hidden="true">›</span></a>
+        <a class="link" href="#listen">
+          <span data-i18n="hero.listen">Hear the difference</span> <span aria-hidden="true"> ›</span></a>
       </div>
       <p class="fine" data-intro><span data-i18n="hero.meta">Free and open source · macOS 14 or later</span><span class="js-version"></span></p>
 
@@ -87,17 +88,17 @@
       <div class="scene-sticky">
         <h2 class="sr-only" id="scene-title" data-i18n="scene.title">How Hush cleans your microphone</h2>
         <ol class="scene-steps">
-          <li class="step" data-i18n-html="scene.s1"><strong>Your Mac plays music.</strong> The microphone sits right next to the speakers.</li>
-          <li class="step" data-i18n-html="scene.s2"><strong>You start talking.</strong> The mic can't tell your voice from the song.</li>
-          <li class="step" data-i18n-html="scene.s3"><strong>Without Hush,</strong> your friends get both. Your playlist, the video, the game.</li>
-          <li class="step" data-i18n-html="scene.s4"><strong>Hush turns on.</strong> Apple's voice processing removes everything the Mac plays.</li>
+          <li class="step" data-i18n-html="scene.s1"><strong>When your Mac plays music,</strong> the microphone picks up the sound from your speakers.</li>
+          <li class="step" data-i18n-html="scene.s2"><strong>Then, you start talking.</strong> The mic can't tell your voice from the song.</li>
+          <li class="step" data-i18n-html="scene.s3"><strong>Without Hush,</strong> your audience hears both. Your playlist, the video, the game.</li>
+          <li class="step" data-i18n-html="scene.s4"><strong>Hush turns on.</strong> Apple's voice processing removes everything your Mac plays.</li>
           <li class="step" data-i18n-html="scene.s5"><strong>Only your voice gets through.</strong> About 43 dB less music.</li>
         </ol>
         <div class="scene-stage">
           <canvas class="scene-canvas" aria-hidden="true"></canvas>
           <span class="tag tag-music" data-i18n="scene.music">Music from your speakers</span>
           <span class="tag tag-voice" data-i18n="scene.voice">Your voice</span>
-          <span class="tag tag-out" data-i18n="scene.out">What your friends hear</span>
+          <span class="tag tag-out" data-i18n="scene.out">What your audience hears</span>
           <div class="node" aria-hidden="true">
             <span class="node-mic">
               <svg viewBox="0 0 24 24" width="30" height="30"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3.5M9 20.5h6"/></g></svg>
@@ -116,9 +117,8 @@
       </div>
       <div class="player" data-reveal>
         <div class="player-head">
-          <span class="player-label" data-i18n="listen.label">What your friends hear</span>
+          <span class="player-label" data-i18n="listen.label">What your audience hears</span>
           <span class="legend" aria-hidden="true"><i class="dot dot-voice"></i><span data-i18n="listen.lvoice">Voice</span><i class="dot dot-music"></i><span data-i18n="listen.lmusic">Music</span></span>
-          <span class="badge" data-i18n="listen.badge">Simulated</span>
         </div>
         <canvas class="player-wave" aria-hidden="true"></canvas>
         <div class="player-controls">
@@ -133,8 +133,8 @@
             <div class="switch-text">
               <span class="switch-label" id="switchLabel">Hush</span>
               <span class="switch-state" aria-live="polite">
-                <span class="state-off" data-i18n="listen.off">Off: they hear your music too</span>
-                <span class="state-on" data-i18n="listen.on">On: they only hear you</span>
+                <span class="state-off" data-i18n="listen.off">Off: they hear your music too (no filtering)</span>
+                <span class="state-on" data-i18n="listen.on">On: they only hear you (filtering enabled)</span>
               </span>
             </div>
           </div>
@@ -151,7 +151,8 @@
           <article class="card card-menu" data-reveal>
             <div class="card-text">
               <h3 data-i18n="how.menu.t">Lives in your menu bar.</h3>
-              <p data-i18n="how.menu.p">Two meters show what your microphone hears and what apps receive. Play music and watch the first one move while the second stays quiet.</p>
+              <p data-i18n="how.menu.p">Two meters show what your microphone hears and what apps receive. Play a sound and watch the first one move while the second stays quiet.</p>
+              <p data-i18n="how.menu.p2">As soon as you start speaking, you'll see your voice being sent through the apps.</p>
             </div>
             <picture>
               <source srcset="assets/img/menu-dark.webp" media="(prefers-color-scheme: dark)">
@@ -168,7 +169,7 @@
           </article>
           <article class="card card-apps" data-reveal>
             <h3 data-i18n="how.apps.t">Works with every app.</h3>
-            <p data-i18n="how.apps.p">Hush adds a microphone called “Hush Microphone”. Pick it in any app that lets you choose an input.</p>
+            <p data-i18n="how.apps.p">Hush adds a virtual microphone called “Hush Microphone”. Pick it in any app that lets you choose an input.</p>
             <ul class="chips" aria-label="Apps">
               <li title="Discord"><span class="sr-only">Discord</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24" style="color:#5865F2"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></li>
               <li title="Zoom"><span class="sr-only">Zoom</span><svg class="chip-ico" aria-hidden="true" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0B5CFF"/><rect x="4.5" y="8" width="10.5" height="8" rx="2.2" fill="#fff"/><path d="M15.8 11l3.7-2.4v6.8L15.8 13z" fill="#fff"/></svg></li>
@@ -197,14 +198,14 @@
               </svg><figcaption data-i18n="how.auto.live">In a call</figcaption></figure>
             </div>
             <h3 data-i18n="how.auto.t">Only on when you talk to someone.</h3>
-            <p data-i18n="how.auto.p">In automatic mode, Hush runs only while an app listens to Hush Microphone. The rest of the time, your Mac sounds normal.</p>
+            <p data-i18n="how.auto.p">In automatic mode, Hush runs only while an app listens to Hush Microphone, so your speakers sound normal while enhancing your privacy.</p>
           </article>
           <article class="card card-level" data-reveal>
             <div class="levels" aria-hidden="true">
               <div class="lv"><span class="lv-name" data-i18n="how.level.before">Your mic</span><div class="lv-bars lv-raw"><i style="--h:0.22"></i><i style="--h:0.25"></i><i style="--h:0.19"></i><i style="--h:0.35"></i><i style="--h:0.32"></i><i style="--h:0.28"></i><i style="--h:0.21"></i><i style="--h:0.22"></i><i style="--h:0.33"></i><i style="--h:0.32"></i><i style="--h:0.05"></i><i style="--h:0.06"></i><i style="--h:0.06"></i><i style="--h:0.07"></i><i style="--h:0.97"></i><i style="--h:0.91"></i><i style="--h:0.89"></i><i style="--h:0.88"></i><i style="--h:0.99"></i><i style="--h:0.9"></i><i style="--h:0.98"></i><i style="--h:0.97"></i><i style="--h:0.89"></i><i style="--h:0.91"></i><i style="--h:0.82"></i><i style="--h:0.06"></i><i style="--h:0.04"></i><i style="--h:0.04"></i><i style="--h:0.06"></i><i style="--h:0.23"></i><i style="--h:0.26"></i><i style="--h:0.36"></i><i style="--h:0.25"></i><i style="--h:0.29"></i><i style="--h:0.24"></i><i style="--h:0.24"></i><i style="--h:0.34"></i><i style="--h:0.19"></i></div></div>
               <div class="lv"><span class="lv-name" data-i18n="how.level.after">Sent</span><div class="lv-bars lv-even"><i style="--h:0.59"></i><i style="--h:0.6"></i><i style="--h:0.63"></i><i style="--h:0.68"></i><i style="--h:0.61"></i><i style="--h:0.61"></i><i style="--h:0.59"></i><i style="--h:0.69"></i><i style="--h:0.68"></i><i style="--h:0.6"></i><i style="--h:0.05"></i><i style="--h:0.06"></i><i style="--h:0.06"></i><i style="--h:0.07"></i><i style="--h:0.59"></i><i style="--h:0.66"></i><i style="--h:0.6"></i><i style="--h:0.59"></i><i style="--h:0.68"></i><i style="--h:0.62"></i><i style="--h:0.65"></i><i style="--h:0.68"></i><i style="--h:0.63"></i><i style="--h:0.63"></i><i style="--h:0.62"></i><i style="--h:0.06"></i><i style="--h:0.04"></i><i style="--h:0.04"></i><i style="--h:0.06"></i><i style="--h:0.64"></i><i style="--h:0.62"></i><i style="--h:0.6"></i><i style="--h:0.6"></i><i style="--h:0.61"></i><i style="--h:0.67"></i><i style="--h:0.65"></i><i style="--h:0.59"></i><i style="--h:0.61"></i></div></div>
             </div>
-            <h3 data-i18n="how.level.t">An even voice level.</h3>
+            <h3 data-i18n="how.level.t">Your voice stays even.</h3>
             <p data-i18n="how.level.p">Hush adjusts your level only while you speak, so soft and loud voices come out the same and background noise never gets boosted.</p>
           </article>
         </div>
@@ -223,7 +224,7 @@
         </div>
         <div class="stat" data-reveal>
           <span class="stat-num">0</span>
-          <span class="stat-label" data-i18n="stats.rec">recordings. Audio is processed live, in memory</span>
+          <span class="stat-label" data-i18n="stats.rec">recordings. Audio is processed on-device in realtime.</span>
         </div>
       </div>
       <p class="stats-note fine" data-reveal data-i18n-html="stats.note">Full measurement details available <a href="https://github.com/Showdown76py/Hush/blob/main/Prototypes/MEASUREMENTS.md">on GitHub</a>.</p>
@@ -233,21 +234,21 @@
       <div class="wrap">
         <p class="eyebrow" data-reveal data-i18n="setup.eyebrow">Setup</p>
         <h2 class="headline" id="setup-title" data-reveal data-i18n="setup.title">Ready in about a minute.</h2>
-        <p class="sub" data-reveal data-i18n="setup.sub">Drag Hush into Applications and open it. The welcome screens take care of the rest.</p>
+        <p class="sub" data-reveal data-i18n="setup.sub">Drag Hush into Applications and open it. Follow the steps and you're ready to go!</p>
       </div>
       <div class="rail-wrap" data-reveal>
         <ol class="rail" id="rail">
           <li class="slide">
             <picture><source srcset="assets/img/onboarding-1-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-1-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
-            <div class="slide-text"><span class="slide-n">1</span><h3 data-i18n="setup.1.t">Open Hush</h3><p data-i18n="setup.1.p">It lives in the menu bar, with no Dock icon.</p></div>
+            <div class="slide-text"><span class="slide-n">1</span><h3 data-i18n="setup.1.t">Open Hush</h3><p data-i18n="setup.1.p">Access Hush's settings at any time on the top bar.</p></div>
           </li>
           <li class="slide">
             <picture><source srcset="assets/img/onboarding-2-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-2-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
-            <div class="slide-text"><span class="slide-n">2</span><h3 data-i18n="setup.2.t">Allow the microphone</h3><p data-i18n="setup.2.p">Nothing is recorded or sent anywhere.</p></div>
+            <div class="slide-text"><span class="slide-n">2</span><h3 data-i18n="setup.2.t">Allow the microphone</h3><p data-i18n="setup.2.p">Nothing is recorded or sent anywhere. It is all processed on-device.</p></div>
           </li>
           <li class="slide">
             <picture><source srcset="assets/img/onboarding-3-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-3-light.webp" alt="" width="600" height="540" loading="lazy"></picture>
-            <div class="slide-text"><span class="slide-n">3</span><h3 data-i18n="setup.3.t">Add Hush Microphone</h3><p data-i18n="setup.3.p">macOS asks for your password once.</p></div>
+            <div class="slide-text"><span class="slide-n">3</span><h3 data-i18n="setup.3.t">Add Hush Microphone</h3><p data-i18n="setup.3.p">macOS asks for your password once to install the virtual device.</p></div>
           </li>
           <li class="slide">
             <picture><source srcset="assets/img/onboarding-4-dark.webp" media="(prefers-color-scheme: dark)"><img src="assets/img/onboarding-4-light.webp" alt="" width="600" height="540" loading="lazy"></picture>

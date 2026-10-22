@@ -4,7 +4,7 @@
 
 <h1 align="center">Hush</h1>
 
-<p align="center">Un micro propre pour Discord, Zoom, Meet et OBS sur Mac.<br>
+<p align="center">Un micro propre pour Discord, Zoom, Meet, OBS et bien d'autres sur Mac.<br>
 On entend votre voix, pas la musique de vos haut-parleurs.</p>
 
 <p align="center"><a href="https://hush.showdown.boo/?lang=fr"><b>hush.showdown.boo</b></a> · <a href="https://github.com/Showdown76py/Hush/releases/latest">Télécharger</a></p>
@@ -13,8 +13,9 @@ On entend votre voix, pas la musique de vos haut-parleurs.</p>
 
 ---
 
-Sur un MacBook, le micro intégré capte tout ce que jouent les haut-parleurs. Discord n'annule que son propre son :
-votre playlist Spotify, une vidéo YouTube ou un jeu arrivent donc dans les oreilles de tout le monde.
+Sur un MacBook, le micro intégré capte tout ce que jouent les haut-parleurs. Discord, par exemple, n'annule que son
+propre son : votre playlist Spotify, une vidéo YouTube ou un jeu arrivent donc dans les oreilles de tout le monde, plus
+fort que votre voix.
 
 Le traitement de la voix d'Apple, celui de FaceTime, retire du micro tout le son du Mac. Hush l'applique à votre
 micro et vous donne le résultat sous la forme d'une nouvelle entrée, « Hush Microphone », utilisable dans n'importe
@@ -47,6 +48,8 @@ Dans Discord, ouvrez Paramètres utilisateur › Voix et vidéo :
 Hush nettoie déjà votre voix. Si vous laissez le traitement de Discord actif, votre voix est nettoyée deux fois et
 sonne moins bien. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush Microphone » comme micro.
 
+<sup><sub>Certaines apps ont leur propre suppression de l'écho ou réduction du bruit : pensez à les désactiver.</sub></sup>
+
 <p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Schéma des réglages de Discord"></p>
 
 ### macOS refuse d'ouvrir Hush
@@ -54,7 +57,7 @@ sonne moins bien. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush 
 Les versions publiées sans compte Apple Developer ne sont pas notarisées : au premier lancement, macOS dit ne pas
 pouvoir vérifier que Hush ne contient pas de logiciel malveillant. Pour l'ouvrir :
 
-- macOS 15 ou plus récent : essayez d'ouvrir Hush une fois, puis allez dans Réglages Système › Confidentialité et
+- macOS 15 ou plus récent : essayez d'ouvrir Hush une fois, puis allez dans Réglages Système > Confidentialité et
   sécurité et cliquez sur Ouvrir quand même.
 - macOS 14 : Ctrl-clic sur Hush dans Applications, Ouvrir, puis Ouvrir à nouveau.
 - N'importe quelle version, dans le Terminal :
@@ -75,10 +78,10 @@ sudo rm -rf /Library/Audio/Plug-Ins/HAL/Hush.driver && sudo killall coreaudiod
 
 ## Utilisation
 
-- Automatique (par défaut) : Hush nettoie votre voix seulement quand une app utilise « Hush Microphone », pendant
-  un appel Discord par exemple. Le reste du temps, votre Mac sonne normalement.
-- Toujours actif : le nettoyage tourne en permanence.
-- Désactivé : Hush transmet votre micro tel quel. Vous coupez le nettoyage sans changer de micro dans Discord.
+- **Automatique (par défaut)** : Hush nettoie votre voix seulement quand une app utilise « Hush Microphone », pendant
+  un appel par exemple. Le reste du temps, votre Mac sonne normalement.
+- **Toujours actif** : le nettoyage tourne en permanence.
+- **Désactivé** : Hush transmet votre micro tel quel. Vous coupez le nettoyage sans changer de micro dans votre app.
 
 Le menu affiche deux vumètres : ce que capte votre micro et ce que reçoivent les apps. Lancez de la musique : le
 premier bouge, le second reste calme.
@@ -105,6 +108,9 @@ peu les haut-parleurs ou utilisez des écouteurs.
 macOS baisse les autres sons dès que le traitement de la voix tourne. Hush demande la baisse la plus faible
 qu'Apple autorise : environ 8 dB, au lieu de 30 dB par défaut. On a tout essayé, rien ne descend plus bas
 (voir les [mesures](Prototypes/MEASUREMENTS.md)). Le mode Automatique limite ça à vos appels.
+
+**Remarque :** le son paraît assez faible quand Hush s'active, mais le système le ramène peu à peu à la normale, tout
+seul (voir [Limites connues](#limites-connues)).
 
 </details>
 
@@ -159,34 +165,33 @@ remarquent pas en conversation.
 
 ## Limites connues
 
-- Les autres sons baissent d'environ 8 dB pendant le nettoyage. C'est le plancher fixé par macOS.
+- Les autres sons baissent d'environ 8 dB pendant le nettoyage. C'est une limite de macOS, et ça s'entend à peine.
 - Les haut-parleurs passent en mode appel pendant le nettoyage et mettent 30 à 40 secondes à revenir ensuite.
 - La latence ajoutée est d'environ 80 ms, surtout due au traitement d'Apple.
 - Pendant que Hush tourne, les apps qui lisent directement le micro intégré reçoivent un signal plus faible et en
   partie traité (environ -20 dB). Réglez-les plutôt sur « Hush Microphone ».
 - Le micro virtuel est mono, en 48 kHz. Les apps convertissent si besoin.
-- Hush demande macOS 14 ou plus récent. Le style Liquid Glass demande macOS 26 ; les versions plus anciennes ont un
-  rendu équivalent.
-- Sans compte Apple Developer, Gatekeeper bloque le premier lancement. Les releases portent un certificat auto-signé
-  stable : macOS conserve donc votre autorisation micro d'une mise à jour à l'autre, et Sparkle vérifie une
-  signature EdDSA sur chaque mise à jour.
+- Hush demande macOS 14 ou plus récent.
+- Je n'ai pas de compte Apple Developer : les releases portent donc un certificat auto-signé stable, grâce auquel
+  macOS conserve votre autorisation micro d'une mise à jour à l'autre, et Sparkle vérifie une signature EdDSA sur
+  chaque mise à jour.
 
 ## Mesures
 
-Mesurées sur un MacBook Air (Apple Silicon, macOS 27). Détails complets dans
+Nous avons fait les mesures sur un MacBook Air (Apple Silicon, macOS 27). Détails complets dans
 [Prototypes/MEASUREMENTS.md](Prototypes/MEASUREMENTS.md).
 
 | | Résultat |
 |---|---|
 | Musique retirée du micro | -43,5 dB (médiane, après environ 3 s) |
-| Baisse de la musique (ducking) | -8 dB (défaut d'Apple : -30 dB) |
+| Baisse de la musique (ducking) | -8 dB |
 | Latence ajoutée totale | 80,9 ms, dont 14 ms de transport Hush |
 | Niveau de la voix, voix douce à forte | -20 à -25 dB, crêtes à -8 dBFS |
-| Dérive d'horloge micro / driver | moins de 1 ppm, aucune correction nécessaire |
+| Dérive d'horloge micro / driver | moins de 1 ppm |
 
 Nous avons aussi prototypé un moteur WebRTC AEC3 (`Prototypes/aec3`). Il évite le ducking, laisse les haut-parleurs
 tranquilles et n'ajoute que 16,6 ms, mais il retire moins de musique (-16 dB sans réduction de bruit) et coupe votre
-voix quand vous parlez par-dessus la musique. Le traitement d'Apple reste.
+voix quand vous parlez par-dessus la musique. Nous en avons conclu que le traitement de la voix d'Apple était meilleur dans ce cas.
 
 ## Pour les développeurs
 
@@ -199,8 +204,8 @@ xcodegen generate                 # régénère Hush.xcodeproj à partir de proj
 open Hush.xcodeproj
 ```
 
-Si le dépôt se trouve dans un dossier iCloud Drive, laissez le DerivedData de Xcode à son emplacement par défaut :
-macOS ajoute des attributs étendus aux bundles des dossiers synchronisés, et `codesign` les refuse.
+> [!NOTE]
+> Si le dépôt se trouve dans un dossier iCloud Drive, laissez le DerivedData de Xcode à son emplacement par défaut : macOS ajoute des attributs étendus aux bundles des dossiers synchronisés, et `codesign` les refuse.
 
 ### Tests
 

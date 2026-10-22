@@ -4,7 +4,7 @@
 
 <h1 align="center">Hush</h1>
 
-<p align="center">A clean microphone for Discord, Zoom, Meet and OBS on your Mac.<br>
+<p align="center">A clean microphone for Discord, Zoom, Meet, OBS & more on your Mac.<br>
 People hear your voice, not the music playing on your speakers.</p>
 
 <p align="center"><a href="https://hush.showdown.boo"><b>hush.showdown.boo</b></a> · <a href="https://github.com/Showdown76py/Hush/releases/latest">Download</a></p>
@@ -13,8 +13,8 @@ People hear your voice, not the music playing on your speakers.</p>
 
 ---
 
-On a MacBook, the built-in microphone picks up whatever the speakers play. Discord only cancels its own sound, so
-your Spotify playlist, a YouTube video or a game ends up in everyone's ears.
+On a MacBook, the built-in microphone picks up whatever the speakers play. For instance, Discord only cancels its own sound,
+so your Spotify playlist, a YouTube video or a game ends up being louder than your voice in everyone's ears.
 
 Apple's voice processing, the one FaceTime uses, removes all of the Mac's sound from the microphone. Hush runs it
 on your microphone and gives you the result as a new input, "Hush Microphone", that any app can use.
@@ -43,8 +43,10 @@ In Discord, open User Settings › Voice & Video:
 | Noise Suppression | None |
 | Automatic Gain Control | off |
 
-Hush already cleans your voice. Leave Discord's processing on and your voice gets cleaned twice and sounds worse.
+Hush already cleans your voice. If you leave Discord's processing on and your voice gets cleaned twice and sounds worse.
 Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone.
+
+<sup><sub>Some apps may have bult-in echo cancellation or noise suppression, so make sure to toggle that off.</sub></sup>
 
 <p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Discord settings diagram"></p>
 
@@ -53,7 +55,7 @@ Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone.
 Releases built without an Apple Developer account aren't notarized, so macOS says it "could not verify Hush is
 free of malware" on first launch. To open it:
 
-- macOS 15 or later: try to open Hush once, then go to System Settings › Privacy & Security and click Open Anyway.
+- macOS 15 or later: try to open Hush once, then go to System Settings > Privacy & Security and click Open Anyway.
 - macOS 14: Control-click Hush in Applications, choose Open, then Open again.
 - Any version, from Terminal:
   ```bash
@@ -72,11 +74,11 @@ sudo rm -rf /Library/Audio/Plug-Ins/HAL/Hush.driver && sudo killall coreaudiod
 
 ## Using Hush
 
-- Automatic (default): Hush cleans your voice only while an app uses "Hush Microphone", during a Discord call for
+- **Automatic (default)**: Hush cleans your voice only while an app uses "Hush Microphone", during a call for
   example. The rest of the time your Mac sounds normal.
-- Always on: the cleanup runs all the time.
-- Off: Hush passes your microphone through untouched, so you can switch the cleanup off without changing
-  microphones in Discord.
+- **Always on**: the cleanup runs all the time.
+- **Off**: Hush passes your microphone through untouched, so you can switch the cleanup off without changing
+  microphones in your app.
 
 The menu shows two meters: what your microphone hears and what apps receive. Play music and you'll see the first
 one move while the second stays quiet.
@@ -102,6 +104,8 @@ use headphones.
 macOS lowers other audio whenever voice processing runs. Hush requests the smallest reduction Apple allows, about
 8 dB instead of the default 30 dB. We measured it and couldn't go lower (see the [measurements](Prototypes/MEASUREMENTS.md)).
 Automatic mode limits this to your calls.
+
+**Note:** It appears that the volume gets quite low when Hush turns on, but your system will slowly make it normal, automatically. (see [Known Limitations](#known-limitations))
 
 </details>
 
@@ -154,33 +158,33 @@ in conversation.
 
 ## Known limitations
 
-- Other audio drops by about 8 dB while the cleanup runs. macOS sets that floor.
+- Other audio drops by about 8 dB while the cleanup runs. This is a macOS limitation, and it can be barely heard.
 - The speakers switch to call mode during the cleanup and take 30 to 40 seconds to recover afterwards.
 - Added latency is about 80 ms, mostly from Apple's processing.
 - While Hush runs, apps that read the built-in microphone directly get a quieter, partly processed signal (about
   -20 dB). Point them at "Hush Microphone" instead.
 - The virtual microphone is mono at 48 kHz. Apps convert as needed.
-- Hush needs macOS 14 or later. The Liquid Glass look needs macOS 26; older versions get an equivalent design.
-- Without an Apple Developer account, Gatekeeper blocks the first launch. Releases carry a stable self-signed
+- Hush needs macOS 14 or later.
+- Releases carry a stable self-signed
   certificate, so macOS keeps your microphone permission across updates, and Sparkle checks an EdDSA signature on
-  every update.
+  every update, as I don't own an Apple Developper Account.
 
 ## Measurements
 
-Measured on a MacBook Air (Apple Silicon, macOS 27). Full details, in French, in
+We've done measurements on a MacBook Air (Apple Silicon, macOS 27). Full details, in French, in
 [Prototypes/MEASUREMENTS.md](Prototypes/MEASUREMENTS.md).
 
 | | Result |
 |---|---|
 | Music removed from the microphone | -43.5 dB (median, after about 3 s) |
-| Music ducking | -8 dB (Apple's default: -30 dB) |
+| Music ducking | -8 dB |
 | Total added latency | 80.9 ms, including 14 ms of Hush transport |
 | Voice level, soft to loud speech | -20 to -25 dB, peaks at -8 dBFS |
-| Mic and driver clock drift | under 1 ppm, no correction needed |
+| Mic and driver clock drift | under 1 ppm |
 
 We also prototyped a WebRTC AEC3 engine (`Prototypes/aec3`). It avoids ducking, leaves the speakers alone and adds
 only 16.6 ms, but it removes less music (-16 dB without noise suppression) and cuts your voice when you talk over
-the music. Apple's processing stays.
+the music. So we concluded that Apple's voice processing was better in this case.
 
 ## For developers
 
@@ -193,8 +197,8 @@ xcodegen generate                 # rebuilds Hush.xcodeproj from project.yml
 open Hush.xcodeproj
 ```
 
-If the repository sits in an iCloud Drive folder, keep Xcode's DerivedData in its default location. macOS adds
-extended attributes to bundles in synced folders and `codesign` rejects them.
+> [!NOTE]
+> If the repository sits in an iCloud Drive folder, keep Xcode's DerivedData in its default location. macOS adds extended attributes to bundles in synced folders and `codesign` rejects them.
 
 ### Tests
 
