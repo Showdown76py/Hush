@@ -413,13 +413,22 @@ function player() {
     drawWave();
   }
 
+  const raw = {};
+  function fetchClip(l) {
+    raw[l] ??= Promise.all([
+      fetch(`assets/audio/demo-${l}.m4a`).then((r) => r.arrayBuffer()),
+      fetch(`assets/audio/demo-${l}.json`).then((r) => r.json()),
+    ]).catch((err) => {
+      delete raw[l];
+      throw err;
+    });
+    return raw[l];
+  }
+
   async function load(l) {
     if (!clips[l]) {
-      const [audio, env] = await Promise.all([
-        fetch(`assets/audio/demo-${l}.m4a`).then((r) => r.arrayBuffer()),
-        fetch(`assets/audio/demo-${l}.json`).then((r) => r.json()),
-      ]);
-      clips[l] = { buf: await ac.decodeAudioData(audio), env };
+      const [audio, env] = await fetchClip(l);
+      clips[l] = { buf: await ac.decodeAudioData(audio.slice(0)), env };
     }
     return clips[l];
   }
@@ -454,11 +463,17 @@ function player() {
   async function play() {
     playBtn.classList.add('is-loading');
     try {
+      if (navigator.audioSession) navigator.audioSession.type = 'playback';
       if (!ac) {
         ac = new (window.AudioContext || window.webkitAudioContext)();
         nodes = graph();
       }
-      if (ac.state === 'suspended') await ac.resume();
+      const resumed = ac.state === 'running' ? null : ac.resume();
+      const unlock = ac.createBufferSource();
+      unlock.buffer = ac.createBuffer(1, 1, ac.sampleRate);
+      unlock.connect(ac.destination);
+      unlock.start(0);
+      await resumed;
       if (!source) await startSource(offset);
       playing = true;
       setPlayUI();
@@ -511,7 +526,8 @@ function player() {
     c2d.globalAlpha = alpha;
     c2d.fillStyle = color;
     c2d.beginPath();
-    c2d.roundRect(x, y, BAR, h, BAR / 2);
+    if (c2d.roundRect) c2d.roundRect(x, y, BAR, h, BAR / 2);
+    else c2d.rect(x, y, BAR, h);
     c2d.fill();
   }
 
@@ -543,6 +559,12 @@ function player() {
   new IntersectionObserver(([e]) => {
     if (!e.isIntersecting && playing) pause();
   }).observe(root);
+  const prefetch = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    fetchClip(lang).catch(() => {});
+    prefetch.disconnect();
+  }, { rootMargin: '800px 0px' });
+  prefetch.observe(root);
 }
 
 function rail() {
