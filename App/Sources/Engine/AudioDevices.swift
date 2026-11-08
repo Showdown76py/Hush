@@ -47,6 +47,14 @@ enum AudioDevices {
         return value
     }
 
+    static func nominalSampleRate(_ id: AudioDeviceID) -> Float64? {
+        var a = address(kAudioDevicePropertyNominalSampleRate)
+        var value: Float64 = 0
+        var size = UInt32(MemoryLayout<Float64>.size)
+        guard AudioObjectGetPropertyData(id, &a, 0, nil, &size, &value) == noErr else { return nil }
+        return value
+    }
+
     static func inputChannelCount(_ id: AudioDeviceID) -> Int {
         var a = address(kAudioDevicePropertyStreamConfiguration, kAudioObjectPropertyScopeInput)
         var size: UInt32 = 0

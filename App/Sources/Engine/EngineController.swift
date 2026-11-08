@@ -311,9 +311,20 @@ final class EngineController: ObservableObject {
     }
 
     private func watchDevice(_ id: AudioDeviceID) {
-        deviceListeners = [kAudioDevicePropertyNominalSampleRate, kAudioDevicePropertyDeviceIsAlive].compactMap { sel in
-            AudioPropertyListener(object: id, selector: sel) { [weak self] in self?.scheduleRestart(reason: "périphérique") }
-        }
+        // the vp reconfigures the mic async after start (built-in mic w/ airpods output: 48 -> 24 kHz once)
+        // and the HAL keeps notifying. restarting on every notification looped forever so compare values
+        let rate = AudioDevices.nominalSampleRate(id)
+        deviceListeners = [
+            AudioPropertyListener(object: id, selector: kAudioDevicePropertyNominalSampleRate) { [weak self] in
+                let now = AudioDevices.nominalSampleRate(id)
+                guard now != rate else { return }
+                self?.scheduleRestart(reason: "fréquence \(rate ?? 0) -> \(now ?? 0) Hz")
+            },
+            AudioPropertyListener(object: id, selector: kAudioDevicePropertyDeviceIsAlive) { [weak self] in
+                guard AudioDevices.uint32(id, kAudioDevicePropertyDeviceIsAlive) != 1 else { return }
+                self?.scheduleRestart(reason: "périphérique disparu")
+            },
+        ].compactMap { $0 }
     }
 
     /// "mic" meter only listens to the mic while the popover is open
