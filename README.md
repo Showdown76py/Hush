@@ -30,7 +30,7 @@ on your microphone and gives you the result as a new input, "Hush Microphone", t
 2. Open it and drag Hush into Applications.
 3. Open Hush. If macOS blocks it, see [macOS won't open Hush](#macos-wont-open-hush).
 4. The welcome screens walk you through the rest: allow the microphone, install the virtual microphone (macOS asks
-   for your password once), record a 10-second before/after test, and set up Discord.
+   for your password once), record a 10-second before/after test, and choose Hush in your app.
 
 ### Discord settings
 
@@ -44,11 +44,12 @@ In Discord, open User Settings › Voice & Video:
 | Automatic Gain Control | off |
 
 Hush already cleans your voice. If you leave Discord's processing on and your voice gets cleaned twice and sounds worse.
-Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone.
+Zoom, Meet and OBS need one setting: pick "Hush Microphone" as the microphone. **Use in an app…** in the Hush menu
+shows the steps for Discord, Zoom, Google Meet, Teams and OBS.
 
 <sup><sub>Some apps may have bult-in echo cancellation or noise suppression, so make sure to toggle that off.</sub></sup>
 
-<p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Discord settings diagram"></p>
+<p align="center"><img src="docs/screenshots/guide-dark.png" width="480" alt="Hush guide for choosing Hush Microphone in Discord, Zoom, Google Meet, Teams or OBS"></p>
 
 ### macOS won't open Hush
 

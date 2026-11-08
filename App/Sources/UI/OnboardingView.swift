@@ -17,7 +17,7 @@ struct OnboardingView: View {
                 case 1: PermissionStep(next: next)
                 case 2: InstallStep(next: next)
                 case 3: TestStep(next: next)
-                default: DiscordGuideView(showsDoneButton: true, done: finish)
+                default: AppGuideView(isOnboarding: true, done: finish)
                 }
             }
             .id(step)

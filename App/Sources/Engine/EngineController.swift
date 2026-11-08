@@ -27,6 +27,9 @@ final class EngineController: ObservableObject {
     private func setStatus(_ new: Status) { if status != new { status = new } }
     @Published private(set) var sourceName: String = ""
     @Published private(set) var clientCount = 0
+    /// names of the apps reading Hush Microphone
+    @Published private(set) var clientApps: [String] = []
+    private var lastClientAppsRefresh = Date.distantPast
     /// "clean mic" off but an app is listening so raw mic is passed through as is
     @Published private(set) var passthroughActive = false
     private var passthroughError: HushError?
@@ -238,11 +241,18 @@ final class EngineController: ObservableObject {
 
     private func tick() {
         if let stats = shm?.stats {
-            if stats.clients != clientCount {
+            let changed = stats.clients != clientCount
+            if changed {
                 log.notice("apps clientes de Hush Microphone : \(stats.clients)")
                 clientCount = stats.clients
             }
             if stats.clients > 0 { lastClientSeen = Date() }
+            // the count can stay the same while apps swap so also poll every 2 s
+            if changed || (stats.clients > 0 && Date().timeIntervalSince(lastClientAppsRefresh) > 2) {
+                let apps = stats.clients > 0 ? AudioDevices.appsReading(deviceUID: AudioDevices.hushDeviceUID) : []
+                if apps != clientApps { clientApps = apps }
+                lastClientAppsRefresh = Date()
+            }
         }
         if engine.isRunning, Date().timeIntervalSince(lastGainSave) > 10 {
             saveAutomaticGain()
@@ -355,25 +365,28 @@ final class EngineController: ObservableObject {
         return engine.isPassingThrough ? engine.rawLevel : 0
     }
 
-    func applyPreview(status: Status, clients: Int, source: String, levels: (raw: Float, clean: Float),
+    func applyPreview(status: Status, clients: [String], source: String, levels: (raw: Float, clean: Float),
                       driverState: DriverInstaller.State = .installed) {
         self.driverState = driverState
         self.status = status
-        clientCount = clients
+        clientCount = clients.count
+        clientApps = clients
         sourceName = source
         previewLevels = levels
     }
 
-    var statusText: String {
+    /// line under "Hush" in the menu, the badge next to it carries the state itself
+    var statusDetail: String {
+        let users = clientApps.formatted(.list(type: .and))
         switch status {
-        case .running where clientCount > 0:
-            String(localized: "Active — \(clientCount) app(s) listening")
-        case .running: String(localized: "Active")
-        case .starting: String(localized: "Starting…")
-        case .waiting: String(localized: "Standby — turns on when an app uses Hush Microphone")
-        case .off where passthroughActive: String(localized: "Off — apps get your normal microphone")
-        case .off: String(localized: "Off")
-        case .problem(let e): e.title
+        case .running where !clientApps.isEmpty: return String(localized: "Used by \(users)")
+        case .running where clientCount > 0: return String(localized: "Used by an app")
+        case .running: return String(localized: "Ready for any app")
+        case .starting: return String(localized: "Starting…")
+        case .waiting: return String(localized: "Turns on when an app needs it")
+        case .off where passthroughActive && !clientApps.isEmpty: return String(localized: "Used by \(users)")
+        case .off: return String(localized: "Voice cleanup is paused")
+        case .problem(let e): return e.title
         }
     }
 

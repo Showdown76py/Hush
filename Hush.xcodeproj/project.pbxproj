@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		032C1A6CEB8AEAB40E747095 /* BeforeAfterTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3374866CB4E43BFA89E02B89 /* BeforeAfterTest.swift */; };
-		1319A53149C081D53EB90E11 /* DiscordGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */; };
 		16A74F7279FC20B6C14648C8 /* VoiceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3643D0FA740F53EF4CE4A718 /* VoiceEngine.swift */; };
 		2851EDCED9D7105AEC45391D /* hush_rt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66FA5173A5EC9FF62939EF64 /* hush_rt.c */; };
 		40105AE33C412B5B76FE8F3F /* EngineController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E622253C65EB346B5BF78618 /* EngineController.swift */; };
@@ -23,6 +22,7 @@
 		6A8A90B3D580C258E21DD47F /* AudioDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5857C55ECEA19366E371E2A7 /* AudioDevices.swift */; };
 		6AB5802BE57F019FE2C4148B /* HushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654F958ABA81F8BFE55E9395 /* HushTests.swift */; };
 		6E551E838DC0DDFD9C98E5BD /* Screenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D7749AE0829E17D4A6D682 /* Screenshots.swift */; };
+		77A8F75C716B7A574137E17F /* AppGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B533FE7FEE1F445E4DA643F /* AppGuideView.swift */; };
 		89CDE18C7CCEDEF865FF939A /* LevelMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329A2B479160410654DCBB /* LevelMeter.swift */; };
 		92727255D1807D1698509C45 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3B441E844E805B05E732ED6D /* Localizable.xcstrings */; };
 		9476FB996FF32B0650C1F6AE /* HushDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 0B94DE077A98962D3B46A2A8 /* HushDriver.c */; };
@@ -98,12 +98,12 @@
 		654F958ABA81F8BFE55E9395 /* HushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushTests.swift; sourceTree = "<group>"; };
 		664D0852F7C4BB53CCD3F928 /* Hush.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hush.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		66FA5173A5EC9FF62939EF64 /* hush_rt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hush_rt.c; sourceTree = "<group>"; };
-		7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordGuideView.swift; sourceTree = "<group>"; };
 		7F654EC87DB3D46438DB275B /* HushDriver.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HushDriver.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		8372E1B68A4B3AE002388487 /* hush_rt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hush_rt.h; sourceTree = "<group>"; };
 		88D5F1E34276D7F28423D584 /* HushTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HushTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		998EE92588640F00901C68F9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9AD303383E70238854530C8A /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = "<group>"; };
+		9B533FE7FEE1F445E4DA643F /* AppGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGuideView.swift; sourceTree = "<group>"; };
 		9C3E7BA292EA15C269AF423B /* hush_agc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hush_agc.c; sourceTree = "<group>"; };
 		A7BF3AF6473EBDB20122AC07 /* ring.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ring.h; sourceTree = "<group>"; };
 		BE0FA2754F2AF00ACD3F8601 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
@@ -162,8 +162,8 @@
 		31EC7202F6B77DDD66780FC0 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				9B533FE7FEE1F445E4DA643F /* AppGuideView.swift */,
 				3374866CB4E43BFA89E02B89 /* BeforeAfterTest.swift */,
-				7A82026D1999394C6DA9C36D /* DiscordGuideView.swift */,
 				5A56F36AD2F01B6D830581C7 /* GlassCompat.swift */,
 				35329A2B479160410654DCBB /* LevelMeter.swift */,
 				2B7D62C487ECC4D6EB8EE3BA /* MenuContentView.swift */,
@@ -380,9 +380,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77A8F75C716B7A574137E17F /* AppGuideView.swift in Sources */,
 				6A8A90B3D580C258E21DD47F /* AudioDevices.swift in Sources */,
 				032C1A6CEB8AEAB40E747095 /* BeforeAfterTest.swift in Sources */,
-				1319A53149C081D53EB90E11 /* DiscordGuideView.swift in Sources */,
 				D13857F1BF351D8248240F5E /* DriverInstaller.swift in Sources */,
 				40105AE33C412B5B76FE8F3F /* EngineController.swift in Sources */,
 				47D3A9BC9F217A7EA331210C /* GlassCompat.swift in Sources */,

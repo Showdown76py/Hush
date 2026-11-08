@@ -31,10 +31,10 @@ struct HushApp: App {
         .windowResizability(.contentSize)
         .defaultPosition(.center)
 
-        Window(Text("Set up Discord"), id: WindowID.discord) {
-            DiscordGuideView(showsDoneButton: false)
+        Window(Text("Use Hush in your apps"), id: WindowID.guide) {
+            AppGuideView()
                 .padding(28)
-                .frame(width: 560)
+                .frame(width: 580)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
@@ -59,7 +59,7 @@ let isHeadless = isRunningUnitTests || screenshotDirectory != nil
 
 enum WindowID {
     static let onboarding = "onboarding"
-    static let discord = "discord"
+    static let guide = "guide"
 }
 
 /// auto updates (sparkle). off until the EdDSA public key is set

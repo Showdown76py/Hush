@@ -32,7 +32,7 @@ quelle app.
 2. Ouvrez-le et glissez Hush dans Applications.
 3. Ouvrez Hush. Si macOS le bloque, voir [macOS refuse d'ouvrir Hush](#macos-refuse-douvrir-hush).
 4. Les écrans d'accueil font le reste avec vous : autoriser le micro, installer le micro virtuel (macOS demande
-   votre mot de passe une fois), faire un test avant/après de 10 secondes, puis régler Discord.
+   votre mot de passe une fois), faire un test avant/après de 10 secondes, puis choisir Hush dans votre app.
 
 ### Réglages de Discord
 
@@ -46,11 +46,12 @@ Dans Discord, ouvrez Paramètres utilisateur › Voix et vidéo :
 | Contrôle automatique du gain | désactivé |
 
 Hush nettoie déjà votre voix. Si vous laissez le traitement de Discord actif, votre voix est nettoyée deux fois et
-sonne moins bien. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush Microphone » comme micro.
+sonne moins bien. Pour Zoom, Meet et OBS, un seul réglage : choisissez « Hush Microphone » comme micro. **Use in an app…** dans le
+menu de Hush donne les étapes pour Discord, Zoom, Google Meet, Teams et OBS.
 
 <sup><sub>Certaines apps ont leur propre suppression de l'écho ou réduction du bruit : pensez à les désactiver.</sub></sup>
 
-<p align="center"><img src="docs/screenshots/discord-dark.png" width="480" alt="Schéma des réglages de Discord"></p>
+<p align="center"><img src="docs/screenshots/guide-dark.png" width="480" alt="Guide de Hush pour choisir Hush Microphone dans Discord, Zoom, Google Meet, Teams ou OBS"></p>
 
 ### macOS refuse d'ouvrir Hush
 

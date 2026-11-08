@@ -21,13 +21,45 @@ enum AudioDevices {
         AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: kAudioObjectPropertyElementMain)
     }
 
-    static func allDeviceIDs() -> [AudioDeviceID] {
-        var a = address(kAudioHardwarePropertyDevices)
+    static func allDeviceIDs() -> [AudioDeviceID] { objectIDs(system, kAudioHardwarePropertyDevices) }
+
+    static func objectIDs(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector,
+                          _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal) -> [AudioObjectID] {
+        var a = address(selector, scope)
         var size: UInt32 = 0
-        guard AudioObjectGetPropertyDataSize(system, &a, 0, nil, &size) == noErr else { return [] }
-        var ids = [AudioDeviceID](repeating: 0, count: Int(size) / MemoryLayout<AudioDeviceID>.size)
-        guard AudioObjectGetPropertyData(system, &a, 0, nil, &size, &ids) == noErr else { return [] }
+        guard AudioObjectGetPropertyDataSize(object, &a, 0, nil, &size) == noErr, size > 0 else { return [] }
+        var ids = [AudioObjectID](repeating: 0, count: Int(size) / MemoryLayout<AudioObjectID>.size)
+        guard AudioObjectGetPropertyData(object, &a, 0, nil, &size, &ids) == noErr else { return [] }
         return ids
+    }
+
+    /// apps reading from a device, sorted. helper processes count as their app (Discord Helper -> Discord)
+    static func appsReading(deviceUID: String) -> [String] {
+        guard let device = device(uid: deviceUID) else { return [] }
+        var names = Set<String>()
+        for process in objectIDs(system, kAudioHardwarePropertyProcessObjectList)
+        where objectIDs(process, kAudioProcessPropertyDevices, kAudioObjectPropertyScopeInput).contains(device) {
+            var a = address(kAudioProcessPropertyPID)
+            var pid: pid_t = 0
+            var size = UInt32(MemoryLayout<pid_t>.size)
+            guard AudioObjectGetPropertyData(process, &a, 0, nil, &size, &pid) == noErr, pid != getpid(),
+                  let name = appName(pid: pid) else { continue }
+            names.insert(name)
+        }
+        return names.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    private static func appName(pid: pid_t) -> String? {
+        var buffer = [CChar](repeating: 0, count: 4096)   // PROC_PIDPATHINFO_MAXSIZE
+        guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0 else { return nil }
+        let path = String(cString: buffer)
+        let parts = path.split(separator: "/")
+        // outermost .app, helpers live inside their app's bundle
+        guard let i = parts.firstIndex(where: { $0.hasSuffix(".app") }) else { return (path as NSString).lastPathComponent }
+        let url = URL(fileURLWithPath: "/" + parts[...i].joined(separator: "/"))
+        let info = Bundle(url: url)?.localizedInfoDictionary ?? Bundle(url: url)?.infoDictionary
+        return info?["CFBundleDisplayName"] as? String ?? info?["CFBundleName"] as? String
+            ?? url.deletingPathExtension().lastPathComponent
     }
 
     static func string(_ id: AudioObjectID, _ selector: AudioObjectPropertySelector) -> String? {

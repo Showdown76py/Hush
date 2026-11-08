@@ -36,46 +36,6 @@
         }
       }
     },
-    "Active — %lld app(s) listening": {
-      "localizations": {
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Active — %lld app listening"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Active — %lld apps listening"
-                }
-              }
-            }
-          }
-        },
-        "fr": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Actif — %lld app à l’écoute"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Actif — %lld apps à l’écoute"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "Allow Hush in System Settings › Privacy & Security › Microphone. If it’s already on, turn it off and on again, then reopen Hush.": {
       "localizations": {
         "fr": {
@@ -136,6 +96,26 @@
         }
       }
     },
+    "Any app that lets you choose a microphone works. Pick yours for the exact steps.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toute app qui permet de choisir un micro fonctionne. Choisissez la vôtre pour voir les étapes."
+          }
+        }
+      }
+    },
+    "App": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        }
+      }
+    },
     "Apps get your normal microphone": {
       "localizations": {
         "fr": {
@@ -186,12 +166,12 @@
         }
       }
     },
-    "Automatic Gain Control": {
+    "Automatic Gain Control: off": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contrôle automatique du gain"
+            "value": "Contrôle automatique du gain : désactivé"
           }
         }
       }
@@ -212,6 +192,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatique — seulement quand une app l’utilise"
+          }
+        }
+      }
+    },
+    "Automatically adjust microphone volume: off": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajuster automatiquement le volume du micro : désactivé"
+          }
+        }
+      }
+    },
+    "Background noise suppression: Low": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suppression du bruit de fond : Faible"
           }
         }
       }
@@ -276,16 +276,6 @@
         }
       }
     },
-    "Discord setup": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réglage Discord"
-          }
-        }
-      }
-    },
     "Done": {
       "localizations": {
         "fr": {
@@ -296,12 +286,32 @@
         }
       }
     },
-    "Echo Cancellation": {
+    "Echo Cancellation: off": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Suppression de l’écho"
+            "value": "Suppression de l’écho : désactivée"
+          }
+        }
+      }
+    },
+    "Echo and background sound removed": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écho et sons de fond retirés"
+          }
+        }
+      }
+    },
+    "Echo cancellation and noise suppression: off": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulation d’écho et réduction du bruit : désactivées"
           }
         }
       }
@@ -322,6 +332,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Écoutez la différence"
+          }
+        }
+      }
+    },
+    "Help": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide"
           }
         }
       }
@@ -366,12 +386,12 @@
         }
       }
     },
-    "Hush already removes echo and noise, so turn Discord’s own processing off to avoid cleaning your voice twice. In Zoom, Meet or OBS, pick “Hush Microphone” as the microphone.": {
+    "Hush already removes echo and noise. Leaving the app’s processing on cleans your voice twice and can make it sound thin.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hush supprime déjà l’écho et le bruit : désactivez le traitement de Discord pour ne pas nettoyer votre voix deux fois. Dans Zoom, Meet ou OBS, choisissez « Hush Microphone » comme micro."
+            "value": "Hush retire déjà l’écho et le bruit. Laisser le traitement de l’app actif nettoie votre voix deux fois et peut la rendre métallique."
           }
         }
       }
@@ -426,16 +446,6 @@
         }
       }
     },
-    "INPUT DEVICE": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PÉRIPHÉRIQUE D’ENTRÉE"
-          }
-        }
-      }
-    },
     "In Automatic mode, Hush only runs while an app such as Discord is using “Hush Microphone”, so your music sounds normal the rest of the time.": {
       "localizations": {
         "fr": {
@@ -446,12 +456,12 @@
         }
       }
     },
-    "Input device: Hush Microphone. Echo Cancellation off, Noise Suppression None, Automatic Gain Control off.": {
+    "Input Device": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Périphérique d’entrée : Hush Microphone. Suppression de l’écho désactivée, Réduction du bruit sur Aucune, Contrôle automatique du gain désactivé."
+            "value": "Périphérique d’entrée"
           }
         }
       }
@@ -536,12 +546,12 @@
         }
       }
     },
-    "Last step: choose Hush in Discord": {
+    "Last step: choose Hush in your app": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dernière étape : choisissez Hush dans Discord"
+            "value": "Dernière étape : choisissez Hush dans votre app"
           }
         }
       }
@@ -562,6 +572,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vérifiez que vous avez saisi un mot de passe administrateur, puis réessayez."
+          }
+        }
+      }
+    },
+    "Mic/Auxiliary Audio": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Micro/Audio auxiliaire"
           }
         }
       }
@@ -596,12 +616,58 @@
         }
       }
     },
-    "Music from your speakers is removed": {
+    "Microphone setting": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La musique de vos haut-parleurs est retirée"
+            "value": "Microphone"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone"
+          }
+        }
+      }
+    },
+    "More": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus"
+          }
+        }
+      }
+    },
+    "More options › Settings › Audio": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus d’options › Paramètres › Audio"
+          }
+        }
+      }
+    },
+    "No Noise Suppression filter on this source": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas de filtre « Suppression du bruit » sur cette source"
+          }
+        }
+      }
+    },
+    "No app is using Hush Microphone": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune app n’utilise Hush Microphone"
           }
         }
       }
@@ -616,22 +682,32 @@
         }
       }
     },
-    "Noise Suppression": {
+    "Noise Suppression: None": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Réduction du bruit"
+            "value": "Réduction du bruit : Aucune"
           }
         }
       }
     },
-    "None": {
+    "Noise cancellation: off": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aucune"
+            "value": "Réduction du bruit : désactivée"
+          }
+        }
+      }
+    },
+    "Noise suppression: Off": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suppression du bruit : Désactivée"
           }
         }
       }
@@ -656,32 +732,12 @@
         }
       }
     },
-    "Off — apps get your normal microphone": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Désactivé — les apps reçoivent votre micro normal"
-          }
-        }
-      }
-    },
     "On": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Activé"
-          }
-        }
-      }
-    },
-    "Open Discord › User Settings › Voice & Video, then set:": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrez Discord › Paramètres utilisateur › Voix et vidéo, puis réglez :"
           }
         }
       }
@@ -716,6 +772,26 @@
         }
       }
     },
+    "Open the audio settings": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez les réglages audio"
+          }
+        }
+      }
+    },
+    "Other": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autre"
+          }
+        }
+      }
+    },
     "Play some music on your speakers, press Start, and keep talking for 10 seconds.": {
       "localizations": {
         "fr": {
@@ -736,6 +812,16 @@
         }
       }
     },
+    "Problem": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Problème"
+          }
+        }
+      }
+    },
     "Quit Hush": {
       "localizations": {
         "fr": {
@@ -752,6 +838,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quittez l’autre copie (cherchez une deuxième icône Hush dans la barre des menus). Celle-ci prendra le relais automatiquement."
+          }
+        }
+      }
+    },
+    "Ready for any app": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt pour toutes les apps"
           }
         }
       }
@@ -816,12 +912,32 @@
         }
       }
     },
-    "Set up Discord": {
+    "Set %@ to “Hush Microphone”": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configurer Discord"
+            "value": "Réglez %@ sur « Hush Microphone »"
+          }
+        }
+      }
+    },
+    "Settings › Audio": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paramètres › Audio"
+          }
+        }
+      }
+    },
+    "Settings › Devices": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paramètres › Appareils"
           }
         }
       }
@@ -856,12 +972,12 @@
         }
       }
     },
-    "Standby — turns on when an app uses Hush Microphone": {
+    "Standby": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "En veille — s’active quand une app utilise Hush Microphone"
+            "value": "En veille"
           }
         }
       }
@@ -886,6 +1002,16 @@
         }
       }
     },
+    "Starting": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démarrage"
+          }
+        }
+      }
+    },
     "Starting…": {
       "localizations": {
         "fr": {
@@ -902,6 +1028,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le micro Hush n’est pas installé"
+          }
+        }
+      }
+    },
+    "The app’s audio or microphone settings": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les réglages audio ou micro de l’app"
           }
         }
       }
@@ -942,6 +1078,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Réessayer"
+          }
+        }
+      }
+    },
+    "Turn off the app’s own processing": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactivez le traitement de l’app"
+          }
+        }
+      }
+    },
+    "Turns on when an app needs it": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S’active quand une app en a besoin"
           }
         }
       }
@@ -1006,6 +1162,56 @@
         }
       }
     },
+    "Use Hush in your apps": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser Hush dans vos apps"
+          }
+        }
+      }
+    },
+    "Use in an app…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser dans une app…"
+          }
+        }
+      }
+    },
+    "Used by %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilisé par %@"
+          }
+        }
+      }
+    },
+    "Used by an app": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilisé par une app"
+          }
+        }
+      }
+    },
+    "User Settings › Voice & Video": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paramètres utilisateur › Voix et vidéo"
+          }
+        }
+      }
+    },
     "Version": {
       "localizations": {
         "fr": {
@@ -1046,12 +1252,32 @@
         }
       }
     },
+    "Voice cleanup is paused": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nettoyage de la voix en pause"
+          }
+        }
+      }
+    },
     "Voice level": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Niveau de la voix"
+          }
+        }
+      }
+    },
+    "Waiting for an app to use Hush Microphone": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En attente d’une app qui utilise Hush Microphone"
           }
         }
       }

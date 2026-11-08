@@ -5,7 +5,7 @@ enum Screenshots {
     static func render(to directory: String) {
         let controller = EngineController()
         let updates = UpdateController()
-        controller.applyPreview(status: .running, clients: 1, source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004))
+        controller.applyPreview(status: .running, clients: ["Discord", "Zoom"], source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004))
         let windowBackground = Color(nsColor: .windowBackgroundColor)
 
         // real window shown then screencapture since ImageRenderer doesn't draw AppKit controls
@@ -41,10 +41,12 @@ enum Screenshots {
 
         try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         save("menu", MenuContentView())
-        controller.applyPreview(status: .running, clients: 1, source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004),
+        controller.applyPreview(status: .running, clients: ["Discord", "Zoom"], source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004),
                                 driverState: .updateAvailable)
         save("menu-driver-update", MenuContentView())
-        controller.applyPreview(status: .running, clients: 1, source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004))
+        controller.applyPreview(status: .waiting, clients: [], source: "AirPods Pro", levels: (raw: 0.006, clean: 0))
+        save("menu-standby", MenuContentView())
+        controller.applyPreview(status: .running, clients: ["Discord", "Zoom"], source: "MacBook Air Microphone", levels: (raw: 0.02, clean: 0.004))
         for step in 0..<5 {
             save("onboarding-\(step + 1)", OnboardingView(initialStep: step))
         }
@@ -79,7 +81,7 @@ enum Screenshots {
                 }
             }
         }
-        save("discord", DiscordGuideView(showsDoneButton: false).padding(28).frame(width: 560))
+        save("guide", AppGuideView().padding(28).frame(width: 580))
         save("settings", SettingsView())
         exit(0)
     }
