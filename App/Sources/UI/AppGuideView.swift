@@ -16,11 +16,12 @@ struct AppGuideView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Picker("App", selection: $app) {
-                ForEach(GuideApp.allCases) { a in Text(a.name).tag(a) }
+            // segments are as wide as the longest label (wider in an active window on macOS 26)
+            // and an overflowing picker pushed the whole view out of the window, so fall back to a menu
+            ViewThatFits(in: .horizontal) {
+                appPicker.pickerStyle(.segmented)
+                appPicker.pickerStyle(.menu).fixedSize()
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
 
             VStack(alignment: .leading, spacing: 16) {
                 GuideStep(number: 1, title: "Open the audio settings") {
@@ -67,6 +68,14 @@ struct AppGuideView: View {
                     .frame(maxWidth: .infinity)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var appPicker: some View {
+        Picker("App", selection: $app) {
+            ForEach(GuideApp.allCases) { a in Text(a.name).tag(a) }
+        }
+        .labelsHidden()
     }
 }
 
@@ -100,7 +109,7 @@ enum GuideApp: String, CaseIterable, Identifiable {
         switch self {
         case .discord: "Discord"
         case .zoom: "Zoom"
-        case .meet: "Google Meet"
+        case .meet: "Meet"
         case .teams: "Teams"
         case .obs: "OBS"
         case .other: String(localized: "Other")
