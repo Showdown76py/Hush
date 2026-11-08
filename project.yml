@@ -7,7 +7,7 @@ options:
   developmentLanguage: en
 settings:
   base:
-    MARKETING_VERSION: 0.2.1
+    MARKETING_VERSION: 0.2.2
     # independent of MARKETING_VERSION. app offers a driver update (admin password)
     # when this exceeds the installed driver's, only bump if the driver changes
     HUSH_DRIVER_VERSION: 14
